@@ -1,2 +1,2 @@
-# Graphophile
+# Graphle
 Graph based file browser
