@@ -1,0 +1,15 @@
+type File {
+    location: String! # Where the file is located. Either local or on the web
+    updated: Int! # Unix time of the last mutation done
+    tags: [Tag] # Categories the file belongs to
+    connections: [Connection] # Connection set on this file
+}
+
+type Tag {
+    name: String! # Category title
+}
+
+type Connection {
+    relationship: String! # How are the files related
+    toFiles: [File] # List of files related to the original file with the given relationship
+}
