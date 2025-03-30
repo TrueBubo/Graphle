@@ -1,15 +1,58 @@
+type Query {
+    fileByLocation(location: String!): File! # Searches for a file based on its location
+    filesByTag(tagName: String!): [File!]! # Finds all the files with a tag
+}
+
+type Mutation {
+    addFile(location: String!): File! # Creates a new file if not exist and updates the metadata
+    removeFile(location: String!): RemoveFileResponse! # Removes a file and informs about the deletion statuseletion
+    moveFile(locationFrom: String!, locationTo: String!):  MoveFileResponse! # Moves a file together with its references, if the file does not exist, the call returns {success: False}
+    addTagsToFile(location: String!, tags: [TagInput!]!): File! # Adds new tags to a file at the given location
+    addConnectionDirectional(connection: ConnectionInput!):  Connection! # Adds the new connection between two files which is marked as directional
+    addConnectionBidirectional(connection: ConnectionInput!): Connection!  # Adds the new connection between two files which is marked as directional
+}
+
 type File {
     location: String! # Where the file is located. Either local or on the web
     updated: Int! # Unix time of the last mutation done
-    tags: [Tag] # Categories the file belongs to
-    connections: [Connection] # Connection set on this file
+    tags: [Tag!]! # Categories the file belongs to
+    connections: [NeighborConnection!]! # Connection set on this file
 }
+
+type RemoveFileResponse {
+    success: Boolean! # True in case the file was found and successfully deleted, False otherwise
+    message: String # Additional info about the operation
+}
+
+type MoveFileResponse {
+    success: Boolean! # True in case the file was found and successfully moved, False otherwise
+    message: String # Additional info about the operation
+    file: File # File moved with the new state
+}
+
 
 type Tag {
     name: String! # Category title
 }
 
+input TagInput {
+    name: String! # Category title
+}
+
 type Connection {
     relationship: String! # How are the files related
-    toFiles: [File] # List of files related to the original file with the given relationship
+    from: File! # The file the relationship goes from
+    to: File! # The file the relationship goes to
+    bidirectional: Boolean! # Whether the relationship is two-way (True) or one-way (False)
+}
+
+input ConnectionInput {
+    relationship: String! # How are the files related
+    locationFrom: String! # The file location the relationship goes from
+    locationTo: String! # The file location the relationship goes to
+}
+
+type NeighborConnection {
+    relationship: String! # How are the files related
+    toFiles: [File!]! # List of files related to the original file with the given relationship
 }
