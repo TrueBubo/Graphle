@@ -30,3 +30,20 @@ provides a schema, which ensures a total transparency with the users.
 
 Spring provides a whole ecosystem for creating APIs including GraphQL support and security. It is a popular framework,
 meaning it is easy to find developers who would be able to work on this project.
+
+## DSL: [Java](https://www.java.com/)
+The application provides autocompletion for the filenames, which requires character by character parsing of the commands.
+The autocomplete needs to know about possible options. They are stored in the database, which are handled by the server.
+Henceforth, the language used is the language of the API, which provides the GUI via the API.
+
+## Connections between files: [Neo4J](https://neo4j.com/)
+The software enables the users to create their own web of connections. To enable this efficiently, the program uses
+a graph data model to represent data. The project had two types to choose from, LPG and RDF. The problem with RDF is that 
+it forces users to use URIs to identify relationships. This is a hurdle users should not have to deal with when they are not 
+sharing their file systems with others. RDF does not store its data as graphs, and hence would be [slower](https://neo4j.com/blog/knowledge-graph/rdf-vs-property-graphs-knowledge-graphs/) for
+this application. The only [popular](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database)
+self-hosted graph first database is Neo4J, and hence it is used.
+
+## Autocomplete: [Redis](https://redis.io/)
+Due to the need of a character by character autocomplete, the API must respond to a request without a user having to wait. 
+Cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics).
