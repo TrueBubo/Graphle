@@ -1,11 +1,14 @@
 type Query {
-    fileByLocation(location: String!): File! # Searches for a file based on its location
-    filesByTag(tagName: String!): [File!]! # Finds all the files with a tag
+    fileByLocation(location: String!): File # Searches for a file based on its location returns null if not found
+    filesByTagInRange(tagName: String!, range: TimeRangeInput!, limit: Int = 20): TimeRangedFiles! # Finds all the files with a tag
+    filesFromFileByRelationship(fromLocation: String!, relationshipName: String!, limit: Int = 20): TimeRangedFiles! # Files relation to fromLocation file via the relationship
+    optionsByDslPrefix(dslPrefix: String!, limit: Int = 5): [String!]! # Gives possible next term for the command, like full file locations
+    entriesFromDSL(dslCommand: String!, range: TimeRangeInput!, limit: Int): Entries! # Returns entries based on the DSL command provided
 }
 
 type Mutation {
     addFile(location: String!): File! # Creates a new file if not exist and updates the metadata
-    removeFile(location: String!): RemoveFileResponse! # Removes a file and informs about the deletion statuseletion
+    removeFile(location: String!): RemoveFileResponse! # Removes a file and informs about the deletion status
     moveFile(locationFrom: String!, locationTo: String!):  MoveFileResponse! # Moves a file together with its references, if the file does not exist, the call returns {success: False}
     addTagsToFile(location: String!, tags: [TagInput!]!): File! # Adds new tags to a file at the given location
     addConnectionDirectional(connection: ConnectionInput!):  Connection! # Adds the new connection between two files which is marked as directional
@@ -15,8 +18,24 @@ type Mutation {
 type File {
     location: String! # Where the file is located. Either local or on the web
     updated: Int! # Unix time of the last mutation done
-    tags: [Tag!]! # Categories the file belongs to
-    connections: [NeighborConnection!]! # Connection set on this file
+    tags(limit: Int): [Tag!]! # Categories the file belongs to
+    connections(limit: Int = 20): RangedNeighborConnections! # Connection set on this file
+}
+
+type TimeRange {
+    oldest: Int # Unix time of the oldest result returned
+    newest: Int # Unix time of the newest result returned
+}
+
+input TimeRangeInput {
+    from: Int # Unix time of the earliest possible result wanted
+    to: Int # Unix time of the latest possible result wanted
+    fromNew: Boolean! # Show the newest result first
+}
+
+type TimeRangedFiles {
+    range: TimeRange! # Range of the files returned
+    files: [File!]! # Files matching criteria in the given time range
 }
 
 type RemoveFileResponse {
@@ -29,7 +48,6 @@ type MoveFileResponse {
     message: String # Additional info about the operation
     file: File # File moved with the new state
 }
-
 
 type Tag {
     name: String! # Category title
@@ -55,4 +73,19 @@ input ConnectionInput {
 type NeighborConnection {
     relationship: String! # How are the files related
     toFiles: [File!]! # List of files related to the original file with the given relationship
+}
+
+type RangedNeighborConnections {
+    range: TimeRange! # Range of the neighbor connections returned
+    neighborConnection: [NeighborConnection!]! # Connections on the file
+}
+
+type Entries {
+    entryTypeName: EntryTypeName! # What type was returned
+    identifiers: [String!]! # How to identify the entry to enable further querying
+}
+
+enum EntryTypeName {
+   File,
+   Connection
 }
