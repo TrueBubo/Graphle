@@ -47,4 +47,5 @@ self-hosted graph first database is Neo4J, and hence it is used.
 
 ## Autocomplete: [Redis](https://redis.io/)
 Due to the need of a character by character autocomplete, the API must respond to a request without a user having to wait. 
-The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics).
+The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics). To achieve this the application uses an
+in-memory database. The best database for implementing cache is a key-value based like Redis.
