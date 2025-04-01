@@ -62,6 +62,7 @@ type Connection {
     from: File! # The file the relationship goes from
     to: File! # The file the relationship goes to
     bidirectional: Boolean! # Whether the relationship is two-way (True) or one-way (False)
+    updated: Int! # Unix time of the last mutation done
 }
 
 input ConnectionInput {
