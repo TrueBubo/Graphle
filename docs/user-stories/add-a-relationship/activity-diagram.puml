@@ -1,0 +1,19 @@
+@startuml
+start
+:The user opens the file browser;
+:The user searches for a file (more in its own user story);
+:The user views the menu on the file;
+:The system shows the menu with different operations;
+if (Is the file local or a remote link) then ( Local )
+:The user selects "Create a new relationship";
+:The user searches for another file;
+:The user views the menu on the file;
+:The system shows the menu with different operations;
+:The user selects an operation "Add to the relationship";
+else ( Remote )
+:The user selects "Add a new web link";
+endif
+:The system displays a menu where the user can enter\n info about the relationship (name, is bidirectional);
+:The user enters the information and submits it;
+stop
+@enduml
