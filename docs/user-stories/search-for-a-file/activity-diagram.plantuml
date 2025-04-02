@@ -1,0 +1,27 @@
+@startuml
+start
+:The user opens the file browser;
+while (Continue searching for a file) is ( Yes )
+:The file browser is opened in the user's defined home location;
+:Application shows the graph of possible neighbors from the current location;
+if (How does the user want to interact with the system?) then ( GUI )
+    :The user clicks on the neighbor they want to visit;
+else ( DSL )
+    :The user enters a command to search for an item;
+endif
+endwhile ( No )
+switch (What operation does the user want to do on a file)
+case (\n Open )
+    :The user clicks on the file;
+    :The file opens;
+case (\n Show the tags)
+    :The user hovers over the file;
+    :The system shows the tags;
+case (\n Other (more in specific user stories))
+    :The user view the menu;
+    :The system shows the menu\n with different operation;
+    :The user selects an operation;
+endswitch
+:Operation is done;
+stop
+@enduml
