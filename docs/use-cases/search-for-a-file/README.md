@@ -14,13 +14,13 @@
 7. The file opens
 
 ### Alternative flow
-- 4a The user uses the integrated DSL for search  
-- 6a The user hovers over the file  
-   - 6a.1 The system shows the [tags](../../vocabulary.md/#tag) for the file  
-   - 6a.2 The flow ends 
-- 6b. The user shows the menu on the file
-   - 6b.1 The system shows the menu with different operations available  
-   - 6b.2 The user selects an operation  
+- 4a) The user uses the integrated DSL for search  
+- 6a) The user hovers over the file  
+   - 6a.1) The system shows the [tags](../../vocabulary.md/#tag) for the file  
+   - 6a.2) The flow ends 
+- 6b) The user shows the menu on the file
+   - 6b.1) The system shows the menu with different operations available  
+   - 6b.2) The user selects an operation  
 
 ## Postconditions
 - a) The user accessed the wanted file  

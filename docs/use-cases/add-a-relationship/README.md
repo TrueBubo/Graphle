@@ -15,7 +15,12 @@
 8. The system shows the menu with different operation 
 9. The user selects the operation "Add to the relationship"
 10. The system displays the menu where the user can enter info about the relationship (name, is bidirectional)
-11. The user enters the information and submits it;
+11. The user enters the information and submits it
+
+### Alternative flow
+- 5a) The user selects "Add a new web link"
+  - 5a.1) Move to step 10 in the original flow
+
 
 ## Postconditions
 - a) The system remembers a new relationship between two entities
