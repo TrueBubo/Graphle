@@ -37,8 +37,8 @@ The application provides autocompletion for the filenames, which requires charac
 The autocomplete needs to know about possible options. They are stored in the database, which is handled by the server.
 Henceforth, the language used is the language of the API, which provides the GUI via the API.
 
-## Connections between files: [Neo4J](https://neo4j.com/)
-The software enables users to create their own web of connections. To enable this to be done efficiently, the program uses
+## [Relationships](vocabulary.md/#relationship) between files: [Neo4J](https://neo4j.com/)
+The software enables users to create their own web of relationships. To enable this to be done efficiently, the program uses
 a graph data model to represent data. The project had two types to choose from: LPG and RDF. The problem with RDF is that 
 it forces users to use URIs to identify relationships. This is a hurdle users should not have to deal with when they are not 
 sharing their file systems with others. RDF does not store its data as graphs and hence would be [slower](https://neo4j.com/blog/knowledge-graph/rdf-vs-property-graphs-knowledge-graphs/) for

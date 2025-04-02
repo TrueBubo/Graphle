@@ -1,4 +1,4 @@
-# Add a relationship
+# Add a [relationship](../../vocabulary.md/#relationship)
 ## Preconditions
 - a) The user has the application opened
 - b) The file browser is connected to a Graphle server

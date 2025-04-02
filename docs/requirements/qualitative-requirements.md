@@ -6,6 +6,6 @@ This list serves as a requirement list for how well they should handle the users
     - Users can connect remotely
 - **Performance**
     - The autocomplete responds with available filenames within 250ms
-    - The GUI should update within 200ms after clicking to see relations from another node
+    - The GUI should update within 200ms after clicking to see [neighbors](../vocabulary.md/#neighbor) for a node
 - **Security**
   - Users need to authenticate to access the API
