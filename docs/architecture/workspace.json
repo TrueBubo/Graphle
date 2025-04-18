@@ -3,8 +3,7 @@
   "description" : "This workspace documents the architecture of the Graphle file manager.",
   "documentation" : { },
   "id" : 1,
-  "lastModifiedAgent" : "structurizr-ui",
-  "lastModifiedDate" : "2025-04-18T10:36:38Z",
+  "lastModifiedDate" : "2025-04-18T11:33:19Z",
   "model" : {
     "people" : [ {
       "description" : "Manages the filesystem",
@@ -537,7 +536,6 @@
     "configuration" : {
       "branding" : { },
       "lastSavedView" : "GraphleContainerDiagram",
-      "metadataSymbols" : "SquareBrackets",
       "styles" : {
         "elements" : [ {
           "background" : "#999999",

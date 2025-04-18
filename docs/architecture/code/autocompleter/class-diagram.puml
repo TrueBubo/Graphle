@@ -1,0 +1,25 @@
+@startuml
+
+PathTrie *-- PathTrieNode
+
+-class PathTrieNode {
+    - previousLevelEndings: List<PathTrieNode>
+    - children: Map<Character, PathTrieNode>
+    - parent: PathTrieNode
+    + child(char nextCharacterInPath): PathTrieNode
+    + parent(): PathTrieNode
+    + search(String pathPrefix, int limit): String[]
+    - search(String pathPrefix, int limit, int indexPrefix): String[]
+    + add((String path)
+    - add(String path, int pathIndex)
+    + remove(String path)
+    - remove(String path, int pathIndex)
+}
+
++class PathTrie {
+ - root: PathTrieNode
+ + search(String pathPrefix, int limit): String[]
+ + add(String path)
+ + remove(String path)
+}
+@enduml
