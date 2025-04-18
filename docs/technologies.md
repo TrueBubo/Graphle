@@ -45,7 +45,14 @@ sharing their file systems with others. RDF does not store its data as graphs an
 this application. The only [popular](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database)
 self-hosted graph first database is Neo4J, and hence it is used.
 
-## Autocomplete: [Redis](https://redis.io/)
+## Autocomplete: [Kryo](https://github.com/EsotericSoftware/kryo)
 Due to the need of a character by character autocomplete, the API must respond to a request without a user having to wait. 
-The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics). To achieve this the application uses an
-in-memory database. The best database for implementing cache is a key-value based like Redis.
+The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics). To achieve this, the application uses an
+in-memory data structure. To save space, the suffix tree is used. The suffix tree saves only bottom-level names without parents
+to utilize efficient prefix search. Parents are saved as a link in word-ending nodes.
+
+In-memory databases such as Redis were not used due to the bottleneck of verifying the files still existing. Therefore,
+it would not significantly boost performance, even though it would require more space.
+
+Serialization is used to save the suffix tree. Since the memory consumption and serialization performance are of
+paramount importance, the Kryo serialization is used.
