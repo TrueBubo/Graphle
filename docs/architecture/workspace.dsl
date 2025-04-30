@@ -19,9 +19,10 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
 
                     AutocompleterDataController = component "Autocompleter Data Controller" "DSL autocomplete data Controller"
                     AutocompleterModel = component "Autocompleter Model" "Handles logic for autocompletion"
+
+                    Autocompleter = component "Autocompleter" "Recommends possible ways how to continue in a command"
                 }
 
-                Autocompleter = container "Autocompleter" "Recommends possible ways how to continue in a command"
             }
         }
 
@@ -48,9 +49,6 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
         # Relationships inside Graphle
         GraphleUI -> GraphleManager "Sends requests for data"
         GraphleManager -> GraphleUI "Receives requested data"
-        GraphleManager -> Autocompleter "Sends the current command prefix"
-        Autocompleter -> GraphleManager "Provides possible ways how to complete the current term"
-        GraphleManager -> Autocompleter "Updates with new or deletes files"
         GraphleManager -> ConnectionsDB "Updating of connections and tags"
         ConnectionsDB -> GraphleManager "Reading of connections and tags"
         GraphleManager -> FileSystem "Updates files"
@@ -72,6 +70,8 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
         AutocompleterDataController -> AutocompleterModel "Request possible continuations of a command"
         AutocompleterModel -> Autocompleter "Reads possible continuations of a command"
         AutocompleterModel -> Autocompleter "Sends info about invalid continuations"
+        AutocompleterModel -> Autocompleter "Updates with new or deletes files"
+        Autocompleter -> AutocompleterModel "Provides possible ways how to complete the current term"
 
         # Relationships inside GraphleUI
         GraphleDesktopApp -> GraphleAPIService "Sends requests for files and connections"
