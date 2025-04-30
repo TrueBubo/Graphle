@@ -79,6 +79,7 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
         GraphleUI -> FileDataController "Sends request for possible files"
         FileDataController -> FileModel "Handles logic for files"
         FileModel -> FileDBController "Request saving / reading data"
+        FileModel -> FileSystem "Syncs the file information with the FS"
         FileModel -> FileDBController "Updates with new or deletes files"
         FileDBController -> ConnectionsDB "Saves changes / reads DB"
 
