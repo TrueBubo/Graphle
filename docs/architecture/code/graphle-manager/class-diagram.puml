@@ -16,7 +16,8 @@ class TagRepository
 
 class AutocompleterController
 class AutocompleterService
-class AutocompleterRepository
+class PathTrie
+class PathTrieNode
 
 'Relationships between classes
 FileController *-- FileService
@@ -29,6 +30,7 @@ TagController *-- TagService
 TagService *-- TagRepository
 
 AutocompleterController *-- AutocompleterService
-AutocompleterService *-- AutocompleterRepository
+AutocompleterService *-- PathTrie
+PathTrie *-- PathTrieNode
 
 @enduml
