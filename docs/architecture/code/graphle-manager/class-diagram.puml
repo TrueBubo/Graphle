@@ -1,0 +1,34 @@
+@startuml
+hide empty members
+
+'classes of Graphle manager
+class FileController
+class FileService
+class FileRepository
+
+class RelationshipController
+class RelationshipService
+class RelationshipRepository
+
+class TagController
+class TagService
+class TagRepository
+
+class AutocompleterController
+class AutocompleterService
+class AutocompleterRepository
+
+'Relationships between classes
+FileController *-- FileService
+FileService *-- FileRepository
+
+RelationshipController *-- RelationshipService
+RelationshipService *-- RelationshipRepository
+
+TagController *-- TagService
+TagService *-- TagRepository
+
+AutocompleterController *-- AutocompleterService
+AutocompleterService *-- AutocompleterRepository
+
+@enduml

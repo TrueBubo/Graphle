@@ -9,12 +9,16 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
                     GraphleAPIService = component "Graphle API service" "Handles communication between the front-end interface and the backend server"
                 }
                 GraphleManager = container "Graphle Manager" "Manages information about files and their relationships and tags" {
-                    RelationshipDataController = component "Relationship Data Controller" "Creating of relationships"
+                    FileDataController = component "File Data Controller" "Creating and retrieving of files"
+                    FileDBController = component "File DB Controller" "Communication with the file database"
+                    FileModel = component "File Model" "Handles logic for files"
+
+                    RelationshipDataController = component "Relationship Data Controller" "Creating and retrieving of relationships"
                     RelationshipDBController = component "Relationship DB Controller" "Communication with the relationship database"
                     RelationshipModel = component "Relationship Model" "Handles logic for relationships"
 
-                    TagDataController = component "Tag Data Controller" "Creating of tags"
-                    TagDBController = component "Tag DB Controller" "Communication with the relationship database"
+                    TagDataController = component "Tag Data Controller" "Creating and retrieving of tags"
+                    TagDBController = component "Tag DB Controller" "Communication with the tag database"
                     TagModel = component "Tag Model" "Handles logic for tags"
 
                     AutocompleterDataController = component "Autocompleter Data Controller" "DSL autocomplete data Controller"
@@ -70,8 +74,13 @@ workspace "Graphle Workspace" "This workspace documents the architecture of the 
         AutocompleterDataController -> AutocompleterModel "Request possible continuations of a command"
         AutocompleterModel -> Autocompleter "Reads possible continuations of a command"
         AutocompleterModel -> Autocompleter "Sends info about invalid continuations"
-        AutocompleterModel -> Autocompleter "Updates with new or deletes files"
         Autocompleter -> AutocompleterModel "Provides possible ways how to complete the current term"
+
+        GraphleUI -> FileDataController "Sends request for possible files"
+        FileDataController -> FileModel "Handles logic for files"
+        FileModel -> FileDBController "Request saving / reading data"
+        FileModel -> FileDBController "Updates with new or deletes files"
+        FileDBController -> ConnectionsDB "Saves changes / reads DB"
 
         # Relationships inside GraphleUI
         GraphleDesktopApp -> GraphleAPIService "Sends requests for files and connections"
