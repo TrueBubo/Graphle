@@ -4,7 +4,7 @@
   "documentation" : { },
   "id" : 1,
   "lastModifiedAgent" : "structurizr-ui",
-  "lastModifiedDate" : "2025-04-30T21:35:28Z",
+  "lastModifiedDate" : "2025-04-30T21:36:59Z",
   "model" : {
     "people" : [ {
       "description" : "Manages the filesystem",
@@ -594,7 +594,11 @@
       }, {
         "id" : "41"
       }, {
-        "id" : "42"
+        "id" : "42",
+        "vertices" : [ {
+          "x" : 797,
+          "y" : 1236
+        } ]
       }, {
         "id" : "43"
       }, {
