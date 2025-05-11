@@ -4,4 +4,5 @@ services:
     environment:
       - 'NEO4J_AUTH=neo4j/notverysecret'
     ports:
-      - '7687'
+      - '7687:7687'  # Bolt
+      - '7474:7474'  # HTTP for Neo4j Browser
