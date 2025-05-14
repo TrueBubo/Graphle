@@ -51,6 +51,8 @@ type MoveFileResponse {
 
 type Tag {
     name: String! # Category title
+    value: String # Category value
+    numericValue: Float # Category value stored in case the value can be considered a number
 }
 
 input TagInput {
@@ -78,7 +80,7 @@ type NeighborConnection {
 
 type RangedNeighborConnections {
     range: TimeRange! # Range of the neighbor connections returned
-    neighborConnection: [NeighborConnection!]! # Connections on the file
+    neighborConnections: [NeighborConnection!]! # Connections on the file
 }
 
 type Entries {
