@@ -1,4 +1,4 @@
 package com.graphle.graphlemanager.Time;
 
-public record TimeRange(int oldest, int newest) {
+public record TimeRange(long oldest, long newest) {
 }

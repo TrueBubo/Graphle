@@ -51,6 +51,8 @@ type MoveFileResponse {
 
 type Tag {
     name: String! # Category title
+    value: String # Category value
+    numericValue: Float # Category value stored in case the value can be considered a number
 }
 
 input TagInput {
