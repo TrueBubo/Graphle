@@ -11,6 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface FileRepository extends Neo4jRepository<File, UUID> {
-    @Query("MATCH (f:File {location: $fileLocation})-[:HasTag]->(t:Tag) RETURN t.id AS id, t.name AS name, t.value AS value, t.numericValue AS numericValue")
+    @Query("MATCH (f:File {location: $fileLocation})-[:HasTag]->(t:Tag) RETURN t.name AS name, t.value AS value, t.numericValue AS numericValue")
     @NonNull List<Tag> tagsByFileLocation(@NonNull String fileLocation);
 }
