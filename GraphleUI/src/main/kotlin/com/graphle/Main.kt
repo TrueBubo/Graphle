@@ -20,14 +20,17 @@ import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
 import kotlinx.coroutines.launch
+import java.lang.System.currentTimeMillis
 
 const val serverURL = "http://localhost:8080/graphql"
+const val minUpdateDelay = 1000L
 
 @Composable
 @Preview
 fun App() {
     var location by remember { mutableStateOf("/home") }
     var oldLocation by remember { mutableStateOf("") }
+    var lastUpdated by remember { mutableStateOf(0L) }
     var file by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -39,8 +42,9 @@ fun App() {
                 onValueChange = { location = it },
                 singleLine = true,
                 modifier = Modifier.onPreviewKeyEvent {
-                    if (it.key == Key.Enter && !isLoading && oldLocation != location) {
+                    if (it.key == Key.Enter && !isLoading && ((location != oldLocation) || (currentTimeMillis() - lastUpdated > minUpdateDelay))) {
                         oldLocation = location
+                        lastUpdated = currentTimeMillis()
                         coroutineScope.launch {
                             fetchFilesByLocation(
                                 location = location,
@@ -76,7 +80,8 @@ suspend fun fetchFilesByLocation(
             if (response.hasErrors()) {
                 "Error: ${response.errors?.joinToString()}"
             } else {
-                response.data?.fileByLocation?.tags?.joinToString("\n") ?: "No file found"
+                val file = response.data?.fileByLocation
+                file?.tags?.joinToString("\n") ?: "No file found"
             }
         )
     } catch (e: Exception) {
