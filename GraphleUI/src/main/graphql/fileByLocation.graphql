@@ -1,0 +1,9 @@
+query  fileByLocation($location: String!) {
+    fileByLocation(location: $location) {
+        location,
+        tags {
+            name
+            value
+        }
+    }
+}
