@@ -17,7 +17,7 @@ class FileController(private val fileService: FileService, private val tagServic
             currentTimeMillis(),
             tagService.tagsForFileLocation(location),
             RangedNeighborConnections(
-                TimeRange(0, currentTimeMillis()),
+                TimeRange(to = currentTimeMillis()),
                 listOf()
             )
         )
