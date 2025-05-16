@@ -5,6 +5,7 @@ import com.graphle.graphlemanager.time.TimeRange
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
+import java.lang.System.currentTimeMillis
 
 @Controller
 class FileController(private val fileService: FileService) {
@@ -12,10 +13,10 @@ class FileController(private val fileService: FileService) {
     fun fileByLocation(@Argument location: String): File {
         return File(
             location,
-            System.currentTimeMillis(),
+            currentTimeMillis(),
             fileService.tagsForFileLocation(location),
             RangedNeighborConnections(
-                TimeRange(0, System.currentTimeMillis()),
+                TimeRange(0, currentTimeMillis()),
                 listOf()
             )
         )
