@@ -1,6 +1,6 @@
-package com.graphle.graphlemanager.Connections
+package com.graphle.graphlemanager.connections
 
-import com.graphle.graphlemanager.Time.TimeRange
+import com.graphle.graphlemanager.time.TimeRange
 
 data class RangedNeighborConnections(
     val range: TimeRange,

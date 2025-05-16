@@ -1,6 +1,6 @@
-package com.graphle.graphlemanager.Connections
+package com.graphle.graphlemanager.connections
 
-import com.graphle.graphlemanager.File.File
+import com.graphle.graphlemanager.file.File
 
 data class NeighborConnection(
     val relationship: String,

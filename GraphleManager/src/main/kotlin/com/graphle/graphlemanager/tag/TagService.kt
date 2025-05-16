@@ -1,6 +1,6 @@
-package com.graphle.graphlemanager.Tag
+package com.graphle.graphlemanager.tag
 
 import org.springframework.stereotype.Service
 
 @Service
-class TagService 
+class TagService

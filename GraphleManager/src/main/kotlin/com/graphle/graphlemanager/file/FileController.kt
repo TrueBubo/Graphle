@@ -1,16 +1,13 @@
-package com.graphle.graphlemanager.File
+package com.graphle.graphlemanager.file
 
-import com.graphle.graphlemanager.Connections.NeighborConnection
-import com.graphle.graphlemanager.Connections.RangedNeighborConnections
-import com.graphle.graphlemanager.Time.TimeRange
+import com.graphle.graphlemanager.connections.RangedNeighborConnections
+import com.graphle.graphlemanager.time.TimeRange
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
-import org.springframework.lang.NonNull
 import org.springframework.stereotype.Controller
-import java.time.Instant
 
 @Controller
-class FileController(@param:NonNull private val fileService: FileService) {
+class FileController(private val fileService: FileService) {
     @QueryMapping
     fun fileByLocation(@Argument location: String): File {
         return File(
@@ -19,7 +16,7 @@ class FileController(@param:NonNull private val fileService: FileService) {
             fileService.tagsForFileLocation(location),
             RangedNeighborConnections(
                 TimeRange(0, System.currentTimeMillis()),
-                listOf<NeighborConnection>()
+                listOf()
             )
         )
     }
