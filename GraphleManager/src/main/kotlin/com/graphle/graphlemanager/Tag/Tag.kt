@@ -6,14 +6,13 @@ import org.springframework.lang.NonNull
 import org.springframework.lang.Nullable
 import java.util.*
 
-@JvmRecord
 data class Tag(
-    @field:GeneratedValue @field:Id val id: UUID?,
-    @field:NonNull @param:NonNull val name: String,
-    @field:Nullable @param:Nullable val value: String?,
-    @field:Nullable @param:Nullable val numericValue: Double?
+    @GeneratedValue @Id val id: UUID?,
+    val name: String,
+    val value: String?,
+    val numericValue: Double?
 ) {
-    constructor(@NonNull name: String, @Nullable value: String?, @Nullable numericValue: Double?) : this(
+    constructor(name: String, value: String?, numericValue: Double?) : this(
         null,
         name,
         value,
