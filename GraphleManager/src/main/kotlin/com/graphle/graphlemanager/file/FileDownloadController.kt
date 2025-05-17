@@ -14,7 +14,6 @@ import java.nio.file.Paths
 
 @RestController
 class FileDownloadController {
-
     @GetMapping("/download")
     fun serveFile(@RequestParam("path") path: String): ResponseEntity<Resource> {
         val filePath = Paths.get(path)
@@ -37,7 +36,6 @@ class FileDownloadController {
             ResponseEntity.status(500).body(null)
         }
     }
-
 
     private fun guessContentType(filePath: String): String {
         return URLConnection.guessContentTypeFromName(filePath) // From filename
