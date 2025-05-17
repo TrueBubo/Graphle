@@ -7,6 +7,7 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
 import org.springframework.web.bind.annotation.RequestParam
+import java.io.IOException
 import java.net.URLConnection
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -21,14 +22,20 @@ class FileDownloadController {
 
         if (!resource.exists()) return ResponseEntity.notFound().build()
 
+        if (!resource.isReadable) return ResponseEntity.status(403).body(null)
+
         val contentType = guessContentType(filePath.toString())
         val fileName = filePath.fileName.toString()
 
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$fileName\"")
-            .header(HttpHeaders.CONTENT_TYPE, contentType)
-            .header(HttpHeaders.CONTENT_LENGTH, Files.size(filePath).toString())
-            .body(resource)
+        return try {
+            ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$fileName\"")
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .header(HttpHeaders.CONTENT_LENGTH, Files.size(filePath).toString())
+                .body(resource)
+        } catch (_: IOException) {
+            ResponseEntity.status(500).body(null)
+        }
     }
 
 
