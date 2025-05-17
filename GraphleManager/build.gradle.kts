@@ -38,6 +38,7 @@ dependencies {
 	testImplementation("org.springframework.graphql:spring-graphql-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation(kotlin("stdlib-jdk8"))
+	testImplementation(kotlin("test"))
 }
 
 tasks.generateJava {
