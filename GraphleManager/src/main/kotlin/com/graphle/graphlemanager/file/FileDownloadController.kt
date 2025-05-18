@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.file
 
+import jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -10,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.io.IOException
 import java.net.URLConnection
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+
+typealias MimeContentType = String
 
 @RestController
 class FileDownloadController {
@@ -21,9 +25,9 @@ class FileDownloadController {
 
         if (!resource.exists()) return ResponseEntity.notFound().build()
 
-        if (!resource.isReadable) return ResponseEntity.status(403).body(null)
+        if (!resource.isReadable) return ResponseEntity.status(SC_FORBIDDEN).body(null)
 
-        val contentType = guessContentType(filePath.toString())
+        val contentType = filePath.mimeContentType()
         val fileName = filePath.fileName.toString()
 
         return try {
@@ -33,13 +37,13 @@ class FileDownloadController {
                 .header(HttpHeaders.CONTENT_LENGTH, Files.size(filePath).toString())
                 .body(resource)
         } catch (_: IOException) {
-            ResponseEntity.status(500).body(null)
+            ResponseEntity.internalServerError().body(null)
         }
     }
 
-    private fun guessContentType(filePath: String): String {
-        return URLConnection.guessContentTypeFromName(filePath) // From filename
-            ?: Files.probeContentType(Paths.get(filePath)) // From file header
+    private fun Path.mimeContentType(): MimeContentType {
+        return URLConnection.guessContentTypeFromName(fileName.toString()) // From filename
+            ?: Files.probeContentType(this) // From file header
             ?: "application/octet-stream" // Fallback to binary
     }
 }
