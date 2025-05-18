@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpHeaders.CONTENT_DISPOSITION
+import org.springframework.http.HttpHeaders.CONTENT_LENGTH
+import org.springframework.http.HttpHeaders.CONTENT_TYPE
 import org.springframework.web.bind.annotation.RequestParam
 import java.io.IOException
 import java.net.URLConnection
@@ -32,9 +34,9 @@ class FileDownloadController {
 
         return try {
             ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$fileName\"")
-                .header(HttpHeaders.CONTENT_TYPE, contentType)
-                .header(HttpHeaders.CONTENT_LENGTH, Files.size(filePath).toString())
+                .header(CONTENT_DISPOSITION, "attachment; filename=\"$fileName\"")
+                .header(CONTENT_TYPE, contentType)
+                .header(CONTENT_LENGTH, Files.size(filePath).toString())
                 .body(resource)
         } catch (_: IOException) {
             ResponseEntity.internalServerError().body(null)
