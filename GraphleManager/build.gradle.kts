@@ -2,7 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.5"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("com.netflix.dgs.codegen") version "7.0.3"
+	id("com.netflix.dgs.codegen") version "8.0.4"
 	kotlin("jvm")
 }
 
@@ -45,6 +45,15 @@ tasks.generateJava {
 	schemaPaths.add("${projectDir}/src/main/resources/graphql-client")
 	packageName = "com.graphle.graphlemanager.codegen"
 	generateClient = true
+}
+
+tasks.withType<Test>().configureEach {
+	maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+}
+
+tasks.withType<Test>().configureEach {
+	reports.html.required = false
+	reports.junitXml.required = false
 }
 
 tasks.withType<Test> {
