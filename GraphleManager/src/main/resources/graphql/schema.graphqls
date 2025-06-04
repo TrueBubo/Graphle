@@ -1,5 +1,6 @@
 type Query {
     fileByLocation(location: String!): File # Searches for a file based on its location returns null if not found
+    tagsByFileLocation(location: String!): [Tag!]! # Searches for categories the file belongs to
     filesByTagInRange(tagName: String!, range: TimeRangeInput!, limit: Int = 20): TimeRangedFiles! # Finds all the files with a tag
     filesFromFileByRelationship(fromLocation: String!, relationshipName: String!, limit: Int = 20): TimeRangedFiles! # Files relation to fromLocation file via the relationship
     optionsByDslPrefix(dslPrefix: String!, limit: Int = 5): [String!]! # Gives possible next term for the command, like full file locations

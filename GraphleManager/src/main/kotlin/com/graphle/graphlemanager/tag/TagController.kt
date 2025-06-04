@@ -1,10 +1,12 @@
 package com.graphle.graphlemanager.tag
 
-import org.springframework.lang.NonNull
+import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
 
 @Controller
 class TagController(private val tagService: TagService) {
-    fun tagsByFileLocation(@NonNull location: String): List<Tag> =
+    @QueryMapping
+    fun tagsByFileLocation(@Argument location: String): List<Tag> =
         tagService.tagsByFileLocation(location)
 }
