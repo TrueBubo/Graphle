@@ -1,6 +1,6 @@
 package com.graphle.graphlemanager.file
 
-import com.graphle.graphlemanager.connections.RangedNeighborConnections
+import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.Tag
 import org.springframework.data.neo4j.core.schema.GeneratedValue
 import org.springframework.data.neo4j.core.schema.Id
@@ -11,13 +11,13 @@ data class File(
     val location: String,
     val updated: Long,
     val tags: List<Tag>,
-    val connections: RangedNeighborConnections?
+    val connections: List<NeighborConnection>
 ) {
     constructor(
         location: String,
         updated: Long,
         tags: List<Tag>,
-        connections: RangedNeighborConnections?
+        connections: List<NeighborConnection>
     ) : this(
         id = null,
         location = location,
