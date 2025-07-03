@@ -5,7 +5,8 @@
 A cross-platform file management system built on a graph-based data model, designed as an alternative to traditional hierarchical file systems.
 
 ## 🔍 Overview
-Conventional file systems organize data in a strict tree hierarchy, where each file resides in a single parent directory. This model lacks flexibility when modeling complex relationships, such as cross-references, tags, or semantic links between files.
+Conventional file systems organize data in a strict tree hierarchy, where each file resides in a single parent directory. 
+This model lacks flexibility when modeling complex relationships, such as cross-references, tags, or semantic links between files.
 
 This project introduces a graph-oriented approach, where files and folders are treated as fully connected nodes in a graph. The system supports rich, many-to-many relationships, enabling more expressive organization, querying, and manipulation of data.
 
