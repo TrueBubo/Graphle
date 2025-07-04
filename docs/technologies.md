@@ -40,24 +40,25 @@ meaning it is easy to find developers who can work on this project.
 ## DSL: [Kotlin](https://kotlinlang.org/)
 The application provides autocompletion for the filenames, which requires character-by-character parsing of the commands.
 The autocomplete needs to know about possible options. They are stored in the database, which is handled by the server.
-Henceforth, the language used is the language of the API, which provides the GUI via the API.
+Henceforth, the la****nguage used is the language of the API, which provides the GUI via the API.
 
 ## [Relationships](vocabulary.md/#relationship) between files: [Neo4J](https://neo4j.com/)
 The software enables users to create their own web of relationships. To enable this to be done efficiently, the program uses
 a graph data model to represent data. The project had two types to choose from: LPG and RDF. The problem with RDF is that 
-it forces users to use URIs to identify relationships. This is a hurdle users should not have to deal with when they are not 
+it forces users to use URIs to identify relations****hips. This is a hurdle users should not have to deal with when they are not 
 sharing their file systems with others. RDF does not store its data as graphs and hence would be [slower](https://neo4j.com/blog/knowledge-graph/rdf-vs-property-graphs-knowledge-graphs/) for
 this application. The only [popular](https://survey.stackoverflow.co/2024/technology#most-popular-technologies-database)
 self-hosted graph first database is Neo4J, and hence it is used.
 
-## Autocomplete: [Valkey]()
+## Autocomplete: [Valkey](https://valkey.io/)
 Due to the need of a character by character autocomplete, the API must respond to a request without a user having to wait. 
-The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics). To achieve this, the application uses an
-in-memory data structure. To save space, the suffix tree is used. The suffix tree saves only bottom-level names without parents
-to utilize efficient prefix search. Parents are saved as a link in word-ending nodes.
+The cutoff was set as the human reaction time. It hovers around [250ms](https://humanbenchmark.com/tests/reactiontime/statistics). 
+To achieve this, the application uses an in-memory key-value database. The Valkey database was chosen. 
+It is a fork of [Redis](https://redis.io/), hence developers knowing Redis will know how to use it.
+In many benchmarks it is [faster and more memory efficient](https://redisson.pro/blog/valkey-vs-redis-comparision.html) than Redis.
+After the licence change fiasco, many companies such as 
+[Oracle, AWS, and Google](https://www.thestack.technology/redis-fork-valkey-linux-foundation/) embraced it. The corporate
+backing gives it higher credibility as they now need to rely on it as well.
 
-In-memory databases such as Redis were not used due to the bottleneck of verifying the files still existing. Therefore,
-it would not significantly boost performance, even though it would require more space.
-
-Serialization is used to save the suffix tree. Since the memory consumption and serialization performance are of
-paramount importance, the Kryo serialization is used.
+To save space and support infix completion, a modified suffix tree is used. The suffix tree saves only bottom-level names without parents
+to utilize efficient prefix search. Parents are saved as a link to word-ending nodes.
