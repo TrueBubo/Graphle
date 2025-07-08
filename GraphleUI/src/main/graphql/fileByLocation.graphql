@@ -1,4 +1,4 @@
-query  fileByLocation($location: String!) {
+query fileByLocation($location: String!) {
     fileByLocation(location: $location) {
         location,
         tags {
