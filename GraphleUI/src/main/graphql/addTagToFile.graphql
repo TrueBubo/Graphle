@@ -1,0 +1,12 @@
+mutation addTagToFileWithName($location: String!, $name: String!) {
+    addTagToFile(location: $location, tag: {name: $name}) {
+        name
+    }
+}
+
+mutation addTagToFileWithNameAndValue($location: String!, $name: String!, $value: String!) {
+    addTagToFile(location: $location, tag: {name: $name, value: $value}) {
+        name
+        value
+    }
+}
