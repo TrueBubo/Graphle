@@ -25,12 +25,19 @@ import java.lang.System.currentTimeMillis
 const val serverURL = "http://localhost:8080/graphql"
 const val minUpdateDelay = 1000L
 
+val apolloClient = ApolloClient.Builder()
+    .serverUrl(serverURL)
+    .build()
+
+
 @Composable
 @Preview
 fun App() {
     var location by remember { mutableStateOf("/home") }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
+    var tagName by remember { mutableStateOf("") }
+    var tagValue by remember { mutableStateOf("") }
     var file by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -41,8 +48,9 @@ fun App() {
                 value = location,
                 onValueChange = { location = it },
                 singleLine = true,
-                modifier = Modifier.onPreviewKeyEvent {
-                    if (it.key == Key.Enter && !isLoading && ((location != oldLocation) || (currentTimeMillis() - lastUpdated > minUpdateDelay))) {
+                modifier = Modifier.onPreviewKeyEvent { event ->
+                    val canRefresh = !isLoading && ((location != oldLocation) || (currentTimeMillis() - lastUpdated > minUpdateDelay))
+                    if (event.key == Key.Enter && canRefresh) {
                         oldLocation = location
                         lastUpdated = currentTimeMillis()
                         coroutineScope.launch {
@@ -55,6 +63,42 @@ fun App() {
 
                         true
 
+                    } else false
+                }
+            )
+
+            TextField(
+                value = tagName,
+                onValueChange = { tagName = it },
+                singleLine = true,
+                modifier = Modifier.onPreviewKeyEvent { event ->
+                    if (event.key == Key.Enter ) {
+                        coroutineScope.launch {
+                            if (tagValue != "") apolloClient.addTagToFile(location, tagName, tagValue)
+                            else apolloClient.addTagToFile(location, tagName)
+                        }
+
+                        tagName = ""
+                        tagValue = ""
+                        true
+                    } else false
+                }
+            )
+
+            TextField(
+                value = tagValue,
+                onValueChange = { tagValue = it },
+                singleLine = true,
+                modifier = Modifier.onPreviewKeyEvent { event ->
+                    if (event.key == Key.Enter) {
+                        coroutineScope.launch {
+                            if (tagValue != "") apolloClient.addTagToFile(location, tagName, tagValue)
+                            else apolloClient.addTagToFile(location, tagName)
+                        }
+
+                        tagName = ""
+                        tagValue = ""
+                        true
                     } else false
                 }
             )
@@ -75,7 +119,7 @@ suspend fun fetchFilesByLocation(
 ) {
     onLoading(true)
     try {
-        val response = getFilesByLocation(location)
+        val response = apolloClient.getFilesByLocation(location)
         onResult(
             if (response.hasErrors()) {
                 "Error: ${response.errors?.joinToString()}"
@@ -90,13 +134,15 @@ suspend fun fetchFilesByLocation(
     onLoading(false)
 }
 
-suspend fun getFilesByLocation(location: String): ApolloResponse<FileByLocationQuery.Data> {
-    val apolloClient = ApolloClient.Builder()
-        .serverUrl(serverURL)
-        .build()
+suspend fun ApolloClient.getFilesByLocation(location: String): ApolloResponse<FileByLocationQuery.Data> =
+    query(FileByLocationQuery(location)).execute()
 
-    return apolloClient.query(FileByLocationQuery(location)).execute()
-}
+
+suspend fun ApolloClient.addTagToFile(location: String, name: String): ApolloResponse<AddTagToFileWithNameMutation.Data>  =
+    mutation(AddTagToFileWithNameMutation(location, name)).execute()
+
+suspend fun ApolloClient.addTagToFile(location: String, name: String, value: String): ApolloResponse<AddTagToFileWithNameAndValueMutation.Data> =
+    mutation(AddTagToFileWithNameAndValueMutation(location, name, value)).execute()
 
 
 fun main() = application {
