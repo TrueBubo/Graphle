@@ -18,7 +18,7 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry) : TextWebSo
     override fun handleTextMessage(session: WebSocketSession, messageReceived: TextMessage) {
         val input = messageReceived.payload
         val messageSent = DSLAutoCompleter().complete(input)
-            .joinToString(prefix = "[", postfix = "]")
+            .joinToString(prefix = "[", postfix = "]", transform = { "\"$it\""})
         session.sendMessage(TextMessage(messageSent))
     }
 }
