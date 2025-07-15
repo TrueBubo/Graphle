@@ -71,6 +71,11 @@ suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String
 }
 
 
+val apolloClient = ApolloClient.Builder()
+    .serverUrl(serverURL)
+    .build()
+
+
 @Composable
 @Preview
 fun App() {
