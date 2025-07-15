@@ -2,6 +2,7 @@ package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -19,11 +20,56 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.http.HttpMethod
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readText
+import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
 
 const val serverURL = "http://localhost:8080/graphql"
-const val minUpdateDelay = 1000L
+val minUpdateDelay = 1000.milliseconds
+
+val apolloClient = ApolloClient.Builder()
+    .serverUrl(serverURL)
+    .build()
+
+val autoCompleterClient = HttpClient(CIO) { install(WebSockets) }
+
+suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String) -> Unit) {
+    autoCompleterClient.webSocket(method = HttpMethod.Get, host = "localhost", port = 8080, path = "/ws") {
+        send(Frame.Text("Hello from Ktor"))
+
+        launch {
+            for (frame in incoming) {
+                when (frame) {
+                    is Frame.Text -> {
+                        val text = frame.readText()
+
+                        try {
+                            val list = Json.decodeFromString<List<String>>(text)
+                            list.forEach {
+                                saveValue(it)
+                                delay(1000)
+                            }
+                        } catch (e: Exception) {
+                            println("Raw text (not a list): $text")
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+}
+
 
 val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
@@ -40,16 +86,28 @@ fun App() {
     var tagValue by remember { mutableStateOf("") }
     var file by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(false) }
+    var dslValue by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
     MaterialTheme {
         Column {
+            Text(dslValue)
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        dslAutoCompleter(autoCompleterClient) {dslValue = it}
+                    }
+                }
+            ) { Text("DSL") }
+
             TextField(
                 value = location,
-                onValueChange = { location = it },
+                onValueChange = { location = it},
                 singleLine = true,
                 modifier = Modifier.onPreviewKeyEvent { event ->
-                    val canRefresh = !isLoading && ((location != oldLocation) || (currentTimeMillis() - lastUpdated > minUpdateDelay))
+                    val canRefresh = !isLoading && ((location != oldLocation)
+                            || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds))
                     if (event.key == Key.Enter && canRefresh) {
                         oldLocation = location
                         lastUpdated = currentTimeMillis()
@@ -146,6 +204,8 @@ suspend fun ApolloClient.addTagToFile(location: String, name: String, value: Str
 
 
 fun main() = application {
+
+
     Window(onCloseRequest = ::exitApplication) {
         App()
     }
