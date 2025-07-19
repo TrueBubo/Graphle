@@ -3,6 +3,7 @@ package com.graphle.graphlemanager.dsl
 import io.valkey.Jedis
 import io.valkey.JedisPool
 import io.valkey.JedisPoolConfig
+import java.io.File
 import kotlin.text.forEach
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
@@ -59,13 +60,17 @@ object ValkeyFilenameCompleter : FilenameCompleter {
 
 
     private fun searchAndAddComponent(jedis: Jedis, component: String): CharacterKey {
-        if (lastElement == -1L) jedis.set(LAST_KEY, lastElement.toString())
+        if (lastElement == 0L) jedis.set(LAST_KEY, lastElement.toString())
 
         var currNode = ROOT
         var currNodeChildren = jedis.hgetAll(currNode.key).toMutableMap()
         component.forEach {
             val char = it.toString()
-            val index = currNodeChildren[char] ?: (++lastElement).toString()
+            val maybeIndex = currNodeChildren[char]
+            val index = if (maybeIndex != null) maybeIndex else {
+                jedis.set(LAST_KEY, lastElement.toString())
+                (++lastElement).toString()
+            }
             currNodeChildren[char] = index
             jedis.hsetex(currNode.key, ttl, currNodeChildren)
 
@@ -100,29 +105,26 @@ object ValkeyFilenameCompleter : FilenameCompleter {
         return route.toString().reversed()
     }
 
-    fun filenameDFS(jedis: Jedis, key: CharacterKey, limit: Int, collected: MutableSet<FilenameComponents> = mutableSetOf()): List<FilenameComponents> {
+    fun filenameDFS(
+        jedis: Jedis,
+        key: CharacterKey,
+        limit: Int,
+        collected: MutableSet<String> = mutableSetOf()
+    ): List<String> {
         if (collected.size >= limit) return collected.take(limit)
 
         val children = jedis.hgetAllEx(key.key, ttl)
 
-        if (children.isEmpty()) {
-            // We're at a leaf, reconstruct full path
-            val path = mutableListOf<String>()
-            var current: CharacterKey? = key
-            while (current != null) {
-                path.add(current.key)
-                val parentKeys = jedis.smembersex(keyOfPreviousLevel(current).key, ttl)
-                current = parentKeys.firstOrNull()?.let { CharacterKey(it) }
-            }
-            collected.add(
-                path.mapNotNull { findRouteToKey(jedis, CharacterKey(it)) }.reversed()
-            )
-            return collected.toList()
-        }
+        val parentKeys = jedis.smembersex(keyOfPreviousLevel(key).key, ttl)
+        parentKeys
+            .mapNotNull { parentKey -> findRouteToKey(jedis, CharacterKey(parentKey)) }
+            .forEach { if (collected.size < limit) {
+                collected.add(it)
+            }}
 
-        for ((char, _) in children) {
+        for ((_, charKey) in children) {
             if (collected.size >= limit) break
-            val childKey = CharacterKey(char)
+            val childKey = CharacterKey(charKey)
             filenameDFS(jedis, childKey, limit, collected)
         }
 
@@ -137,10 +139,9 @@ object ValkeyFilenameCompleter : FilenameCompleter {
     }
 
     override fun insert(filename: FilenameComponents) = pool.withJedis { jedis ->
-        var parent: CharacterKey? = null
-        filename.forEach { component ->
-            parent = insertComponent(jedis, component, parent)
-        }
+        val fullFileKey = insertComponent(jedis, filename.joinToString(File.separator), null)
+        insertComponent(jedis, filename.last(), fullFileKey)
+        return@withJedis
     }
 
 
@@ -165,8 +166,6 @@ object ValkeyFilenameCompleter : FilenameCompleter {
             currNodeChildren = jedis.hgetAll(currNode.key)
         }
 
-
-        println(filenameDFS(jedis,currNode, 2))
-        listOf()
+        filenameDFS(jedis, currNode, limit).map { it.split(File.separator) }
     }
 }
