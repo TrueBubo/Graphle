@@ -2,7 +2,6 @@ package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -27,7 +26,6 @@ import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.http.HttpMethod
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
-import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
@@ -48,6 +46,7 @@ suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String
 
         launch {
             for (frame in incoming) {
+                println("Received frame $frame")
                 when (frame) {
                     is Frame.Text -> {
                         val text = frame.readText()
@@ -56,7 +55,7 @@ suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String
                             val list = Json.decodeFromString<List<String>>(text)
                             list.forEach {
                                 saveValue(it)
-                                delay(1000)
+//                                delay(1000)
                             }
                         } catch (e: Exception) {
                             println("Raw text (not a list): $text")
@@ -69,12 +68,6 @@ suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String
         }
     }
 }
-
-
-val apolloClient = ApolloClient.Builder()
-    .serverUrl(serverURL)
-    .build()
-
 
 @Composable
 @Preview
@@ -91,15 +84,7 @@ fun App() {
 
     MaterialTheme {
         Column {
-            Text(dslValue)
-
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        dslAutoCompleter(autoCompleterClient) {dslValue = it}
-                    }
-                }
-            ) { Text("DSL") }
+            CommandLine()
 
             TextField(
                 value = location,
@@ -204,8 +189,6 @@ suspend fun ApolloClient.addTagToFile(location: String, name: String, value: Str
 
 
 fun main() = application {
-
-
     Window(onCloseRequest = ::exitApplication) {
         App()
     }
