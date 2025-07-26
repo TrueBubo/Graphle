@@ -15,10 +15,10 @@ class DSLAutoCompleter {
      * @return At most [limit] files matching the given prefix
      */
     private fun completeFilename(filenamePrefix: String, limit: Int): List<String> =
-        ValkeyFilenameCompleter.lookup(filenamePrefix, limit).map { it.joinToString(File.separator) }
+        valkeyFilenameCompleter.lookup(filenamePrefix, limit).map { it.joinToString(File.separator) }
 
     /**
-     * Predicts the
+     * Predicts the DSL command with the next word
      */
     fun complete(commandPrefix: String, limit: Int = 5): List<String> =
         listOf(commandPrefix, "$commandPrefix + the rest") + completeFilename(commandPrefix, limit)

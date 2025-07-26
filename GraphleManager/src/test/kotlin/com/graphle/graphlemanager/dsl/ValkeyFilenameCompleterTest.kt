@@ -6,8 +6,8 @@ import kotlin.test.Test
 class ValkeyFilenameCompleterTest {
     @Test
     fun `filenames`() {
-        ValkeyFilenameCompleter.insert(listOf("home", "bubo"))
-        ValkeyFilenameCompleter.insert(listOf("home" , "bubo", "notThere"))
-        println(ValkeyFilenameCompleter.lookup("/hom", 10))
+        valkeyFilenameCompleter.insert(listOf("home", "bubo"))
+        valkeyFilenameCompleter.insert(listOf("home" , "bubo", "notThere"))
+        println(valkeyFilenameCompleter.lookup("no", 10))
     }
 }
