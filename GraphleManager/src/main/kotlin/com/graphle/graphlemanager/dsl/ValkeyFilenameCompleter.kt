@@ -28,28 +28,61 @@ object ValkeyFilenameCompleter : FilenameCompleter {
     private val pool = JedisPool(poolConfig, HOST, PORT)
     private val ttl = 30.days
     private const val LAST_KEY = "last"
-    private var lastElement = pool.withJedis { it.get(LAST_KEY) }?.toLong() ?: 0
-    private val ROOT = CharacterKey("0")
+    private const val ROOT_INDEX_KEY = 0L
+    private const val TRUE_CHAR = "1"
+    private var lastElement = pool.withJedis { it.get(LAST_KEY) }?.toLong() ?: ROOT_INDEX_KEY
+    private val ROOT = CharacterKey(ROOT_INDEX_KEY.toString())
 
-    private fun Jedis.hsetex(key: String, ttl: Duration, hash: Map<String, String>) {
+    private val childrenCache = ConcurrentCache<String, Map<String, String>>(ttl)
+    private val previousLevelCache = ConcurrentCache<String, MutableSet<String>>(ttl)
+    private val treeParentCache = ConcurrentCache<String, String>(ttl)
+    private val valueCache = ConcurrentCache<String, String>(ttl)
+    private val fullPathEndCache = ConcurrentCache<String, String>(ttl)
+
+    private fun Jedis.getEx(key: String, ttl: Duration, onGet: (String) -> String?): String? {
+        expire(key, ttl.inWholeSeconds)
+        val cachedValue = onGet(key)
+        return cachedValue ?: get(key)
+    }
+
+    private fun Jedis.setEx(key: String, ttl: Duration, value: String, onSet: (String, String) -> Unit) {
+        expire(key, ttl.inWholeSeconds)
+        set(key, value)
+        onSet(key, value)
+    }
+
+    private fun Jedis.hsetex(
+        key: String,
+        ttl: Duration,
+        hash: Map<String, String>,
+        onSet: (String, Map<String, String>) -> Unit
+    ) {
+        expire(key, ttl.inWholeSeconds)
         hset(key, hash)
-        expire(key, ttl.inWholeSeconds)
+        onSet(key, hash)
     }
 
-    private fun Jedis.hgetAllEx(key: String, ttl: Duration): Map<String, String> {
+    private fun Jedis.hgetAllEx(
+        key: String,
+        ttl: Duration,
+        onGet: (String) -> Map<String, String>?
+    ): Map<String, String> {
         expire(key, ttl.inWholeSeconds)
-        return hgetAll(key)
+        val cachedValue = onGet(key)
+        return cachedValue ?: hgetAll(key)
     }
 
 
-    private fun Jedis.saddex(key: String, ttl: Duration, vararg members: String) {
-        sadd(key, *members)
+    private fun Jedis.saddex(key: String, ttl: Duration, member: String, onSet: (String, String) -> Unit) {
         expire(key, ttl.inWholeSeconds)
+        sadd(key, member)
+        onSet(key, member)
     }
 
-    private fun Jedis.smembersex(key: String, ttl: Duration): Set<String> {
+    private fun Jedis.smembersex(key: String, ttl: Duration, onGet: (String) -> Set<String>?): Set<String> {
         expire(key, ttl.inWholeSeconds)
-        return smembers(key)
+        val cachedValue = onGet(key)
+        return cachedValue ?: smembers(key)
     }
 
     private fun keyOfPreviousLevel(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:parents")
@@ -58,9 +91,11 @@ object ValkeyFilenameCompleter : FilenameCompleter {
 
     private fun keyOfValue(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:val")
 
+    private fun keyOfFullPathEnd(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:full")
+
 
     private fun searchAndAddComponent(jedis: Jedis, component: String): CharacterKey {
-        if (lastElement == 0L) jedis.set(LAST_KEY, lastElement.toString())
+        if (lastElement == ROOT_INDEX_KEY) jedis.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
         var currNode = ROOT
         var currNodeChildren = jedis.hgetAll(currNode.key).toMutableMap()
@@ -72,10 +107,14 @@ object ValkeyFilenameCompleter : FilenameCompleter {
                 (++lastElement).toString()
             }
             currNodeChildren[char] = index
-            jedis.hsetex(currNode.key, ttl, currNodeChildren)
+            jedis.hsetex(currNode.key, ttl, currNodeChildren) { key, value -> childrenCache[key] = value }
 
-            jedis.setex(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds, currNode.key)
-            jedis.setex(keyOfValue(CharacterKey(index)).key, ttl.inWholeSeconds, char)
+            jedis.setEx(
+                keyOfTreeParent(CharacterKey(index)).key,
+                ttl,
+                currNode.key
+            ) { key, value -> treeParentCache[key] = value }
+            jedis.setEx(keyOfValue(CharacterKey(index)).key, ttl, char) { key, value -> valueCache[key] = value }
 
             currNode = CharacterKey(index)
             currNodeChildren = jedis.hgetAll(currNode.key).toMutableMap()
@@ -113,14 +152,21 @@ object ValkeyFilenameCompleter : FilenameCompleter {
     ): List<String> {
         if (collected.size >= limit) return collected.take(limit)
 
-        val children = jedis.hgetAllEx(key.key, ttl)
+        val children = jedis.hgetAllEx(key.key, ttl) { childrenCache[it] }
 
-        val parentKeys = jedis.smembersex(keyOfPreviousLevel(key).key, ttl)
-        parentKeys
+        if (collected.size < limit && jedis.getEx(
+                keyOfFullPathEnd(key).key,
+                ttl
+            ) { fullPathEndCache[it] } == TRUE_CHAR
+        ) {
+            findRouteToKey(jedis, key)?.let(collected::add)
+        }
+        val previousLevelKeys = jedis.smembersex(keyOfPreviousLevel(key).key, ttl) { previousLevelCache[it] }
+        previousLevelKeys
             .mapNotNull { parentKey -> findRouteToKey(jedis, CharacterKey(parentKey)) }
-            .forEach { if (collected.size < limit) {
-                collected.add(it)
-            }}
+            .filter { it !in collected }
+            .forEach(collected::add)
+
 
         for ((_, charKey) in children) {
             if (collected.size >= limit) break
@@ -133,13 +179,23 @@ object ValkeyFilenameCompleter : FilenameCompleter {
 
     private fun insertComponent(jedis: Jedis, component: String, parent: CharacterKey?): CharacterKey {
         val currNode = searchAndAddComponent(jedis, component)
-        parent?.let { jedis.saddex(keyOfPreviousLevel(currNode).key, ttl, parent.key) }
+        if (parent == null) {
+            jedis.setEx(keyOfFullPathEnd(currNode).key, ttl, TRUE_CHAR) { key, value -> fullPathEndCache[key] = value }
+        }
+        parent?.let {
+            val previousLevelKey = keyOfPreviousLevel(currNode).key
+            jedis.saddex(previousLevelKey, ttl, parent.key) { key, value ->
+                if (previousLevelCache[key] == null) previousLevelCache[key] = mutableSetOf()
+                previousLevelCache[key]?.add(value)
+            }
+        }
 
         return currNode
     }
 
     override fun insert(filename: FilenameComponents) = pool.withJedis { jedis ->
-        val fullFileKey = insertComponent(jedis, filename.joinToString(File.separator), null)
+        val fullFileKey =
+            insertComponent(jedis, filename.joinToString(prefix = File.separator, separator = File.separator), null)
         insertComponent(jedis, filename.last(), fullFileKey)
         return@withJedis
     }
@@ -149,21 +205,20 @@ object ValkeyFilenameCompleter : FilenameCompleter {
         filenamePrefix: String,
         limit: Int
     ): List<FilenameComponents> = pool.withJedis { jedis ->
-        if (lastElement == -1L) jedis.set(LAST_KEY, lastElement.toString())
+        if (lastElement == ROOT_INDEX_KEY) jedis.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
         var currNode = ROOT
-        var currNodeChildren = jedis.hgetAll(currNode.key)
+        var currNodeChildren = jedis.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
 
-        filenamePrefix.forEach {
-            val char = it.toString()
+        filenamePrefix.forEach { character ->
+            val char = character.toString()
             val index = currNodeChildren[char]
             if (index == null) return emptyList()
-            jedis.expire(currNode.key, ttl.inWholeSeconds)
 
             jedis.expire(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds)
 
             currNode = CharacterKey(index)
-            currNodeChildren = jedis.hgetAll(currNode.key)
+            currNodeChildren = jedis.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
         }
 
         filenameDFS(jedis, currNode, limit).map { it.split(File.separator) }

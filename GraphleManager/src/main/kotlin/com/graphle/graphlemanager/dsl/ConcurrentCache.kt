@@ -38,7 +38,8 @@ class ConcurrentCache<K : Any, V : Any>(
 
     operator fun get(key: K): V? {
         val value = cache.get(key)
-        value?.let { set(key, value.first) }
-        return value?.first
+        if (value == null || value.second < Instant.now()) return null
+        set(key, value.first)
+        return value.first
     }
 }
