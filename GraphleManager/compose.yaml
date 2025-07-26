@@ -6,3 +6,18 @@ services:
     ports:
       - '7687:7687'  # Bolt
       - '7474:7474'  # HTTP for Neo4j Browser
+    volumes:
+      - neo4j_data:/data
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey_data:/data
+    command: [ "valkey-server", "--appendonly", "yes" ]
+
+volumes:
+  valkey_data:
+  neo4j_data:
