@@ -7,7 +7,7 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Service
-class DSLAutoCompleterHandler(private val registry: SessionRegistry) : TextWebSocketHandler() {
+class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val dslAutoCompleter: DSLAutoCompleter) : TextWebSocketHandler() {
     override fun afterConnectionEstablished(session: WebSocketSession) {
         registry.addSession(Session(session.id), session)
     }
@@ -17,7 +17,7 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry) : TextWebSo
     }
     override fun handleTextMessage(session: WebSocketSession, messageReceived: TextMessage) {
         val input = messageReceived.payload
-        val messageSent = DSLAutoCompleter().complete(input)
+        val messageSent = dslAutoCompleter.complete(input)
             .joinToString(prefix = "[", postfix = "]", transform = { "\"$it\""})
         session.sendMessage(TextMessage(messageSent))
     }

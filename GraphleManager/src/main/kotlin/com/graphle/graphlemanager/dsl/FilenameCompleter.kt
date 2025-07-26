@@ -1,9 +1,11 @@
 package com.graphle.graphlemanager.dsl
 
 import java.io.File
+import java.nio.file.Files
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
+import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.days
 
 
@@ -12,35 +14,37 @@ typealias FilenameComponents = List<String>
 @JvmInline
 value class CharacterKey(val key: String)
 
-class FilenameCompleter(private val storage: Storage) {
-    private val ttl = 30.days
-    private val LAST_KEY = "last"
-    private val ROOT_INDEX_KEY = 0L
-    private val TRUE_CHAR = "1"
+private const val LAST_KEY = "last"
+private const val ROOT_INDEX_KEY = 0L
+private const val TRUE_CHAR = "1"
+private val root = CharacterKey(ROOT_INDEX_KEY.toString())
+private val ttl = 30.days
+
+class FilenameCompleter(
+    private val storage: Storage,
+    private val fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) }
+) {
     private var lastElement = storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY
-    private val ROOT = CharacterKey(ROOT_INDEX_KEY.toString())
 
     private val childrenCache = ConcurrentCache<String, Map<String, String>>(ttl)
     private val previousLevelCache = ConcurrentCache<String, MutableSet<String>>(ttl)
     private val treeParentCache = ConcurrentCache<String, String>(ttl)
     private val valueCache = ConcurrentCache<String, String>(ttl)
     private val fullPathEndCache = ConcurrentCache<String, String>(ttl)
+
     private fun keyOfPreviousLevel(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:parents")
-
     private fun keyOfTreeParent(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:prev")
-
     private fun keyOfValue(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:val")
-
     private fun keyOfFullPathEnd(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:full")
 
 
     private fun searchAndAddComponent(component: String): CharacterKey {
         if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
-        var currNode = ROOT
-        var currNodeChildren = storage.hgetAll(currNode.key).toMutableMap()
-        component.forEach {
-            val char = it.toString()
+        var currNode = root
+        var currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }.toMutableMap()
+        component.forEach { character ->
+            val char = character.toString()
             val maybeIndex = currNodeChildren[char]
             val index = if (maybeIndex != null) maybeIndex else {
                 storage.set(LAST_KEY, lastElement.toString())
@@ -57,7 +61,7 @@ class FilenameCompleter(private val storage: Storage) {
             storage.setEx(keyOfValue(CharacterKey(index)).key, ttl, char) { key, value -> valueCache[key] = value }
 
             currNode = CharacterKey(index)
-            currNodeChildren = storage.hgetAll(currNode.key).toMutableMap()
+            currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }.toMutableMap()
         }
 
         storage.expire(currNode.key, ttl.inWholeSeconds)
@@ -68,18 +72,18 @@ class FilenameCompleter(private val storage: Storage) {
     private fun findRouteToKey(key: CharacterKey): String? {
         val route = StringBuilder()
         var lastKey = key
-        while (lastKey != ROOT) {
-            val prevKeyPointer = keyOfTreeParent(lastKey)
-            val prevKey = storage.get(prevKeyPointer.key)
-            if (prevKey == null) return null
+        while (lastKey != root) {
+            val parentKeyPointer = keyOfTreeParent(lastKey)
+            val parentKey = storage.getEx(parentKeyPointer.key, ttl) { treeParentCache[it] }
+            if (parentKey == null) return null
 
-            storage.expire(prevKeyPointer.key, ttl.inWholeSeconds)
-            storage.expire(prevKey, ttl.inWholeSeconds)
+            storage.expire(parentKeyPointer.key, ttl.inWholeSeconds)
+            storage.expire(parentKey, ttl.inWholeSeconds)
 
-            val lastKeyChar = storage.get(keyOfValue(lastKey).key)
+            val lastKeyChar = storage.getEx(keyOfValue(lastKey).key, ttl) { valueCache[it] }
             if (lastKeyChar == null) return null
             route.append(lastKeyChar)
-            lastKey = CharacterKey(prevKey)
+            lastKey = CharacterKey(parentKey)
         }
         return route.toString().reversed()
     }
@@ -98,12 +102,14 @@ class FilenameCompleter(private val storage: Storage) {
                 ttl
             ) { fullPathEndCache[it] } == TRUE_CHAR
         ) {
-            findRouteToKey(key)?.let(collected::add)
+            findRouteToKey(key)?.let {
+                if (fileExistsPredicate(it)) collected.add(it)
+            }
         }
         val previousLevelKeys = storage.smembersex(keyOfPreviousLevel(key).key, ttl) { previousLevelCache[it] }
         previousLevelKeys
             .mapNotNull { parentKey -> findRouteToKey(CharacterKey(parentKey)) }
-            .filter { it !in collected }
+            .filter { it !in collected && fileExistsPredicate(it) }
             .forEach(collected::add)
 
 
@@ -140,13 +146,9 @@ class FilenameCompleter(private val storage: Storage) {
      * @param filename Components of the filenames consists of parent directories and the bottom level filename itself
      */
     fun insert(filename: FilenameComponents) {
-        val fullFileKey =
-            insertComponent(
-                filename.joinToString(prefix = File.separator, separator = File.separator),
-                null
-            )
+        val filenameString = filename.joinToString(prefix = File.separator, separator = File.separator)
+        val fullFileKey = insertComponent(filenameString, null)
         insertComponent(filename.last(), fullFileKey)
-        return
     }
 
     /**
@@ -156,13 +158,10 @@ class FilenameCompleter(private val storage: Storage) {
      * @return list of possible filenames
      */
     fun lookup(filenamePrefix: String, limit: Int = 10): List<FilenameComponents> {
-        if (lastElement == ROOT_INDEX_KEY) storage.set(
-            LAST_KEY, ROOT_INDEX_KEY.toString())
+        if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
-        var currNode = ROOT
-        var currNodeChildren = storage.hgetAllEx(currNode.key,
-            ttl
-        ) { childrenCache[it] }
+        var currNode = root
+        var currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
 
         filenamePrefix.forEach { character ->
             val char = character.toString()
@@ -172,11 +171,12 @@ class FilenameCompleter(private val storage: Storage) {
             storage.expire(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds)
 
             currNode = CharacterKey(index)
-            currNodeChildren = storage.hgetAllEx(currNode.key,
-                ttl
-            ) { childrenCache[it] }
+            currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
         }
 
-        return filenameDFS(currNode, limit).map { it.split(File.separator) }
+        return filenameDFS(currNode, limit).map {
+            val list = it.split(File.separator)
+            if (list.first() == "") list.drop(1) else list
+        }
     }
 }
