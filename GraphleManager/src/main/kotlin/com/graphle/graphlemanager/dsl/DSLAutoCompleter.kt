@@ -9,6 +9,7 @@ import java.io.File
 @Service
 class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
     val filenameCompleter = filenameCompleterService.filenameCompleter
+
     /**
      * Finds out the files beginning with the given prefix
      * @param filenamePrefix Looking for files with this prefix
@@ -23,7 +24,6 @@ class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
      */
     fun complete(commandPrefix: String, limit: Int = 5): List<String> {
         val completionList = completeFilename(commandPrefix, limit)
-        println("$commandPrefix $completionList")
         return completionList
     }
 }

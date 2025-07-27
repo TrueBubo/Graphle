@@ -29,6 +29,7 @@ import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.http.HttpMethod
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
+import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
@@ -45,10 +46,14 @@ val autoCompleterClient = HttpClient(CIO) { install(WebSockets) }
 
 suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String) -> Unit) {
     autoCompleterClient.webSocket(method = HttpMethod.Get, host = "localhost", port = 8080, path = "/ws") {
-        send(Frame.Text("/hom"))
+        send(Frame.Text("ho"))
+        println("Sent")
 
         launch {
+            println("Waiting for updates")
             for (frame in incoming) {
+                println("Received frame: $frame")
+                delay(100.milliseconds)
                 when (frame) {
                     is Frame.Text -> {
                         val text = frame.readText()
