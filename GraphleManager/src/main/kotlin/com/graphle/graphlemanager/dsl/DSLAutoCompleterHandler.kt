@@ -5,6 +5,8 @@ import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Service
 class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val dslAutoCompleter: DSLAutoCompleter) : TextWebSocketHandler() {
@@ -17,8 +19,7 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val
     }
     override fun handleTextMessage(session: WebSocketSession, messageReceived: TextMessage) {
         val input = messageReceived.payload
-        val messageSent = dslAutoCompleter.complete(input)
-            .joinToString(prefix = "[", postfix = "]", transform = { "\"$it\""})
+        val messageSent = Json.encodeToString(dslAutoCompleter.complete(input))
         session.sendMessage(TextMessage(messageSent))
     }
 }
