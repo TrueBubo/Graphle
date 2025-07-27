@@ -21,6 +21,9 @@ class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
     /**
      * Predicts the DSL command with the next word
      */
-    fun complete(commandPrefix: String, limit: Int = 5): List<String> =
-        listOf(commandPrefix, "$commandPrefix + the rest") + completeFilename(commandPrefix, limit)
+    fun complete(commandPrefix: String, limit: Int = 5): List<String> {
+        val completionList = completeFilename(commandPrefix, limit)
+        println("$commandPrefix $completionList")
+        return completionList
+    }
 }
