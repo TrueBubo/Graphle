@@ -39,12 +39,13 @@ object DSLWebSocketManager {
     private const val MAX_RETRIES = 2
     private val retryDelay = { retryIdx: Int -> 1000.milliseconds * 2.0.pow(retryIdx.toDouble()) }
 
-    var isFailed = false
+    private val _isFailed = MutableStateFlow(false)
+    val isFailed: StateFlow<Boolean> = _isFailed
 
     suspend fun tryToReconnect(failMessage: String) {
         if (connectionRetries >= MAX_RETRIES) {
             println(failMessage)
-            isFailed = true
+            _isFailed.value = true
             return
         }
         delay(retryDelay(connectionRetries))
