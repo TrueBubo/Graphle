@@ -45,11 +45,10 @@ val autoCompleterClient = HttpClient(CIO) { install(WebSockets) }
 
 suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String) -> Unit) {
     autoCompleterClient.webSocket(method = HttpMethod.Get, host = "localhost", port = 8080, path = "/ws") {
-        send(Frame.Text("Hello from Ktor"))
+        send(Frame.Text("/hom"))
 
         launch {
             for (frame in incoming) {
-                println("Received frame $frame")
                 when (frame) {
                     is Frame.Text -> {
                         val text = frame.readText()
