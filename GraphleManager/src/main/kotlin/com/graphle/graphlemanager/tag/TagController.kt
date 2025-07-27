@@ -12,6 +12,8 @@ class TagController(private val tagService: TagService) {
         tagService.tagsByFileLocation(location)
 
     @MutationMapping
-    fun addTagToFile(@Argument location: String, @Argument tag: TagInput): Tag =
+    fun addTagToFile(@Argument location: String, @Argument tag: TagInput): Tag {
         tagService.addTagToFile(location, tag)
+        return Tag(tag.name, tag.value)
+    }
 }
