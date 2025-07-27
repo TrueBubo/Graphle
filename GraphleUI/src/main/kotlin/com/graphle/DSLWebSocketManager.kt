@@ -11,12 +11,15 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import kotlin.math.pow
+import kotlin.time.Duration.Companion.milliseconds
 
 object DSLWebSocketManager {
     private val client = HttpClient(CIO) {
@@ -32,6 +35,23 @@ object DSLWebSocketManager {
 
     private val sendQueue = Channel<String>(capacity = Channel.UNLIMITED)
 
+    private var connectionRetries = 0
+    private const val MAX_RETRIES = 2
+    private val retryDelay = { retryIdx: Int -> 1000.milliseconds * 2.0.pow(retryIdx.toDouble()) }
+
+    var isFailed = false
+
+    suspend fun tryToReconnect(failMessage: String) {
+        if (connectionRetries >= MAX_RETRIES) {
+            println(failMessage)
+            isFailed = true
+            return
+        }
+        delay(retryDelay(connectionRetries))
+        connectionRetries++
+        connect()
+    }
+
     fun connect() {
         if (_isConnected.value) return // avoid reconnecting
         CoroutineScope(Dispatchers.IO).launch {
@@ -44,12 +64,12 @@ object DSLWebSocketManager {
                 ) {
                     session = this
                     _isConnected.value = true
+                    connectionRetries = 0
                     println("WebSocket connected")
 
                     // Launch sender
                     launch {
                         for (msg in sendQueue) {
-                            println("Sending: $msg")
                             send(Frame.Text(msg))
                         }
                     }
@@ -63,16 +83,16 @@ object DSLWebSocketManager {
                                 val parsed = Json.decodeFromString<List<String>>(text)
                                 _messages.emit(parsed)
                             } catch (e: Exception) {
-                                println("Decode error: ${e.message}")
+                                println("Receiving message parsing failed: ${e.message}")
                             }
                         }
                     }
                 }
             } catch (e: Exception) {
-                println("WebSocket error: ${e.message}")
+                tryToReconnect("WebSocket error: ${e.message}")
             } finally {
                 _isConnected.value = false
-                println("WebSocket closed")
+                tryToReconnect("WebSocket closed")
             }
         }
     }

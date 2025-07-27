@@ -19,6 +19,7 @@ fun CommandLine() {
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
+        println("Launched effect")
         DSLWebSocketManager.connect()
 
         // Listen for autocomplete messages
