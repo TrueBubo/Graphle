@@ -3,12 +3,15 @@ package com.graphle.graphlemanager.dsl
 import org.springframework.stereotype.Service
 import java.io.File
 
+const val COMPLETIONS_LIMIT = 5
+
 /**
  * Used as a response getter for a prefix entered from GUI
  */
 @Service
 class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
     val filenameCompleter = filenameCompleterService.filenameCompleter
+
     /**
      * Finds out the files beginning with the given prefix
      * @param filenamePrefix Looking for files with this prefix
@@ -21,9 +24,8 @@ class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
     /**
      * Predicts the DSL command with the next word
      */
-    fun complete(commandPrefix: String, limit: Int = 5): List<String> {
+    fun complete(commandPrefix: String, limit: Int = COMPLETIONS_LIMIT): List<String> {
         val completionList = completeFilename(commandPrefix, limit)
-        println("$commandPrefix $completionList")
         return completionList
     }
 }
