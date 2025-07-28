@@ -157,7 +157,7 @@ class FilenameCompleter(
      * @param limit Returns at most this many filenames
      * @return list of possible filenames
      */
-    fun lookup(filenamePrefix: String, limit: Int = 10): List<FilenameComponents> {
+    fun lookup(filenamePrefix: String, limit: Int = COMPLETIONS_LIMIT): List<FilenameComponents> {
         if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
         var currNode = root
