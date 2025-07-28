@@ -14,30 +14,44 @@ typealias FilenameComponents = List<String>
 @JvmInline
 value class CharacterKey(val key: String)
 
-private const val LAST_KEY = "last"
+private const val LAST_KEY = "last" // Key of where we ended in database so we do not overwrite previous actions
 private const val ROOT_INDEX_KEY = 0L
-private const val TRUE_CHAR = "1"
-private val root = CharacterKey(ROOT_INDEX_KEY.toString())
-private val ttl = 30.days
+private const val TRUE_CHAR = "1" // Compact representation of "true" so we do not waste space in database
+private val root = CharacterKey(ROOT_INDEX_KEY.toString()) // Every lookup call will start from here
+private val ttl = 30.days // Keys not accessed for this long will be removed to prevent
 
+/**
+ * Stores and finds possible filenames
+ * Utilizes trie to efficiently store all the filenames with small memory footprint. Each node has an index as a key,
+ * and values stored in trie refer to these keys. Only bottom level and the full path are stored. The bottom level refers
+ * to full path so it can be returned.
+ * @param storage Structure where the trie is saved to
+ * @param fileExistsPredicate Verification of file existence so the system does not return non existent files
+ */
 class FilenameCompleter(
     private val storage: Storage,
     private val fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) }
 ) {
-    private var lastElement = storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY
+    private var lastElement = storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
 
+    // Caches so we do not always look in the database which is much more expensive than this
     private val childrenCache = ConcurrentCache<String, Map<String, String>>(ttl)
     private val previousLevelCache = ConcurrentCache<String, MutableSet<String>>(ttl)
     private val treeParentCache = ConcurrentCache<String, String>(ttl)
     private val valueCache = ConcurrentCache<String, String>(ttl)
     private val fullPathEndCache = ConcurrentCache<String, String>(ttl)
 
+    // Getter functions for keys related to a main node
     private fun keyOfPreviousLevel(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:parents")
     private fun keyOfTreeParent(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:prev")
     private fun keyOfValue(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:val")
     private fun keyOfFullPathEnd(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:full")
 
-
+    /**
+     * Searches for a component, and if it does not exists it will build a path for it
+     * @param component Searching this in trie
+     * @return The key the component ends in
+     */
     private fun searchAndAddComponent(component: String): CharacterKey {
         if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
@@ -69,6 +83,11 @@ class FilenameCompleter(
         return currNode
     }
 
+    /**
+     * Finds the string which ends in a given key
+     * @param key to find a string from root to
+     * @return Root to key string or null if it does not exists
+     */
     private fun findRouteToKey(key: CharacterKey): String? {
         val route = StringBuilder()
         var lastKey = key
@@ -88,6 +107,12 @@ class FilenameCompleter(
         return route.toString().reversed()
     }
 
+    /**
+     * Finds filenames starting from the key
+     * @param key Starting of DFS
+     * @param limit Ends if it already found this many filenames
+     * @param collected Used to store the found filenames
+     */
     fun filenameDFS(
         key: CharacterKey,
         limit: Int,
@@ -122,6 +147,11 @@ class FilenameCompleter(
         return collected.toList()
     }
 
+    /**
+     * Inserts the component into trie
+     * @param component Component to be inserted
+     * @param parent Links there so it can reconstruct the whole path, is null if the component if the full path
+     */
     private fun insertComponent(component: String, parent: CharacterKey?): CharacterKey {
         val currNode = searchAndAddComponent(component)
         if (parent == null) {
