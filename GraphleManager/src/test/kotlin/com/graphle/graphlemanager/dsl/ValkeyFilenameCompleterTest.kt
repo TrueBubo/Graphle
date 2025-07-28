@@ -14,7 +14,6 @@ private val mockStorage = object : Storage {
 }
 
 class ValkeyFilenameCompleterTest() {
-
     @Test
     fun `filename completer completes last level filenames`() {
         val filenameCompleter = FilenameCompleter(mockStorage) { true }
