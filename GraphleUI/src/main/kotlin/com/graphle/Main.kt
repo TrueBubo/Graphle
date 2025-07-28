@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.darkColors
@@ -30,29 +31,25 @@ import com.apollographql.apollo.api.ApolloResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocket
-import io.ktor.http.HttpMethod
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readText
-import kotlinx.coroutines.delay
-import kotlinx.serialization.json.Json
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 
-val DarkColorPalette = darkColors(
-    primary = Color(0xFFBB86FC),
-    background = Color(0xFF000000),   // true black
-    surface = Color(0xFF121212),      // optional: near-black for contrast
+private val Color.Companion.LightBlue: Color
+    get() = Color(0xFF0086FC)
+private val DarkColorPalette = darkColors(
+    primary = Color.LightBlue,
+    background = Color.Black,
+    surface = Color.Black,
     onPrimary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White
 )
 
-val LightColorPalette = lightColors(
-    primary = Color(0xFF6200EE),
+private val LightColorPalette = lightColors(
+    primary = Color.Blue,
     background = Color.White,
-    surface = Color(0xFFEEEEEE),
+    surface = Color.LightGray,
     onPrimary = Color.White,
     onBackground = Color.Black,
     onSurface = Color.Black
@@ -68,38 +65,6 @@ val apolloClient = ApolloClient.Builder()
 
 val autoCompleterClient = HttpClient(CIO) { install(WebSockets) }
 
-suspend fun dslAutoCompleter(autoCompleterClient: HttpClient, saveValue: (String) -> Unit) {
-    autoCompleterClient.webSocket(method = HttpMethod.Get, host = "localhost", port = 8080, path = "/ws") {
-        send(Frame.Text("ho"))
-        println("Sent")
-
-        launch {
-            println("Waiting for updates")
-            for (frame in incoming) {
-                println("Received frame: $frame")
-                delay(100.milliseconds)
-                when (frame) {
-                    is Frame.Text -> {
-                        val text = frame.readText()
-
-                        try {
-                            val list = Json.decodeFromString<List<String>>(text)
-                            list.forEach {
-                                saveValue(it)
-//                                delay(1000)
-                            }
-                        } catch (e: Exception) {
-                            println("Raw text (not a list): $text")
-                        }
-                    }
-
-                    else -> {}
-                }
-            }
-        }
-    }
-}
-
 @Composable
 @Preview
 fun App() {
@@ -110,9 +75,11 @@ fun App() {
     var tagValue by remember { mutableStateOf("Value") }
     var file by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(false) }
+    val defaultSystemThemeIsDark = isSystemInDarkTheme()
+    var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
     val coroutineScope = rememberCoroutineScope()
 
-    MaterialTheme(colors = if (isSystemInDarkTheme()) DarkColorPalette else LightColorPalette) {
+    MaterialTheme(colors = if (isDarkTheme) DarkColorPalette else LightColorPalette) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
@@ -199,6 +166,12 @@ fun App() {
                 } else {
                     Text("File:\n$file")
                 }
+
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { isDarkTheme = it }
+                )
+
             }
         }
     }
