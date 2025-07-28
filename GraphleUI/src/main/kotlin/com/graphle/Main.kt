@@ -35,35 +35,12 @@ import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 
-private val Color.Companion.LightBlue: Color
-    get() = Color(0xFF0086FC)
-private val DarkColorPalette = darkColors(
-    primary = Color.LightBlue,
-    background = Color.Black,
-    surface = Color.Black,
-    onPrimary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White
-)
-
-private val LightColorPalette = lightColors(
-    primary = Color.Blue,
-    background = Color.White,
-    surface = Color.LightGray,
-    onPrimary = Color.White,
-    onBackground = Color.Black,
-    onSurface = Color.Black
-)
-
-
 const val serverURL = "http://localhost:8080/graphql"
 val minUpdateDelay = 1000.milliseconds
 
 val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
-
-val autoCompleterClient = HttpClient(CIO) { install(WebSockets) }
 
 @Composable
 @Preview
