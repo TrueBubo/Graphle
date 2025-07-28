@@ -26,7 +26,7 @@ You can view the rationale for technologies in [docs/technologies.md](docs/techn
 - Spring Boot
 - KMP
 - Neo4J
-- Redis
+- Valkey
 
 ## 📚 Documentation
 You can view project documentation in [docs/](docs/)
