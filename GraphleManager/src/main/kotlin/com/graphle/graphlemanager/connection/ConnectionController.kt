@@ -2,8 +2,17 @@ package com.graphle.graphlemanager.connection
 
 import org.springframework.stereotype.Controller
 
+/**
+ * GraphQL controller for searching for relationships between files on the system
+ * @param connectionService Service used for retrieving required information
+ */
 @Controller
 class ConnectionController(val connectionService: ConnectionService) {
-    fun neighborsByFileLocation(location: String): List<NeighborConnection> =
-        connectionService.neighborsByFileLocation(location)
+    /**
+     * Retrieves the list of relations of fromLocation file together with all the files connected by said relationship
+     * @param fromLocation Shows all the files connected to the file located at this location
+     * @return List of neighbors
+     */
+    fun neighborsByFileLocation(fromLocation: String): List<NeighborConnection> =
+        connectionService.neighborsByFileLocation(fromLocation)
 }
