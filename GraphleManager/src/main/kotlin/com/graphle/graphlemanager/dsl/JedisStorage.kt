@@ -2,11 +2,15 @@ package com.graphle.graphlemanager.dsl
 
 import io.valkey.Jedis
 
+/**
+ * Storage implementation for Valkey
+ * @param jedis Handler for Valkey operations
+ * @see Storage
+ */
 class JedisStorage(private val jedis: Jedis) : Storage {
     override fun set(key: String, value: String) {
         jedis.set(key, value)
     }
-
 
     override fun get(key: String): String? {
         return jedis.get(key)
