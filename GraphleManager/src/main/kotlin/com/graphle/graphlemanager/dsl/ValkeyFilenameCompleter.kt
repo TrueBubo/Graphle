@@ -5,6 +5,10 @@ import io.valkey.JedisPool
 import io.valkey.JedisPoolConfig
 import org.springframework.stereotype.Service
 
+/**
+ * Service used for creating filename completer utilizing Valkey
+ * @param autoCompleteProperties Connection details for database
+ */
 @Service
 class ValkeyFilenameCompleter(autoCompleteProperties: AutoCompleteProperties) {
     private inline fun <T> JedisPool.withJedis(action: (Jedis) -> T): T {
@@ -22,6 +26,7 @@ class ValkeyFilenameCompleter(autoCompleteProperties: AutoCompleteProperties) {
     private val port = autoCompleteProperties.valkey.port
     private val pool = JedisPool(poolConfig, host, port)
 
+    // Can be used as completer
     val filenameCompleter = pool.withJedis { jedis ->
         FilenameCompleter(JedisStorage(jedis))
     }
