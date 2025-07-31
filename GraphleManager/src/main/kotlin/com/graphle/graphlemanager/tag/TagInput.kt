@@ -1,6 +1,5 @@
 package com.graphle.graphlemanager.tag
 
-import com.graphle.graphlemanager.tag.Tag
 import org.springframework.data.neo4j.core.schema.GeneratedValue
 import org.springframework.data.neo4j.core.schema.Id
 import java.util.UUID
