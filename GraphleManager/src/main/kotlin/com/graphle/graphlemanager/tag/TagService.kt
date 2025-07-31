@@ -12,4 +12,6 @@ class TagService(private val tagRepository: TagRepository) {
             fileLocation, tag.name
         )
     }
+
+    fun filesByTag(tagName: String): List<String> = tagRepository.filesByTag(tagName)
 }
