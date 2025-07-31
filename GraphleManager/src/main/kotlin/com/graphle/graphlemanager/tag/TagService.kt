@@ -2,16 +2,36 @@ package com.graphle.graphlemanager.tag
 
 import org.springframework.stereotype.Service
 
+/**
+ * Service for managing information related to tags
+ * @param tagRepository Repository used for retrieving required information
+ */
 @Service
 class TagService(private val tagRepository: TagRepository) {
-    fun tagsByFileLocation(fileLocation: String): List<Tag> = tagRepository.tagsByFileLocation(fileLocation)
+    /**
+     * Retrieves the list of all the tags for a file at a particular location
+     * @param location Absolute path of the file in server filesystem
+     * @return Tags corresponding to the file
+     */
+    fun tagsByFileLocation(location: String): List<Tag> = tagRepository.tagsByFileLocation(location)
 
-    fun addTagToFile(fileLocation: String, tag: TagInput) {
-        if (tag.value != null) tagRepository.addTagToFile(fileLocation, tag.name, tag.value)
+    /**
+     * Marks the given file with a tag via a connection to a tag node
+     * @param location Absolute path of the file in server filesystem
+     * @param tag Tag the system associate will with the file
+     * @return Inserted [tag]
+     */
+    fun addTagToFile(location: String, tag: TagInput) {
+        if (tag.value != null) tagRepository.addTagToFile(location, tag.name, tag.value)
         else tagRepository.addTagToFile(
-            fileLocation, tag.name
+            location, tag.name
         )
     }
 
+    /**
+     * Retrieves the absolute paths of all the files containing the given tag
+     * @param tagName name of tag to search for
+     * @return Absolute paths of files with tag with the given [tagName]
+     */
     fun filesByTag(tagName: String): List<String> = tagRepository.filesByTag(tagName)
 }
