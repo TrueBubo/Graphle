@@ -18,8 +18,16 @@ import java.nio.file.Paths
 
 typealias MimeContentType = String
 
+/**
+ * REST controller for downloading files from the server
+ */
 @RestController
 class FileDownloadController {
+    /**
+     * Downloads a file at the given path
+     * @param path Absolute path of the file in the server filesystem
+     * @return The file or an error code if it cannot be delivered
+     */
     @GetMapping("/download")
     fun serveFile(@RequestParam("path") path: String): ResponseEntity<Resource> {
         val filePath = Paths.get(path)
@@ -43,6 +51,10 @@ class FileDownloadController {
         }
     }
 
+    /**
+     * Tries to find what the mime content type of the file at the path is
+     * @return The content type first determined from filename, then header or it falls back to binary if previous methods fail
+     */
     private fun Path.mimeContentType(): MimeContentType {
         return URLConnection.guessContentTypeFromName(fileName.toString()) // From filename
             ?: Files.probeContentType(this) // From file header

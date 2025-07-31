@@ -23,6 +23,9 @@ class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
 
     /**
      * Predicts the DSL command with the next word
+     * @param commandPrefix Prefix to find the current word continuation for
+     * @param limit return at most this many entries
+     * @return At most [limit] words matching the given prefix
      */
     fun complete(commandPrefix: String, limit: Int = COMPLETIONS_LIMIT): List<String> {
         val completionList = completeFilename(commandPrefix, limit)
