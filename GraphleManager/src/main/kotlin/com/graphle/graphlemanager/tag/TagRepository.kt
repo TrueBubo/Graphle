@@ -15,4 +15,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
 
     @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName}) MERGE (f)-[:HasTag]->(t) RETURN t")
     fun addTagToFile(fileLocation: String, tagName: String)
+
+    @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location")
+    fun filesByTag(tagName: String): List<String>
 }

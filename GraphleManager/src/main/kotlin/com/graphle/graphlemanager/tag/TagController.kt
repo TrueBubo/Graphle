@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.tag
 
+import com.graphle.graphlemanager.file.File
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -16,4 +17,8 @@ class TagController(private val tagService: TagService) {
         tagService.addTagToFile(location, tag)
         return Tag(tag.name, tag.value)
     }
+
+    @QueryMapping
+    fun filesByTag(@Argument tagName: String): List<String> =
+        tagService.filesByTag(tagName)
 }
