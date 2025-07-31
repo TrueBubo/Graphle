@@ -17,10 +17,8 @@ class FileController(
     fun fileByLocation(@Argument location: String): File {
         return File(
             location,
-            currentTimeMillis(),
             tagController.tagsByFileLocation(location),
             connectionController.neighborsByFileLocation(location)
-
         )
     }
 }
