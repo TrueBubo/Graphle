@@ -26,7 +26,6 @@ object DSLWebSocketManager {
         install(WebSockets)
     }
 
-    private var session: DefaultClientWebSocketSession? = null
     private val _messages = MutableSharedFlow<List<String>>(replay = 0)
     val messages: SharedFlow<List<String>> = _messages
 
@@ -42,7 +41,7 @@ object DSLWebSocketManager {
     private val _isFailed = MutableStateFlow(false)
     val isFailed: StateFlow<Boolean> = _isFailed
 
-    private suspend fun tryToReconnect(failMessage: String) {
+    private suspend inline fun tryToReconnect(failMessage: String) {
         if (connectionRetries >= maxRetries) {
             println(failMessage)
             _isFailed.value = true
@@ -51,6 +50,34 @@ object DSLWebSocketManager {
         delay(retryDelay(connectionRetries))
         connectionRetries++
         connect()
+    }
+
+    private suspend fun DefaultClientWebSocketSession.receiveIncomingMessages() {
+        for (frame in incoming) {
+            if (frame is Frame.Text) {
+                val text = frame.readText()
+                try {
+                    val parsed = Json.decodeFromString<List<String>>(text)
+                    _messages.emit(parsed)
+                } catch (e: Exception) {
+                    println("Receiving message parsing failed: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private suspend fun DefaultClientWebSocketSession.sendQueuedMessages() {
+        for (msg in this@DSLWebSocketManager.sendQueue) {
+            send(Frame.Text(msg))
+        }
+    }
+
+    private fun markConnectionAsEstablished() {
+        _isConnected.value = true
+        connectionRetries = 0
+        maxRetries = 10
+        println("DSL WebSocket connection established")
+
     }
 
     fun connect() {
@@ -63,31 +90,9 @@ object DSLWebSocketManager {
                     port = 8080,
                     path = "/ws"
                 ) {
-                    session = this
-                    _isConnected.value = true
-                    connectionRetries = 0
-                    maxRetries = 10
-                    println("DSL WebSocket connection established")
-
-                    // Launch sender
-                    launch {
-                        for (msg in sendQueue) {
-                            send(Frame.Text(msg))
-                        }
-                    }
-
-                    // Receive incoming messages
-                    for (frame in incoming) {
-                        if (frame is Frame.Text) {
-                            val text = frame.readText()
-                            try {
-                                val parsed = Json.decodeFromString<List<String>>(text)
-                                _messages.emit(parsed)
-                            } catch (e: Exception) {
-                                println("Receiving message parsing failed: ${e.message}")
-                            }
-                        }
-                    }
+                    markConnectionAsEstablished()
+                    launch { sendQueuedMessages() }
+                    receiveIncomingMessages()
                 }
             } catch (e: Exception) {
                 tryToReconnect("DSL WebSocket error: ${e.message}")
