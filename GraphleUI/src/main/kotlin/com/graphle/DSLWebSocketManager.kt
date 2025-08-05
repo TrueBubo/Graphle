@@ -42,7 +42,7 @@ object DSLWebSocketManager {
     private val _isFailed = MutableStateFlow(false)
     val isFailed: StateFlow<Boolean> = _isFailed
 
-    suspend fun tryToReconnect(failMessage: String) {
+    private suspend fun tryToReconnect(failMessage: String) {
         if (connectionRetries >= maxRetries) {
             println(failMessage)
             _isFailed.value = true
@@ -90,10 +90,10 @@ object DSLWebSocketManager {
                     }
                 }
             } catch (e: Exception) {
-                tryToReconnect("WebSocket error: ${e.message}")
+                tryToReconnect("DSL WebSocket error: ${e.message}")
             } finally {
                 _isConnected.value = false
-                tryToReconnect("WebSocket closed")
+                tryToReconnect("DSL WebSocket closed")
             }
         }
     }
