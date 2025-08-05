@@ -36,14 +36,14 @@ object DSLWebSocketManager {
     private val sendQueue = Channel<String>(capacity = Channel.UNLIMITED)
 
     private var connectionRetries = 0
-    private const val MAX_RETRIES = 2
+    private var maxRetries = 2
     private val retryDelay = { retryIdx: Int -> 1000.milliseconds * 2.0.pow(retryIdx.toDouble()) }
 
     private val _isFailed = MutableStateFlow(false)
     val isFailed: StateFlow<Boolean> = _isFailed
 
     suspend fun tryToReconnect(failMessage: String) {
-        if (connectionRetries >= MAX_RETRIES) {
+        if (connectionRetries >= maxRetries) {
             println(failMessage)
             _isFailed.value = true
             return
@@ -66,7 +66,8 @@ object DSLWebSocketManager {
                     session = this
                     _isConnected.value = true
                     connectionRetries = 0
-                    println("WebSocket connected")
+                    maxRetries = 10
+                    println("DSL WebSocket connection established")
 
                     // Launch sender
                     launch {
@@ -79,7 +80,6 @@ object DSLWebSocketManager {
                     for (frame in incoming) {
                         if (frame is Frame.Text) {
                             val text = frame.readText()
-                            println("Received: $text")
                             try {
                                 val parsed = Json.decodeFromString<List<String>>(text)
                                 _messages.emit(parsed)
