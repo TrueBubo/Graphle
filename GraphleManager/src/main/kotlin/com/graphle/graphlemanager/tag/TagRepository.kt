@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.tag
 
+import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.data.neo4j.repository.Neo4jRepository
 import org.springframework.data.neo4j.repository.query.Query
 import org.springframework.stereotype.Repository
@@ -16,7 +17,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @return Tags corresponding to the [fileLocation]
      */
     @Query("MATCH (f:File {location: \$fileLocation})-[:HasTag]->(t:Tag) RETURN t.name AS name, t.value AS value")
-    fun tagsByFileLocation(fileLocation: String): List<Tag>
+    fun tagsByFileLocation(fileLocation: AbsolutePathString): List<Tag>
 
     /**
      * Marks the given file with a tag via a connection to a tag node
@@ -26,7 +27,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @return Inserted tag
      */
     @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName, value: \$tagValue}) MERGE (f)-[:HasTag]->(t) RETURN t")
-    fun addTagToFile(fileLocation: String, tagName: String, tagValue: String)
+    fun addTagToFile(fileLocation: AbsolutePathString, tagName: String, tagValue: String)
 
     /**
      * Marks the given file with a tag via a connection to a tag node
@@ -35,7 +36,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @return Inserted tag
      */
     @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName}) MERGE (f)-[:HasTag]->(t) RETURN t")
-    fun addTagToFile(fileLocation: String, tagName: String)
+    fun addTagToFile(fileLocation: AbsolutePathString, tagName: String)
 
     /**
      * Retrieves the absolute paths of all the files containing the given tag
@@ -43,5 +44,5 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @return Absolute paths of files with tag with the given name
      */
     @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location")
-    fun filesByTag(tagName: String): List<String>
+    fun filesByTag(tagName: String): List<AbsolutePathString>
 }

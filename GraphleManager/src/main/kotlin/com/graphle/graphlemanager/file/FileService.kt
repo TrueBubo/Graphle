@@ -7,4 +7,7 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
     init {
         fileSweeper.startSweeping()
     }
+
+    fun filesFromFileByRelationship(fromLocation: AbsolutePathString, relationshipName: String): List<AbsolutePathString> =
+        fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
 }

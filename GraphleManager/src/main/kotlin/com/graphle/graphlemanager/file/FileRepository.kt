@@ -11,6 +11,9 @@ interface FileRepository : Neo4jRepository<File, UUID> {
      * Removes the file with given [fileLocation] including all the connection that went to it
      * @param fileLocation Absolute path of the file on the server
      */
-    @Query("MATCH (n:File {location: \$fileLocation})-[r]-(m) delete n,r")
-    fun removeFileByLocation(fileLocation: String)
+    @Query("MATCH (n:File {location: \$fileLocation})-[r]-(m) DELETE n,r")
+    fun removeFileByLocation(fileLocation: AbsolutePathString)
+
+    @Query("MATCH (:File {location: \$fromLocation})-[:Relationship {name: \$relationshipName}]-(toFile:File) RETURN toFile.location")
+    fun getFileLocationsByConnections(fromLocation: AbsolutePathString, relationshipName: String): List<AbsolutePathString>
 }
