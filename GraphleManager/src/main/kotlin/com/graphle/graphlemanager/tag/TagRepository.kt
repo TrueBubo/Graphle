@@ -45,4 +45,10 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      */
     @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location")
     fun filesByTag(tagName: String): List<AbsolutePathString>
+
+    /**
+     * Removes tags which are no longer connected to any file
+     */
+    @Query("MATCH (tag:Tag) WHERE NOT (tag)--() DELETE tag")
+    fun removeOrphanTags()
 }
