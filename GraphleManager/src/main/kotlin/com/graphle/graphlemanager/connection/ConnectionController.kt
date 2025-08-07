@@ -1,6 +1,8 @@
 package com.graphle.graphlemanager.connection
 
 import com.graphle.graphlemanager.file.AbsolutePathString
+import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.stereotype.Controller
 
 /**
@@ -16,4 +18,18 @@ class ConnectionController(val connectionService: ConnectionService) {
      */
     fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection> =
         connectionService.neighborsByFileLocation(fromLocation)
+
+    @MutationMapping
+    fun addConnection(@Argument connection: ConnectionInput, @Argument bidirectional: Boolean): Connection {
+        connectionService.addConnection(connection, bidirectional)
+        return connection.run {
+            Connection(
+                name = name,
+                value = value,
+                from = locationFrom,
+                to = locationTo,
+                bidirectional = bidirectional
+            )
+        }
+    }
 }
