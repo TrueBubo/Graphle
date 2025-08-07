@@ -7,6 +7,10 @@ import java.util.*
 
 @Repository
 interface FileRepository : Neo4jRepository<File, UUID> {
+    /**
+     * Removes the file with given [fileLocation] including all the connection that went to it
+     * @param fileLocation Absolute path of the file on the server
+     */
     @Query("MATCH (n:File {location: \$fileLocation})-[r]-(m) delete n,r")
     fun removeFileByLocation(fileLocation: String)
 }
