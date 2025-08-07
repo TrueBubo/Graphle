@@ -8,6 +8,6 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
         fileSweeper.startSweeping()
     }
 
-    fun filesFromFileByRelationship(fromLocation: String, relationshipName: String): List<String> =
+    fun filesFromFileByRelationship(fromLocation: AbsolutePathString, relationshipName: String): List<AbsolutePathString> =
         fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
 }

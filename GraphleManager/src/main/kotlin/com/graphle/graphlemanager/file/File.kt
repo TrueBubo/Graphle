@@ -6,6 +6,8 @@ import org.springframework.data.neo4j.core.schema.GeneratedValue
 import org.springframework.data.neo4j.core.schema.Id
 import java.util.UUID
 
+typealias AbsolutePathString = String
+
 /**
  * Stores information about the file on the filesystem
  * @param location The absolute path of the file
@@ -14,12 +16,12 @@ import java.util.UUID
  */
 data class File(
     @Id @GeneratedValue val id: UUID? = null,
-    val location: String,
+    val location: AbsolutePathString,
     val tags: List<Tag>,
     val connections: List<NeighborConnection>
 ) {
     constructor(
-        location: String,
+        location: AbsolutePathString,
         tags: List<Tag>,
         connections: List<NeighborConnection>
     ) : this(
