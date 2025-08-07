@@ -17,4 +17,24 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
     fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection> {
         return listOf()
     }
+
+    fun addConnection(connection: ConnectionInput, bidirectional: Boolean) = with(connection) {
+        when {
+            (value == null) && bidirectional -> {
+                connectionRepository.addConnection(name, locationFrom, locationTo)
+                connectionRepository.addConnection(name, locationTo, locationFrom)
+            }
+
+            (value != null) && bidirectional -> {
+                connectionRepository.addConnection(name, value, locationFrom, locationTo)
+                connectionRepository.addConnection(name, value, locationTo, locationFrom)
+            }
+
+            (value == null) && !bidirectional ->
+                connectionRepository.addConnection(name, locationFrom, locationTo)
+
+            (value != null) && !bidirectional -> connectionRepository.addConnection(name, value, locationFrom, locationTo)
+        }
+    }
 }
+
