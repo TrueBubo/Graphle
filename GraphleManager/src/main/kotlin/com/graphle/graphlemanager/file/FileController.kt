@@ -31,4 +31,14 @@ class FileController(
             )
         } else null
     }
+
+    /**
+     * Finds file locations related to [fromLocation] file via the relationship named [relationshipName]
+     * @param fromLocation Absolute path of the file on the server
+     * @param relationshipName  Name of the relationship between two files
+     * @return List of absolute paths of files related to [fromLocation] via [relationshipName]
+     * */
+    @QueryMapping
+    fun filesFromFileByRelationship(@Argument fromLocation: String, @Argument relationshipName: String): List<String> =
+        fileService.filesFromFileByRelationship(fromLocation, relationshipName)
 }
