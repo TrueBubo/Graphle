@@ -19,7 +19,8 @@ class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
      * @return At most [limit] files matching the given prefix
      */
     private fun completeFilename(filenamePrefix: String, limit: Int): List<String> =
-        filenameCompleter.lookup(filenamePrefix, limit).map { it.joinToString(File.separator) }
+        filenameCompleter.lookup(filenamePrefix, limit)
+            .map { it.joinToString(prefix = File.separator, separator = File.separator) }
 
     /**
      * Predicts the DSL command with the next word
