@@ -22,7 +22,7 @@ class FileController(
      * @return File information if the file exists or null
      */
     @QueryMapping
-    fun fileByLocation(@Argument location: String): File? {
+    fun fileByLocation(@Argument location: AbsolutePathString): File? {
         return if (Files.exists(Path(location))) {
             File(
                 location,
@@ -31,4 +31,14 @@ class FileController(
             )
         } else null
     }
+
+    /**
+     * Finds file locations related to [fromLocation] file via the relationship named [relationshipName]
+     * @param fromLocation Absolute path of the file on the server
+     * @param relationshipName  Name of the relationship between two files
+     * @return List of absolute paths of files related to [fromLocation] via [relationshipName]
+     * */
+    @QueryMapping
+    fun filesFromFileByRelationship(@Argument fromLocation: AbsolutePathString, @Argument relationshipName: String): List<AbsolutePathString> =
+        fileService.filesFromFileByRelationship(fromLocation, relationshipName)
 }

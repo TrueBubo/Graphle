@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.tag
 
+import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.stereotype.Service
 
 /**
@@ -13,7 +14,7 @@ class TagService(private val tagRepository: TagRepository) {
      * @param location Absolute path of the file in server filesystem
      * @return Tags corresponding to the file
      */
-    fun tagsByFileLocation(location: String): List<Tag> = tagRepository.tagsByFileLocation(location)
+    fun tagsByFileLocation(location: AbsolutePathString): List<Tag> = tagRepository.tagsByFileLocation(location)
 
     /**
      * Marks the given file with a tag via a connection to a tag node
@@ -21,7 +22,7 @@ class TagService(private val tagRepository: TagRepository) {
      * @param tag Tag the system associate will with the file
      * @return Inserted [tag]
      */
-    fun addTagToFile(location: String, tag: TagInput) {
+    fun addTagToFile(location: AbsolutePathString, tag: TagInput) {
         if (tag.value != null) tagRepository.addTagToFile(location, tag.name, tag.value)
         else tagRepository.addTagToFile(
             location, tag.name
@@ -33,5 +34,5 @@ class TagService(private val tagRepository: TagRepository) {
      * @param tagName name of tag to search for
      * @return Absolute paths of files with tag with the given [tagName]
      */
-    fun filesByTag(tagName: String): List<String> = tagRepository.filesByTag(tagName)
+    fun filesByTag(tagName: String): List<AbsolutePathString> = tagRepository.filesByTag(tagName)
 }
