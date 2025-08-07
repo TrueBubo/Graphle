@@ -1,8 +1,6 @@
 package com.graphle.graphlemanager.connection
 
-import com.graphle.graphlemanager.file.File
-import org.springframework.graphql.data.method.annotation.Argument
-import org.springframework.graphql.data.method.annotation.QueryMapping
+import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.stereotype.Controller
 
 /**
@@ -16,6 +14,6 @@ class ConnectionController(val connectionService: ConnectionService) {
      * @param fromLocation Shows all the files connected to the file located at this location
      * @return List of neighbors
      */
-    fun neighborsByFileLocation(fromLocation: String): List<NeighborConnection> =
+    fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection> =
         connectionService.neighborsByFileLocation(fromLocation)
 }
