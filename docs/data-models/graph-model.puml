@@ -1,0 +1,25 @@
+@startuml
+
+object File <<Node>> {
+    location: String
+}
+
+object Tag <<Node>> {
+    name: String
+    value: String?
+}
+
+object HasTag <<Relationship>>
+
+object Relationship <<Relationship>> {
+    name: String
+    value: String?
+}
+
+File --> HasTag
+HasTag --> Tag
+
+File --> Relationship
+Relationship --> File
+
+@enduml
