@@ -2,11 +2,20 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.ConnectionController
 import com.graphle.graphlemanager.tag.TagController
+import graphql.GraphQLError
+import graphql.GraphqlErrorBuilder
 import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.GraphQlExceptionHandler
+import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
+import java.io.IOException
 import java.nio.file.Files
 import kotlin.io.path.Path
+import java.nio.file.FileAlreadyExistsException
+
+private class FileWriteException(message: String) : RuntimeException(message)
+
 
 @Controller
 class FileController(
@@ -39,6 +48,29 @@ class FileController(
      * @return List of absolute paths of files related to [fromLocation] via [relationshipName]
      * */
     @QueryMapping
-    fun filesFromFileByRelationship(@Argument fromLocation: AbsolutePathString, @Argument relationshipName: String): List<AbsolutePathString> =
+    fun filesFromFileByRelationship(
+        @Argument fromLocation: AbsolutePathString,
+        @Argument relationshipName: String
+    ): List<AbsolutePathString> =
         fileService.filesFromFileByRelationship(fromLocation, relationshipName)
+
+    @GraphQlExceptionHandler
+    private fun handleFileWriteException(ex: FileWriteException): GraphQLError {
+        return GraphqlErrorBuilder.newError()
+            .message("Could not write to a file at a given location, please check permissions or whether the parents exist")
+            .build()
+    }
+
+    @GraphQlExceptionHandler
+    private fun handleFileWriteException(ex: FileAlreadyExistsException): GraphQLError {
+        return GraphqlErrorBuilder.newError()
+            .message("Could not create a file, it already exists")
+            .build()
+    }
+
+    @MutationMapping
+    fun addFile(@Argument location: AbsolutePathString): File {
+        fileService.addFile(location)
+        return File(location, listOf(), listOf())
+    }
 }
