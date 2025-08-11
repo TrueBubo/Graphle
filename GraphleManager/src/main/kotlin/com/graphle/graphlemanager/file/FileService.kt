@@ -13,4 +13,8 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
     fun addFile(location: AbsolutePathString) {
         Files.createFile(Path(location))
     }
+
+    fun removeFile(location: AbsolutePathString) {
+        Files.deleteIfExists(Path(location))
+    }
 }
