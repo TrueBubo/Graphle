@@ -79,4 +79,10 @@ class FileController(
         fileService.removeFile(location)
         return location
     }
+
+    @MutationMapping
+    fun moveFile(@Argument locationFrom: AbsolutePathString, @Argument locationTo: AbsolutePathString): MoveFileResponse {
+        fileService.moveFile(locationFrom, locationTo)
+        return MoveFileResponse(locationFrom, locationTo)
+    }
 }
