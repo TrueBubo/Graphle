@@ -73,4 +73,10 @@ class FileController(
         fileService.addFile(location)
         return File(location, listOf(), listOf())
     }
+
+    @MutationMapping
+    fun removeFile(@Argument location: AbsolutePathString): String {
+        fileService.removeFile(location)
+        return location
+    }
 }
