@@ -16,6 +16,7 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
 
     fun removeFile(location: AbsolutePathString) {
         Files.deleteIfExists(Path(location))
+        fileRepository.removeFileByLocation(location)
     }
 
     fun moveFile(locationFrom: AbsolutePathString, locationTo: AbsolutePathString) {
