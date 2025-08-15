@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.dsl
 
+import org.springframework.beans.factory.annotation.Value
 import java.io.File
 import java.nio.file.Files
 import kotlin.collections.component1
@@ -18,6 +19,7 @@ private const val LAST_KEY = "last" // Key of where we ended in database so we d
 private const val ROOT_INDEX_KEY = 0L
 private const val TRUE_CHAR = "1" // Compact representation of "true" so we do not waste space in database
 private val root = CharacterKey(ROOT_INDEX_KEY.toString()) // Every lookup call will start from here
+@Value("\${cache.ttl}")
 private val ttl = 30.days // Keys not accessed for this long will be removed to prevent
 
 /**
@@ -32,7 +34,8 @@ class FilenameCompleter(
     private val storage: Storage,
     private val fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) }
 ) {
-    private var lastElement = storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
+    private var lastElement =
+        storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
 
     // Caches so we do not always look in the database which is much more expensive than this
     private val childrenCache = ConcurrentCache<String, Map<String, String>>(ttl)
