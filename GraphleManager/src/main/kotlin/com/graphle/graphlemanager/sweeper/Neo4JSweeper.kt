@@ -24,11 +24,6 @@ import kotlin.time.Duration.Companion.minutes
 @Service
 class Neo4JSweeper(private val fileRepository: FileRepository, private val tagRepository: TagRepository) {
     private var _sweepInterval = 1.minutes
-    fun setSweepInterval(value: Duration) {
-            scope.cancel()
-            _sweepInterval = value
-            startSweeping()
-        }
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -36,6 +31,10 @@ class Neo4JSweeper(private val fileRepository: FileRepository, private val tagRe
         startSweeping()
     }
 
+    /**
+     * Forces sweeping to be done right now
+     * @param filesExistsPredicate Checks whether the file is eligible to be swept
+     */
     fun sweep(filesExistsPredicate: (AbsolutePathString) -> Boolean = { path -> Files.exists(Path(path))}) {
         fileRepository
             .findAll()
@@ -45,11 +44,15 @@ class Neo4JSweeper(private val fileRepository: FileRepository, private val tagRe
         tagRepository.removeOrphanTags()
     }
 
+    /**
+     * Background task to sweep in the application background
+     * @param filesExistsPredicate Checks whether the file is eligible to be swept
+     */
     private fun startSweeping(filesExistsPredicate: (AbsolutePathString) -> Boolean = { path -> Files.exists(Path(path)) }) {
         scope.launch {
             while (true) {
                 delay(_sweepInterval)
-                sweep()
+                sweep(filesExistsPredicate)
             }
         }
     }
