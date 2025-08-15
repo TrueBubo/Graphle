@@ -45,7 +45,8 @@ class Neo4JSweeper(private val fileRepository: FileRepository, private val tagRe
     }
 
     /**
-     * Background task to sweep in the application background
+     * Background task to sweep old data
+     * It is ran in the application background
      * @param filesExistsPredicate Checks whether the file is eligible to be swept
      */
     private fun startSweeping(filesExistsPredicate: (AbsolutePathString) -> Boolean = { path -> Files.exists(Path(path)) }) {
