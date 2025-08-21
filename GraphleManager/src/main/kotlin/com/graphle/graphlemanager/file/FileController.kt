@@ -14,9 +14,12 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 import java.nio.file.FileAlreadyExistsException
 
-private class FileWriteException(message: String) : RuntimeException(message)
-
-
+/**
+ * GraphQL controller for managing information related to files
+ * @param fileService Service used for retrieving required information related to files on the file system
+ * @param tagController Controller used for querying information about the tags related to files
+ * @param connectionController Controller used for querying information about the connection related to files
+ * */
 @Controller
 class FileController(
     private val fileService: FileService,
@@ -54,34 +57,66 @@ class FileController(
     ): List<AbsolutePathString> =
         fileService.filesFromFileByRelationship(fromLocation, relationshipName)
 
+    /**
+     * GraphQL client will return this error if there was an error with writing the file
+     * @param exception Caught exception
+     * @return error with the message
+     */
     @GraphQlExceptionHandler
-    private fun handleFileWriteException(ex: FileWriteException): GraphQLError {
+    private fun handleFileWriteException(exception: IOException): GraphQLError {
         return GraphqlErrorBuilder.newError()
-            .message("Could not write to a file at a given location, please check permissions or whether the parents exist")
+            .message("Could not write to a file at a given location, please check permissions or whether the parents exist: ${exception.message}")
             .build()
     }
 
+    /**
+     * GraphQL client will return this error if the file already exists
+     * @param exception Caught exception
+     * @return error with the message
+     */
     @GraphQlExceptionHandler
-    private fun handleFileWriteException(ex: FileAlreadyExistsException): GraphQLError {
+    private fun handleFileWriteException(exception: FileAlreadyExistsException): GraphQLError {
         return GraphqlErrorBuilder.newError()
             .message("Could not create a file, it already exists")
             .build()
     }
 
+    /**
+     * Adds a file to the file system at [location]
+     * @param location Absolute path of the file to be created
+     * @throws FileAlreadyExistsException If the file already exists on the file system
+     * @throws java.io.IOException If the write could not happen
+     * @return file created
+     */
     @MutationMapping
     fun addFile(@Argument location: AbsolutePathString): File {
         fileService.addFile(location)
         return File(location, listOf(), listOf())
     }
 
+    /**
+     * Removes the file at [location] from file system, and removes it from database
+     * @param location Absolute path of the file deleted
+     * @throws IOException if the file could not be deleted
+     * @return [location]
+     */
     @MutationMapping
-    fun removeFile(@Argument location: AbsolutePathString): String {
+    fun removeFile(@Argument location: AbsolutePathString): AbsolutePathString {
         fileService.removeFile(location)
         return location
     }
 
+    /**
+     * Moves the file from [locationFrom] to [locationTo], and updates the info in database
+     * @param locationFrom The original absolute path of the file
+     * @param locationTo The new absolute path of the file
+     * @return Information about the move
+     */
     @MutationMapping
-    fun moveFile(@Argument locationFrom: AbsolutePathString, @Argument locationTo: AbsolutePathString): MoveFileResponse {
+    fun moveFile(
+        @Argument locationFrom: AbsolutePathString,
+        @Argument locationTo: AbsolutePathString
+    ): MoveFileResponse {
         fileService.moveFile(locationFrom, locationTo)
         return MoveFileResponse(locationFrom, locationTo)
     }
