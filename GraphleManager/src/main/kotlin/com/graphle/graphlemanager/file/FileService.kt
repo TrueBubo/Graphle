@@ -1,12 +1,14 @@
 package com.graphle.graphlemanager.file
 
+import com.graphle.graphlemanager.dsl.FilenameCompleterService
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.stereotype.Service
 import java.nio.file.Files
+import java.io.File
 import kotlin.io.path.Path
 
 @Service
-class FileService(private val fileRepository: FileRepository, private val fileSweeper: Neo4JSweeper) {
+class FileService(private val fileRepository: FileRepository, private val fileSweeper: Neo4JSweeper, private val filenameCompleterService: FilenameCompleterService) {
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
@@ -17,6 +19,7 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
         location: AbsolutePathString,
         createFileAction: (AbsolutePathString) -> Unit = { Files.createFile(Path(it)) }
     ) {
+        filenameCompleterService.completer.insert(location.split(File.separator))
         createFileAction(location)
     }
 

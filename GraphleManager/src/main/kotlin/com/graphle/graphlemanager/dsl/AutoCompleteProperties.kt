@@ -11,7 +11,7 @@ data class AutoCompleteProperties(val valkey: Valkey) {
      * Properties related to Valkey database configuration
      * @param host Host address
      * @param port Post on the host
-     * @see ValkeyFilenameCompleter
+     * @see ValkeyFilenameCompleterService
      */
     data class Valkey(val host: String, val port: Int)
 }
