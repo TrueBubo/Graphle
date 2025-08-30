@@ -9,8 +9,8 @@ const val COMPLETIONS_LIMIT = 5
  * Used as a response getter for a prefix entered from GUI
  */
 @Service
-class DSLAutoCompleter(filenameCompleterService: ValkeyFilenameCompleter) {
-    val filenameCompleter = filenameCompleterService.filenameCompleter
+class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
+    private val filenameCompleter = filenameCompleterService.completer
 
     /**
      * Finds out the files beginning with the given prefix

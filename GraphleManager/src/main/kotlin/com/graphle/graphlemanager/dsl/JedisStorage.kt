@@ -1,6 +1,7 @@
 package com.graphle.graphlemanager.dsl
 
 import io.valkey.Jedis
+import org.springframework.stereotype.Service
 
 /**
  * Storage implementation for Valkey
@@ -8,6 +9,7 @@ import io.valkey.Jedis
  * @see Storage
  */
 class JedisStorage(private val jedis: Jedis) : Storage {
+
     override fun set(key: String, value: String) {
         jedis.set(key, value)
     }
