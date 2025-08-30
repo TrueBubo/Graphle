@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
  * @param autoCompleteProperties Connection details for database
  */
 @Service
-class ValkeyFilenameCompleter(autoCompleteProperties: AutoCompleteProperties) {
+class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompleteProperties): FilenameCompleterService {
     private inline fun <T> JedisPool.withJedis(action: (Jedis) -> T): T {
         return this.resource.use { jedis -> action(jedis) }
     }
@@ -27,7 +27,7 @@ class ValkeyFilenameCompleter(autoCompleteProperties: AutoCompleteProperties) {
     private val pool = JedisPool(poolConfig, host, port)
 
     // Can be used as completer
-    val filenameCompleter = pool.withJedis { jedis ->
+    override val completer = pool.withJedis { jedis ->
         FilenameCompleter(JedisStorage(jedis))
     }
 }
