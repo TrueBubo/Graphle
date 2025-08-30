@@ -16,34 +16,35 @@ private val mockStorage = object : Storage {
 class ValkeyFilenameCompleterTest() {
     @Test
     fun `filename completer completes last level filenames`() {
-        val filenameCompleter = FilenameCompleter(mockStorage) { true }
+        val filenameCompleter = FilenameCompleter(mockStorage)
         filenameCompleter.insert(listOf("home", "user"))
         filenameCompleter.insert(listOf("home", "user", "notThere"))
         assertEquals(
             listOf(listOf("home", "user", "notThere")),
-            filenameCompleter.lookup("no")
+            filenameCompleter.lookup("no") { true }
         )
     }
 
     @Test
     fun `filename completer completes full level filenames`() {
-        val filenameCompleter = FilenameCompleter(mockStorage) { true }
+        val filenameCompleter = FilenameCompleter(mockStorage)
         filenameCompleter.insert(listOf("home", "user"))
         filenameCompleter.insert(listOf("home", "user", "notThere"))
         assertEquals(
             listOf(listOf("home", "user", "notThere"), listOf("home", "user")).toSet(),
-            filenameCompleter.lookup("/ho").toSet()
+            filenameCompleter.lookup("/ho") { true }
+                .toSet()
         )
     }
 
     @Test
     fun `filename completer only returns existing files`() {
-        val filenameCompleter = FilenameCompleter(mockStorage) { it.contains("notThere") }
+        val filenameCompleter = FilenameCompleter(mockStorage)
         filenameCompleter.insert(listOf("home", "user"))
         filenameCompleter.insert(listOf("home", "user", "notThere"))
         assertEquals(
             listOf(listOf("home", "user", "notThere")),
-            filenameCompleter.lookup("/ho")
+            filenameCompleter.lookup("/ho")  { it.contains("notThere") }
         )
     }
 }

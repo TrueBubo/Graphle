@@ -1,6 +1,9 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.file.AbsolutePathString
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Files
 import kotlin.collections.component1
@@ -19,6 +22,7 @@ private const val LAST_KEY = "last" // Key of where we ended in database so we d
 private const val ROOT_INDEX_KEY = 0L
 private const val TRUE_CHAR = "1" // Compact representation of "true" so we do not waste space in database
 private val root = CharacterKey(ROOT_INDEX_KEY.toString()) // Every lookup call will start from here
+
 @Value("\${cache.ttl}")
 private val ttl = 30.days // Keys not accessed for this long will be removed to prevent
 
@@ -32,7 +36,6 @@ private val ttl = 30.days // Keys not accessed for this long will be removed to 
  */
 class FilenameCompleter(
     private val storage: Storage,
-    private val fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) }
 ) {
     private var lastElement =
         storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
@@ -119,7 +122,9 @@ class FilenameCompleter(
     fun filenameDFS(
         key: CharacterKey,
         limit: Int,
-        collected: MutableSet<String> = mutableSetOf()
+        collected: MutableSet<String> = mutableSetOf(),
+        fileExistsPredicate: (AbsolutePathString) -> Boolean
+//        fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) },
     ): List<String> {
         if (collected.size >= limit) return collected.take(limit)
 
@@ -144,7 +149,7 @@ class FilenameCompleter(
         for ((_, charKey) in children) {
             if (collected.size >= limit) break
             val childKey = CharacterKey(charKey)
-            filenameDFS(childKey, limit, collected)
+            filenameDFS(childKey, limit, collected, fileExistsPredicate)
         }
 
         return collected.toList()
@@ -179,6 +184,9 @@ class FilenameCompleter(
      * @param filename Components of the filenames consists of parent directories and the bottom level filename itself
      */
     fun insert(filename: FilenameComponents) {
+        repeat(100) {
+            println(filename)
+        }
         val filenameString = filename.joinToString(prefix = File.separator, separator = File.separator)
         val fullFileKey = insertComponent(filenameString, null)
         insertComponent(filename.last(), fullFileKey)
@@ -190,7 +198,10 @@ class FilenameCompleter(
      * @param limit Returns at most this many filenames
      * @return list of possible filenames
      */
-    fun lookup(filenamePrefix: String, limit: Int = COMPLETIONS_LIMIT): List<FilenameComponents> {
+    fun lookup(filenamePrefix: String,
+               limit: Int = COMPLETIONS_LIMIT,
+               fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) },
+               ): List<FilenameComponents> {
         if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
         var currNode = root
@@ -207,7 +218,7 @@ class FilenameCompleter(
             currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
         }
 
-        return filenameDFS(currNode, limit).map {
+        return filenameDFS(currNode, limit, fileExistsPredicate = fileExistsPredicate).map {
             val list = it.split(File.separator)
             if (list.first() == "") list.drop(1) else list
         }
