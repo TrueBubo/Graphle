@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.io.File
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.isDirectory
+import kotlin.streams.toList
 
 @Service
 class FileService(private val fileRepository: FileRepository, private val fileSweeper: Neo4JSweeper, private val filenameCompleterService: FilenameCompleterService) {
@@ -14,6 +17,19 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
         relationshipName: String
     ): List<AbsolutePathString> =
         fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+
+    fun descendentsOfFile(
+        fromLocation: AbsolutePathString,
+        getDescendentsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
+            val path = Path(filename)
+            if (path.isDirectory()) Files.list(path).toList().map { it.absolutePathString() } else emptyList()
+        }
+    ): List<AbsolutePathString> = getDescendentsAction(fromLocation)
+
+    fun parentOfFile(
+        fromLocation: AbsolutePathString,
+        getParentAction: (AbsolutePathString) -> AbsolutePathString? = { Path(fromLocation).toFile().parent }
+    ): AbsolutePathString? = getParentAction(fromLocation)
 
     fun addFile(
         location: AbsolutePathString,

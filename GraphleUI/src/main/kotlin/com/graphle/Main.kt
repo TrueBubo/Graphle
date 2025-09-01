@@ -167,7 +167,7 @@ suspend fun fetchFilesByLocation(
                 "Error: ${response.errors?.joinToString()}"
             } else {
                 val file = response.data?.fileByLocation
-                file?.tags?.joinToString("\n") ?: "No file found"
+                (file?.tags?.joinToString("\n") + file?.connections?.joinToString("\n")) ?: "No file found"
             }
         )
     } catch (e: Exception) {

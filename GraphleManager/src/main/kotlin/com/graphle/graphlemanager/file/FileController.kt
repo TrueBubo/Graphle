@@ -1,6 +1,7 @@
 package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.ConnectionController
+import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.TagController
 import graphql.GraphQLError
 import graphql.GraphqlErrorBuilder
@@ -10,9 +11,9 @@ import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
 import java.io.IOException
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import kotlin.io.path.Path
-import java.nio.file.FileAlreadyExistsException
 
 /**
  * GraphQL controller for managing information related to files
@@ -35,11 +36,25 @@ class FileController(
      */
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString): File? {
+        val descendentsConnection = NeighborConnection(
+            "descendent",
+            fileService.descendentsOfFile(location)
+                .map { File(it, emptyList(), emptyList()) })
+        val parentConnection = fileService.parentOfFile(location)
+            ?.let { File(it, emptyList(), emptyList()) }
+            ?.let { NeighborConnection("parent", listOf(it)) }
+        val hierarchyNeighbors = buildList {
+            add(descendentsConnection)
+            parentConnection?.let { add(it) }
+        }
+
+        println("Called $hierarchyNeighbors")
+
         return if (Files.exists(Path(location))) {
             File(
                 location,
                 tagController.tagsByFileLocation(location),
-                connectionController.neighborsByFileLocation(location)
+                hierarchyNeighbors + connectionController.neighborsByFileLocation(location)
             )
         } else null
     }
