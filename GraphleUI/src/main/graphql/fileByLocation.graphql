@@ -5,5 +5,9 @@ query fileByLocation($location: String!) {
             name
             value
         }
+
+        connections(limit: 100) {
+            relationship
+        }
     }
 }
