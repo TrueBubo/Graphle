@@ -1,6 +1,9 @@
 package com.graphle.graphlemanager.dsl
 
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.minutes
@@ -35,4 +38,25 @@ class ConcurrentCacheTest {
         assertNull(cache["hello"])
     }
 
+    @Test
+    fun `values expire only after duration`() = runBlocking {
+        val delayer = MockDelayer()
+        var swept = false
+        val cache = ConcurrentCache<String, String>(
+            ttl = 0.minutes,
+            sweepInterval = 10.minutes,
+            onSweep = { swept = true },
+            delayer = delayer,
+        )
+        cache["hello"] = "world"
+        assertEquals(1, cache.size)
+        delayer.forwardTime(100.minutes)
+        val start = Instant.now()
+        while (!swept) {
+            if (java.time.Duration.between(start, Instant.now()).toMillisPart() > 100) {
+                fail("The sweeper takes too long to sweep")
+            }
+        }
+        assertEquals(0, cache.size)
+    }
 }
