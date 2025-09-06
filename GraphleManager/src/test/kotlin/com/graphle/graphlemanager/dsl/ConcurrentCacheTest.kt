@@ -7,6 +7,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.minutes
+import java.time.Duration
 
 class ConcurrentCacheTest {
     @Test
@@ -42,18 +43,20 @@ class ConcurrentCacheTest {
     fun `values expire only after duration`() = runBlocking {
         val delayer = MockDelayer()
         var swept = false
+        val sweepInterval = 10.minutes
         val cache = ConcurrentCache<String, String>(
             ttl = 0.minutes,
-            sweepInterval = 10.minutes,
+            sweepInterval = sweepInterval,
             onSweep = { swept = true },
             delayer = delayer,
         )
         cache["hello"] = "world"
         assertEquals(1, cache.size)
-        delayer.forwardTime(100.minutes)
+        delayer.forwardTime(sweepInterval)
         val start = Instant.now()
+        val sweepTimeLimitMillis = 100
         while (!swept) {
-            if (java.time.Duration.between(start, Instant.now()).toMillisPart() > 100) {
+            if (Duration.between(start, Instant.now()).toMillisPart() > sweepTimeLimitMillis) {
                 fail("The sweeper takes too long to sweep")
             }
         }
