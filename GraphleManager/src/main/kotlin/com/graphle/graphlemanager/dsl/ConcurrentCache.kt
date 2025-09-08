@@ -1,5 +1,7 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.commons.CoroutineDelayer
+import com.graphle.graphlemanager.commons.IDelayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -35,6 +37,8 @@ class ConcurrentCache<K : Any, V : Any>(
     private val ttl: Duration,
     private val sweepInterval: Duration = 1.minutes,
     private val shouldTriggerCacheSweep: (Map<K, ExpirableValue<V>>).() -> Boolean = { true },
+    private val onSweep: () -> Unit = {},
+    private val delayer: IDelayer = CoroutineDelayer()
 ) {
     val size: Int get() = cache.size
     private val cache = ConcurrentHashMap<K, ExpirableValue<V>>()
@@ -49,12 +53,13 @@ class ConcurrentCache<K : Any, V : Any>(
      */
     private suspend fun sweep() {
         while (true) {
-            delay(sweepInterval)
+            delayer.delay(sweepInterval)
             if (!cache.shouldTriggerCacheSweep()) continue
             val now = Instant.now()
             cache.asSequence()
                 .filter { it.value.isExpired(now) }
-                .forEach { cache.remove(it.key) }
+                .forEach { println("Removed"); cache.remove(it.key) }
+            onSweep()
         }
     }
 
