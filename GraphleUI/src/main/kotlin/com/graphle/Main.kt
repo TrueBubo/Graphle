@@ -4,13 +4,12 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -28,9 +26,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
@@ -50,7 +45,7 @@ fun App() {
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
-    var file by remember { mutableStateOf("Loading...") }
+    var file by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -141,7 +136,9 @@ fun App() {
                 if (isLoading) {
                     Text("Loading...")
                 } else {
-                    Text("File:\n$file")
+                    Text("File:\n")
+                    if (file == null) Text("Could not find the file")
+                    else ClickableText()
                 }
 
                 Switch(
@@ -157,17 +154,17 @@ fun App() {
 suspend fun fetchFilesByLocation(
     location: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (String) -> Unit
+    onResult: (String?) -> Unit
 ) {
     onLoading(true)
     try {
         val response = apolloClient.getFilesByLocation(location)
         onResult(
             if (response.hasErrors()) {
-                "Error: ${response.errors?.joinToString()}"
+                null
             } else {
                 val file = response.data?.fileByLocation
-                (file?.tags?.joinToString("\n") + file?.connections?.joinToString("\n")) ?: "No file found"
+                file?.tags?.joinToString("\n")?.plus(file.connections.joinToString("\n"))
             }
         )
     } catch (e: Exception) {
