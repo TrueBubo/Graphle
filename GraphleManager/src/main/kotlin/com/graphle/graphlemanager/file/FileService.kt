@@ -1,22 +1,24 @@
 package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.dsl.FilenameCompleterService
-import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
-import kotlin.streams.toList
 
 @Service
-class FileService(private val fileRepository: FileRepository, private val fileSweeper: Neo4JSweeper, private val filenameCompleterService: FilenameCompleterService) {
+class FileService(private val fileRepository: FileRepository, private val filenameCompleterService: FilenameCompleterService) {
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
     ): List<AbsolutePathString> =
-        fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+        when (relationshipName) {
+            "descendent" -> descendentsOfFile(fromLocation)
+            "parent" -> parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()
+            else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+        }
 
     fun descendentsOfFile(
         fromLocation: AbsolutePathString,
