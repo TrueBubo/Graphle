@@ -1,10 +1,11 @@
 package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.onClick
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
@@ -37,6 +38,11 @@ val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
 
+enum class PropertyType {
+    FILE, TAG, CONNECTION
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun App() {
@@ -45,7 +51,7 @@ fun App() {
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
-    var file by remember { mutableStateOf<String?>(null) }
+    var displayedInfo by remember { mutableStateOf<Map<PropertyType, List<String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -73,7 +79,7 @@ fun App() {
                                 fetchFilesByLocation(
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = { file = it }
+                                    onResult = { displayedInfo = it }
                                 )
                             }
 
@@ -136,9 +142,61 @@ fun App() {
                 if (isLoading) {
                     Text("Loading...")
                 } else {
-                    Text("File:\n")
-                    if (file == null) Text("Could not find the file")
-                    else ClickableText()
+                    Text("File:")
+                    if (displayedInfo == null) Text("Could not find the file")
+                    else {
+                        displayedInfo?.get(PropertyType.FILE)
+                            ?.apply { Text("Files") }
+                            ?.forEach { filename ->
+                                Text(
+                                    text = filename,
+                                    modifier = Modifier.onClick(
+                                        onClick = {
+                                            println("Clicked $filename")
+                                            coroutineScope.launch {
+                                                fetchFilesByLocation(
+                                                    location = filename,
+                                                    onLoading = { isLoading = it },
+                                                    onResult = {
+                                                        location = filename
+                                                        displayedInfo = it
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    )
+                                )
+                            }
+                        displayedInfo?.get(PropertyType.TAG)
+                            ?.apply { Text("Tags") }
+                            ?.forEach {
+                                Text(
+                                    text = it,
+                                    modifier = Modifier.onClick(onClick = { println("Clicked $it") })
+                                )
+                            }
+
+                        displayedInfo?.get(PropertyType.CONNECTION)
+                            ?.apply { Text("Connections") }
+                            ?.forEach { relationshipName ->
+                                Text(
+                                    text = relationshipName,
+                                    modifier = Modifier.onClick(onClick = {
+                                        println("Clicked $relationshipName")
+                                        coroutineScope.launch {
+                                            fetchFilesFromFileByRelationship(
+                                                fromLocation = location,
+                                                relationshipName = relationshipName,
+                                                onLoading = { isLoading = it },
+                                                onResult = {
+                                                    displayedInfo = mapOf(PropertyType.FILE to (it ?: emptyList()))
+                                                }
+                                            )
+                                        }
+                                    })
+                                )
+                            }
+                    }
                 }
 
                 Switch(
@@ -151,25 +209,46 @@ fun App() {
     }
 }
 
+suspend fun fetchFilesFromFileByRelationship(
+    fromLocation: String,
+    relationshipName: String,
+    onLoading: (Boolean) -> Unit,
+    onResult: (List<String>?) -> Unit
+) {
+    onLoading(true)
+    println("Ran relation")
+    val response = apolloClient.getFilesFromFileByRelationship(
+        fromLocation = fromLocation,
+        relationshipName = relationshipName
+    )
+    onResult(if (response.hasErrors()) null else response.data?.filesFromFileByRelationship)
+    onLoading(false)
+}
+
+suspend fun ApolloClient.getFilesFromFileByRelationship(
+    fromLocation: String,
+    relationshipName: String
+): ApolloResponse<FilesFromFileByRelationshipQuery.Data> =
+    query(FilesFromFileByRelationshipQuery(fromLocation, relationshipName)).execute()
+
 suspend fun fetchFilesByLocation(
     location: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (String?) -> Unit
+    onResult: (Map<PropertyType, List<String>>?) -> Unit
 ) {
     onLoading(true)
-    try {
-        val response = apolloClient.getFilesByLocation(location)
-        onResult(
-            if (response.hasErrors()) {
-                null
-            } else {
-                val file = response.data?.fileByLocation
-                file?.tags?.joinToString("\n")?.plus(file.connections.joinToString("\n"))
-            }
-        )
-    } catch (e: Exception) {
-        onResult("Network error: ${e.message}")
-    }
+    val response = apolloClient.getFilesByLocation(location)
+    onResult(
+        if (response.hasErrors()) {
+            null
+        } else {
+            val file = response.data?.fileByLocation
+            if (file != null) mapOf(
+                PropertyType.TAG to file.tags.map { "${it.name}: ${it.value ?: ""}" },
+                PropertyType.CONNECTION to file.connections.map { it.relationship }
+            ) else null
+        }
+    )
     onLoading(false)
 }
 
