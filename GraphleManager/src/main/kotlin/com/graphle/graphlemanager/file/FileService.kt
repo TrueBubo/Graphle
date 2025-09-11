@@ -7,9 +7,13 @@ import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
+import org.apache.commons.io.FileUtils;
 
 @Service
-class FileService(private val fileRepository: FileRepository, private val filenameCompleterService: FilenameCompleterService) {
+class FileService(
+    private val fileRepository: FileRepository,
+    private val filenameCompleterService: FilenameCompleterService
+) {
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
@@ -43,7 +47,11 @@ class FileService(private val fileRepository: FileRepository, private val filena
 
     fun removeFile(
         location: AbsolutePathString,
-        removeFileByLocationAction: (AbsolutePathString) -> Unit = { Files.deleteIfExists(Path(it)) }
+        removeFileByLocationAction: (AbsolutePathString) -> Unit = {
+            val path = Path(it)
+            if (path.toFile().isDirectory) FileUtils.deleteDirectory(path.toFile())
+            else Files.deleteIfExists(path)
+        }
     ) {
         removeFileByLocationAction(location)
         fileRepository.removeFileByLocation(location)

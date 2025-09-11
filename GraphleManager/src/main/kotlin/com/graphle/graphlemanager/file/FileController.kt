@@ -37,7 +37,7 @@ class FileController(
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString): File? {
         val descendentsConnection = NeighborConnection(
-            "descendent",
+            "descendant",
             fileService.descendantsOfFile(location)
                 .map { File(it, emptyList(), emptyList()) })
         val parentConnection = fileService.parentOfFile(location)
