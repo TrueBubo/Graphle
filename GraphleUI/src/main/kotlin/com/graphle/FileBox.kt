@@ -16,6 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.awt.Desktop
+import java.io.File
+import kotlin.io.path.Path
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -56,6 +59,7 @@ fun FileBox(
             DropdownMenuItem(
                 content = { Text("Open") },
                 onClick = {
+                    openFile(Path(filename).toFile())
                     showMenu = false
                 },
             )
@@ -70,5 +74,22 @@ fun FileBox(
                 }
             )
         }
+    }
+}
+
+private fun openFile(file: File) {
+    if (!file.exists()) {
+        return
+    }
+
+    if (Desktop.isDesktopSupported()) {
+        val desktop = Desktop.getDesktop()
+        if (desktop.isSupported(Desktop.Action.OPEN)) {
+            desktop.open(file)
+        } else {
+            println("OPEN action is not supported on this platform")
+        }
+    } else {
+        println("Desktop API is not supported")
     }
 }
