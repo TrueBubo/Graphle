@@ -1,19 +1,41 @@
 package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.dsl.FilenameCompleterService
-import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.io.File
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.isDirectory
+import org.apache.commons.io.FileUtils;
 
 @Service
-class FileService(private val fileRepository: FileRepository, private val fileSweeper: Neo4JSweeper, private val filenameCompleterService: FilenameCompleterService) {
+class FileService(
+    private val fileRepository: FileRepository,
+    private val filenameCompleterService: FilenameCompleterService
+) {
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
     ): List<AbsolutePathString> =
-        fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+        when (relationshipName) {
+            "descendant" -> descendantsOfFile(fromLocation)
+            "parent" -> parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()
+            else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+        }
+
+    fun descendantsOfFile(
+        fromLocation: AbsolutePathString,
+        getDescendantsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
+            val path = Path(filename)
+            if (path.isDirectory()) Files.list(path).toList().map { it.absolutePathString() } else emptyList()
+        }
+    ): List<AbsolutePathString> = getDescendantsAction(fromLocation)
+
+    fun parentOfFile(
+        fromLocation: AbsolutePathString,
+        getParentAction: (AbsolutePathString) -> AbsolutePathString? = { Path(fromLocation).toFile().parent }
+    ): AbsolutePathString? = getParentAction(fromLocation)
 
     fun addFile(
         location: AbsolutePathString,
@@ -25,7 +47,11 @@ class FileService(private val fileRepository: FileRepository, private val fileSw
 
     fun removeFile(
         location: AbsolutePathString,
-        removeFileByLocationAction: (AbsolutePathString) -> Unit = { Files.deleteIfExists(Path(it)) }
+        removeFileByLocationAction: (AbsolutePathString) -> Unit = {
+            val path = Path(it)
+            if (path.toFile().isDirectory) FileUtils.deleteDirectory(path.toFile())
+            else Files.deleteIfExists(path)
+        }
     ) {
         removeFileByLocationAction(location)
         fileRepository.removeFileByLocation(location)

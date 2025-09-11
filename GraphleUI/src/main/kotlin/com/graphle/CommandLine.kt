@@ -1,5 +1,6 @@
 package com.graphle
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
@@ -13,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,7 +62,8 @@ fun CommandLine() {
     TextField(
         value = dslCommand,
         onValueChange = { dslCommand = it },
-        singleLine = true
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth()
     )
 
     Button(
