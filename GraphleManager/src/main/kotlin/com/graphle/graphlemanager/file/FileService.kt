@@ -15,18 +15,18 @@ class FileService(private val fileRepository: FileRepository, private val filena
         relationshipName: String
     ): List<AbsolutePathString> =
         when (relationshipName) {
-            "descendent" -> descendentsOfFile(fromLocation)
+            "descendant" -> descendantsOfFile(fromLocation)
             "parent" -> parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()
             else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
         }
 
-    fun descendentsOfFile(
+    fun descendantsOfFile(
         fromLocation: AbsolutePathString,
-        getDescendentsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
+        getDescendantsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
             val path = Path(filename)
             if (path.isDirectory()) Files.list(path).toList().map { it.absolutePathString() } else emptyList()
         }
-    ): List<AbsolutePathString> = getDescendentsAction(fromLocation)
+    ): List<AbsolutePathString> = getDescendantsAction(fromLocation)
 
     fun parentOfFile(
         fromLocation: AbsolutePathString,
