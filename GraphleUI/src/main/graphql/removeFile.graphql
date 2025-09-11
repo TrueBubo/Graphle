@@ -1,0 +1,3 @@
+mutation removeFile($location: String!) {
+    removeFile(location: $location)
+}
