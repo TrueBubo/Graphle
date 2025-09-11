@@ -1,16 +1,18 @@
 package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.onClick
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,19 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
-import com.apollographql.apollo.api.ApolloResponse
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.websocket.WebSockets
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
@@ -42,6 +38,11 @@ val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
 
+enum class PropertyType {
+    FILE, TAG, CONNECTION
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
 fun App() {
@@ -50,7 +51,7 @@ fun App() {
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
-    var file by remember { mutableStateOf("Loading...") }
+    var displayedInfo by remember { mutableStateOf<Map<PropertyType, List<String>>?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -78,7 +79,7 @@ fun App() {
                                 fetchFilesByLocation(
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = { file = it }
+                                    onResult = { displayedInfo = it }
                                 )
                             }
 
@@ -88,60 +89,96 @@ fun App() {
                     }
                 )
 
-                TextField(
+                TagTextField(
                     value = tagName,
                     onValueChange = { tagName = it },
-                    singleLine = true,
-                    modifier = Modifier.onPreviewKeyEvent { event ->
-                        if (event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
-                            val tagNameSnapshot = tagName
-                            val tagValueSnapshot = tagValue
-                            coroutineScope.launch {
-                                if (tagNameSnapshot == "") return@launch
-                                if (tagValue != "") apolloClient.addTagToFile(
-                                    location,
-                                    tagNameSnapshot,
-                                    tagValueSnapshot
-                                )
-                                else apolloClient.addTagToFile(location, tagNameSnapshot)
-                            }
-
-                            tagName = ""
-                            tagValue = ""
-                            true
-                        } else false
-                    }
+                    location = location,
+                    tagName = tagName,
+                    tagValue = tagValue,
+                    tagNameSetter = { tagName = it },
+                    tagValueSetter = { tagValue = it },
+                    coroutineScope = coroutineScope,
                 )
 
-                TextField(
+                TagTextField(
                     value = tagValue,
                     onValueChange = { tagValue = it },
-                    singleLine = true,
-                    modifier = Modifier.onPreviewKeyEvent { event ->
-                        if (event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
-                            val tagNameSnapshot = tagName
-                            val tagValueSnapshot = tagValue
-                            coroutineScope.launch {
-                                if (tagNameSnapshot == "") return@launch
-                                if (tagValueSnapshot != "") apolloClient.addTagToFile(
-                                    location,
-                                    tagNameSnapshot,
-                                    tagValueSnapshot
-                                )
-                                else apolloClient.addTagToFile(location, tagNameSnapshot)
-                            }
-
-                            tagName = ""
-                            tagValue = ""
-                            true
-                        } else false
-                    }
+                    location = location,
+                    tagName = tagName,
+                    tagValue = tagValue,
+                    tagNameSetter = { tagName = it },
+                    tagValueSetter = { tagValue = it },
+                    coroutineScope = coroutineScope,
                 )
 
                 if (isLoading) {
                     Text("Loading...")
                 } else {
-                    Text("File:\n$file")
+                    Text("File:")
+                    if (displayedInfo == null) Text("Could not find the file")
+                    else {
+                        displayedInfo?.get(PropertyType.FILE)
+                            ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
+                            ?.let { filenames ->
+                                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                    items(items = filenames, key = { it }) { filename ->
+                                        FileBox(
+                                            filename = filename,
+                                            onLoading = { isLoading = it },
+                                            onResult = {
+                                                location = filename
+                                                displayedInfo = it
+                                            },
+                                            onRefresh = {
+                                                coroutineScope.launch {
+                                                    fetchFilesFromFileByRelationship(
+                                                        fromLocation = location,
+                                                        relationshipName = "descendant",
+                                                        onLoading = { isLoading = it },
+                                                        onResult = {
+                                                            displayedInfo =
+                                                                mapOf(PropertyType.FILE to (it ?: emptyList()))
+                                                        }
+                                                    )
+                                                }
+                                            },
+                                            coroutineScope = coroutineScope
+                                        )
+                                    }
+                                }
+                            }
+                        displayedInfo?.get(PropertyType.TAG)
+                            ?.apply { Text(text = "Tags", fontWeight = FontWeight.Bold) }
+                            ?.forEach {
+                                Text(
+                                    text = it,
+                                    modifier = Modifier.onClick(onClick = { println("Clicked $it") })
+                                )
+                            }
+
+                        displayedInfo?.get(PropertyType.CONNECTION)
+                            ?.apply { Text(text = "Connections", fontWeight = FontWeight.Bold) }
+                            ?.forEach { relationshipName ->
+                                RelationshipBox(
+                                    relationshipName = relationshipName,
+                                    location = location,
+                                    onLoading = { isLoading = it },
+                                    onResult = {
+                                        displayedInfo = mapOf(PropertyType.FILE to (it ?: emptyList()))
+                                    },
+                                    onRefresh = {
+                                        coroutineScope.launch {
+                                            fetchFilesByLocation(
+                                                location = location,
+                                                onLoading = { isLoading = it },
+                                                onResult = { displayedInfo = it }
+                                            )
+                                        }
+                                    },
+                                    coroutineScope = coroutineScope
+                                )
+                            }
+                    }
                 }
 
                 Switch(
@@ -153,46 +190,6 @@ fun App() {
         }
     }
 }
-
-suspend fun fetchFilesByLocation(
-    location: String,
-    onLoading: (Boolean) -> Unit,
-    onResult: (String) -> Unit
-) {
-    onLoading(true)
-    try {
-        val response = apolloClient.getFilesByLocation(location)
-        onResult(
-            if (response.hasErrors()) {
-                "Error: ${response.errors?.joinToString()}"
-            } else {
-                val file = response.data?.fileByLocation
-                file?.tags?.joinToString("\n") ?: "No file found"
-            }
-        )
-    } catch (e: Exception) {
-        onResult("Network error: ${e.message}")
-    }
-    onLoading(false)
-}
-
-suspend fun ApolloClient.getFilesByLocation(location: String): ApolloResponse<FileByLocationQuery.Data> =
-    query(FileByLocationQuery(location)).execute()
-
-
-suspend fun ApolloClient.addTagToFile(
-    location: String,
-    name: String
-): ApolloResponse<AddTagToFileWithNameMutation.Data> =
-    mutation(AddTagToFileWithNameMutation(location, name)).execute()
-
-suspend fun ApolloClient.addTagToFile(
-    location: String,
-    name: String,
-    value: String
-): ApolloResponse<AddTagToFileWithNameAndValueMutation.Data> =
-    mutation(AddTagToFileWithNameAndValueMutation(location, name, value)).execute()
-
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication) {
