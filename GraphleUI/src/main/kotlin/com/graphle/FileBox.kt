@@ -25,7 +25,7 @@ import kotlin.io.path.Path
 fun FileBox(
     filename: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (Map<PropertyType, List<String>>?) -> Unit,
+    onResult: (DisplayedInfo?) -> Unit,
     onRefresh: () -> Unit,
     coroutineScope: CoroutineScope
 ) {
