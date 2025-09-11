@@ -28,19 +28,22 @@ private suspend fun ApolloClient.getFilesFromFileByRelationship(
 suspend fun fetchFilesByLocation(
     location: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (Map<PropertyType, List<String>>?) -> Unit
+    onResult: (DisplayedInfo?) -> Unit
 ) {
     onLoading(true)
     val response = apolloClient.getFilesByLocation(location)
+    println(response?.data?.fileByLocation)
     onResult(
         if (response.hasErrors()) {
             null
         } else {
             val file = response.data?.fileByLocation
-            if (file != null) mapOf(
-                PropertyType.TAG to file.tags.map { "${it.name}: ${it.value ?: ""}" },
-                PropertyType.CONNECTION to file.connections.map { it.relationship }
-            ) else null
+            if (file != null)
+                DisplayedInfo(
+                    tags = file.tags.map { Tag(it.name, it.value) },
+                    connections = file.connections.map { it.relationship }
+                )
+            else null
         }
     )
     onLoading(false)

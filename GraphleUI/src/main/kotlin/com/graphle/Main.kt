@@ -2,6 +2,7 @@ package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,15 +21,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
+import java.net.URI
+import java.net.URL
 import kotlin.time.Duration.Companion.milliseconds
 
 const val serverURL = "http://localhost:8080/graphql"
@@ -42,6 +47,12 @@ enum class PropertyType {
     FILE, TAG, CONNECTION
 }
 
+data class DisplayedInfo(
+    val files: List<String> = emptyList(),
+    val tags: List<Tag> = emptyList(),
+    val connections: List<String> = emptyList()
+)
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
@@ -51,7 +62,7 @@ fun App() {
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
-    var displayedInfo by remember { mutableStateOf<Map<PropertyType, List<String>>?>(null) }
+    var displayedInfo by remember { mutableStateOf<DisplayedInfo?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -79,7 +90,7 @@ fun App() {
                                 fetchFilesByLocation(
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = { displayedInfo = it }
+                                    onResult = { println(it); displayedInfo = it }
                                 )
                             }
 
@@ -115,11 +126,14 @@ fun App() {
                     Text("Loading...")
                 } else {
                     Text("File:")
+                    println(displayedInfo)
                     if (displayedInfo == null) Text("Could not find the file")
                     else {
-                        displayedInfo?.get(PropertyType.FILE)
+                        displayedInfo?.files
                             ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
                             ?.let { filenames ->
+                                if (filenames.isEmpty()) return@let
+                                println(filenames)
                                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                                     items(items = filenames, key = { it }) { filename ->
                                         FileBox(
@@ -137,7 +151,9 @@ fun App() {
                                                         onLoading = { isLoading = it },
                                                         onResult = {
                                                             displayedInfo =
-                                                                mapOf(PropertyType.FILE to (it ?: emptyList()))
+                                                                DisplayedInfo(
+                                                                    files = it ?: emptyList()
+                                                                )
                                                         }
                                                     )
                                                 }
@@ -147,16 +163,37 @@ fun App() {
                                     }
                                 }
                             }
-                        displayedInfo?.get(PropertyType.TAG)
+                        println("Displayed before tags: $displayedInfo")
+                        val uriHandler = LocalUriHandler.current
+                        displayedInfo?.tags
                             ?.apply { Text(text = "Tags", fontWeight = FontWeight.Bold) }
                             ?.forEach {
+                                if (it.name.lowercase() == "url") {
+                                    var violatesURLSpec = false
+                                    try {
+                                        URI.create(it.value!!).toURL()
+                                    } catch (_: Exception) {
+                                        violatesURLSpec = true
+                                        Text(
+                                            text = it.name + if (it.value != null) ": ${it.value}" else ""
+                                        )
+                                    }
+                                    if (!violatesURLSpec)
+                                        Text(
+                                            text = it.name + ": ${it.value}",
+                                            color = Color.Blue,
+                                            modifier = Modifier.clickable {
+                                                uriHandler.openUri(it.value!!)
+                                            }
+                                        )
+                                } else
                                 Text(
-                                    text = it,
+                                    text = "${it.name}: ${it.value}",
                                     modifier = Modifier.onClick(onClick = { println("Clicked $it") })
                                 )
                             }
 
-                        displayedInfo?.get(PropertyType.CONNECTION)
+                        displayedInfo?.connections
                             ?.apply { Text(text = "Connections", fontWeight = FontWeight.Bold) }
                             ?.forEach { relationshipName ->
                                 RelationshipBox(
@@ -164,7 +201,7 @@ fun App() {
                                     location = location,
                                     onLoading = { isLoading = it },
                                     onResult = {
-                                        displayedInfo = mapOf(PropertyType.FILE to (it ?: emptyList()))
+                                        displayedInfo = DisplayedInfo(files = (it ?: emptyList()))
                                     },
                                     onRefresh = {
                                         coroutineScope.launch {
