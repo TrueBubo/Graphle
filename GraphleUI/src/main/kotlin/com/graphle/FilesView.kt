@@ -25,10 +25,10 @@ fun FilesView(
             println(connections)
             val connectionsMap = connections.groupBy { it.name }
             buildList {
+                connectionsMap["parent"]?.let { addAll(it) }
                 connectionsMap.forEach { (key, value) ->
                     if (key != "parent" && key != "descendant") addAll(value)
                 }
-                connectionsMap["parent"]?.let { addAll(it) }
                 connectionsMap["descendant"]?.let { addAll(it) }
             }
         }
