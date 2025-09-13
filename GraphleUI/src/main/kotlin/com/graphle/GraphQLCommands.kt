@@ -17,8 +17,9 @@ suspend fun fetchFilesFromFileByRelationship(
     )
     onResult(if (response.hasErrors()) null else response.data?.filesFromFileByRelationship?.map {
         Connection(
-            name = it.to,
-            value = it.value
+            name = relationshipName,
+            value = it.value,
+            to = it.to
         )
     })
     onLoading(false)
@@ -46,7 +47,13 @@ suspend fun fetchFilesByLocation(
             if (file != null)
                 DisplayedInfo(
                     tags = file.tags.map { Tag(it.name, it.value) },
-                    connections = file.connections.map { Connection(name = it.relationship) }
+                    connections = file.connections.map {
+                        Connection(
+                            name = it.name,
+                            value = it.value,
+                            to = it.to
+                        )
+                    }
                 )
             else null
         }

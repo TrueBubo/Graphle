@@ -37,15 +37,27 @@ class FileController(
      */
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString): File? {
-        val descendentsConnection = NeighborConnection(
-            "descendant",
-            fileService.descendantsOfFile(location)
-                .map { File(it, emptyList(), emptyList()) })
+        val descendants = fileService.descendantsOfFile(location)
+            .map {
+                Connection(
+                    name = "descendant",
+                    value = null,
+                    from = location,
+                    to = it,
+                )
+            }
         val parentConnection = fileService.parentOfFile(location)
-            ?.let { File(it, emptyList(), emptyList()) }
-            ?.let { NeighborConnection("parent", listOf(it)) }
+            ?.let {
+                Connection(
+                    name = "parent",
+                    value = null,
+                    from = location,
+                    to = it,
+                )
+            }
+
         val hierarchyNeighbors = buildList {
-            add(descendentsConnection)
+            addAll(descendants)
             parentConnection?.let { add(it) }
         }
 
@@ -53,9 +65,18 @@ class FileController(
 
         return if (Files.exists(Path(location))) {
             File(
-                location,
-                tagController.tagsByFileLocation(location),
-                hierarchyNeighbors + connectionController.neighborsByFileLocation(location)
+                location = location,
+                tags = tagController.tagsByFileLocation(location),
+                connections = hierarchyNeighbors +
+                        connectionController.neighborsByFileLocation(location)
+                            .map {
+                                Connection(
+                                    name = it.relationship,
+                                    value = it.value,
+                                    from = location,
+                                    to = it.to
+                                )
+                            }
             )
         } else null
     }

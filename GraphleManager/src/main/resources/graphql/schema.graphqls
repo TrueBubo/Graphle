@@ -18,7 +18,7 @@ type Mutation {
 type File {
     location: String! # Where the file is located. Either local or on the web
     tags(limit: Int): [Tag!]! # Categories the file belongs to
-    connections(limit: Int = 20): [NeighborConnection!]! # Connection set on this file
+    connections(limit: Int = 20): [Connection!]! # Connection set on this file
 }
 
 type Tag {

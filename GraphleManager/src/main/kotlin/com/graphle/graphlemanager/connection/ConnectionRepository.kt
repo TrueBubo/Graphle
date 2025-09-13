@@ -11,7 +11,7 @@ import java.util.UUID
  */
 @Repository
 interface ConnectionRepository : Neo4jRepository<NeighborConnection, UUID> {
-    @Query("MATCH (file:File {location: \$fromLocation})-[r:Relationship]->(neighbor:File) RETURN r.name AS relationship")
+    @Query("MATCH (file:File {location: \$fromLocation})-[r:Relationship]->(neighbor:File) RETURN r.name AS relationship, r.value AS value, neighbor.location AS to")
     fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection>
 
     @Query("MERGE (file1:File {location: \$locationFrom}) MERGE (file2:File {location: \$locationTo}) MERGE (file1)-[:Relationship {name:\$name}]->(file2)")

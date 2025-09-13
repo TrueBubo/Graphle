@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.onClick
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -33,7 +31,6 @@ import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import java.net.URI
-import java.net.URL
 import kotlin.time.Duration.Companion.milliseconds
 
 const val serverURL = "http://localhost:8080/graphql"
@@ -43,12 +40,7 @@ val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
 
-enum class PropertyType {
-    FILE, TAG, CONNECTION
-}
-
 data class DisplayedInfo(
-    val files: List<String> = emptyList(),
     val tags: List<Tag> = emptyList(),
     val connections: List<Connection> = emptyList()
 )
@@ -75,6 +67,12 @@ fun App() {
             color = MaterialTheme.colors.background
         ) {
             Column {
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { isDarkTheme = it }
+                )
+
+                println("Associated" + associatedValuesForFilesFromRelations)
                 CommandLine()
 
                 TextField(
@@ -93,6 +91,7 @@ fun App() {
                                     onLoading = { isLoading = it },
                                     onResult = { info ->
                                         displayedInfo = info
+                                        println("Info $info")
                                         associatedValuesForFilesFromRelations = info?.connections
                                             ?.filter { it.value != null }
                                             ?.associateBy { it.name }
@@ -138,43 +137,13 @@ fun App() {
                     println(associatedValuesForFilesFromRelations)
                     if (displayedInfo == null) Text("Could not find the file")
                     else {
-                        displayedInfo?.files
-                            ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
-                            ?.let { filenames ->
-                                if (filenames.isEmpty()) return@let
-                                println(filenames)
-                                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                    items(items = filenames, key = { it }) { filename ->
-                                        FileBox(
-                                            filename = filename,
-                                            text = if (associatedValuesForFilesFromRelations.containsKey(filename))
-                                                "$filename : (${associatedValuesForFilesFromRelations[filename]})"
-                                            else filename,
-                                            onLoading = { isLoading = it },
-                                            onResult = {
-                                                location = filename
-                                                displayedInfo = it
-                                            },
-                                            onRefresh = {
-                                                coroutineScope.launch {
-                                                    fetchFilesFromFileByRelationship(
-                                                        fromLocation = location,
-                                                        relationshipName = "descendant",
-                                                        onLoading = { isLoading = it },
-                                                        onResult = { files ->
-                                                            displayedInfo =
-                                                                DisplayedInfo(
-                                                                    files = (files ?: emptyList()).map { it.name }
-                                                                )
-                                                        }
-                                                    )
-                                                }
-                                            },
-                                            coroutineScope = coroutineScope
-                                        )
-                                    }
-                                }
-                            }
+                        FilesView(
+                            displayedInfo = displayedInfo,
+                            onLoading = { isLoading = it },
+                            setLocation = { location = it },
+                            setDisplayedInfo = { displayedInfo = it },
+                            coroutineScope = coroutineScope,
+                        )
                         println("Displayed before tags: $displayedInfo")
                         val uriHandler = LocalUriHandler.current
                         displayedInfo?.tags
@@ -204,45 +173,8 @@ fun App() {
                                         modifier = Modifier.onClick(onClick = { println("Clicked $it") })
                                     )
                             }
-
-                        displayedInfo?.connections
-                            ?.apply { Text(text = "Connections", fontWeight = FontWeight.Bold) }
-                            ?.forEach { relationship ->
-                                RelationshipBox(
-                                    relationshipName = relationship.name,
-                                    location = location,
-                                    onLoading = { isLoading = it },
-                                    onResult = { fileConnections ->
-                                        displayedInfo =
-                                            DisplayedInfo(files = (fileConnections ?: emptyList()).map { it.name })
-                                    },
-                                    onRefresh = {
-                                        coroutineScope.launch {
-                                            fetchFilesByLocation(
-                                                location = location,
-                                                onLoading = { isLoading = it },
-                                                onResult = { info ->
-                                                    displayedInfo = info
-                                                    associatedValuesForFilesFromRelations = info?.connections
-                                                        ?.filter { it.value != null }
-                                                        ?.associateBy { it.name }
-                                                        ?.mapValues { it.value.toString() }
-                                                        ?: emptyMap()
-                                                }
-                                            )
-                                        }
-                                    },
-                                    coroutineScope = coroutineScope
-                                )
-                            }
                     }
                 }
-
-                Switch(
-                    checked = isDarkTheme,
-                    onCheckedChange = { isDarkTheme = it }
-                )
-
             }
         }
     }
