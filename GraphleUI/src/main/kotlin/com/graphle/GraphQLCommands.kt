@@ -8,21 +8,23 @@ suspend fun fetchFilesFromFileByRelationship(
     relationshipName: String,
     onLoading: (Boolean) -> Unit,
     onResult: (List<Connection>?) -> Unit
-) {
+): List<Connection>? {
     onLoading(true)
     println("Ran relation")
     val response = apolloClient.getFilesFromFileByRelationship(
         fromLocation = fromLocation,
         relationshipName = relationshipName
     )
-    onResult(if (response.hasErrors()) null else response.data?.filesFromFileByRelationship?.map {
+    val result = if (response.hasErrors()) null else response.data?.filesFromFileByRelationship?.map {
         Connection(
             name = relationshipName,
             value = it.value,
             to = it.to
         )
-    })
+    }
+    onResult(result)
     onLoading(false)
+    return result
 }
 
 private suspend fun ApolloClient.getFilesFromFileByRelationship(
@@ -35,30 +37,29 @@ suspend fun fetchFilesByLocation(
     location: String,
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedInfo?) -> Unit
-) {
+): DisplayedInfo? {
     onLoading(true)
     val response = apolloClient.getFilesByLocation(location)
-    println(response.data?.fileByLocation)
-    onResult(
-        if (response.hasErrors()) {
-            null
-        } else {
-            val file = response.data?.fileByLocation
-            if (file != null)
-                DisplayedInfo(
-                    tags = file.tags.map { Tag(it.name, it.value) },
-                    connections = file.connections.map {
-                        Connection(
-                            name = it.name,
-                            value = it.value,
-                            to = it.to
-                        )
-                    }
-                )
-            else null
-        }
-    )
+    val result = if (response.hasErrors()) {
+        null
+    } else {
+        val file = response.data?.fileByLocation
+        if (file != null)
+            DisplayedInfo(
+                tags = file.tags.map { Tag(it.name, it.value) },
+                connections = file.connections.map {
+                    Connection(
+                        name = it.name,
+                        value = it.value,
+                        to = it.to
+                    )
+                }
+            )
+        else null
+    }
+    onResult(result)
     onLoading(false)
+    return result
 }
 
 private suspend fun ApolloClient.getFilesByLocation(location: String): ApolloResponse<FileByLocationQuery.Data> =
