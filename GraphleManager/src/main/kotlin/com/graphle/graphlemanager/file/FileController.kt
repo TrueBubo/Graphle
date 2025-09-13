@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.file
 
+import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionController
 import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.TagController
@@ -69,7 +70,7 @@ class FileController(
     fun filesFromFileByRelationship(
         @Argument fromLocation: AbsolutePathString,
         @Argument relationshipName: String
-    ): List<AbsolutePathString> =
+    ): List<Connection> =
         fileService.filesFromFileByRelationship(fromLocation, relationshipName)
 
     /**

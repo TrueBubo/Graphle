@@ -50,7 +50,7 @@ enum class PropertyType {
 data class DisplayedInfo(
     val files: List<String> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val connections: List<String> = emptyList()
+    val connections: List<Connection> = emptyList()
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -63,6 +63,7 @@ fun App() {
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
     var displayedInfo by remember { mutableStateOf<DisplayedInfo?>(null) }
+    var associatedValuesForFilesFromRelations by remember { mutableStateOf<Map<String, String>>(mapOf()) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -90,7 +91,14 @@ fun App() {
                                 fetchFilesByLocation(
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = { println(it); displayedInfo = it }
+                                    onResult = { info ->
+                                        displayedInfo = info
+                                        associatedValuesForFilesFromRelations = info?.connections
+                                            ?.filter { it.value != null }
+                                            ?.associateBy { it.name }
+                                            ?.mapValues { it.value.toString() }
+                                            ?: emptyMap()
+                                    }
                                 )
                             }
 
@@ -127,6 +135,7 @@ fun App() {
                 } else {
                     Text("File:")
                     println(displayedInfo)
+                    println(associatedValuesForFilesFromRelations)
                     if (displayedInfo == null) Text("Could not find the file")
                     else {
                         displayedInfo?.files
@@ -138,6 +147,9 @@ fun App() {
                                     items(items = filenames, key = { it }) { filename ->
                                         FileBox(
                                             filename = filename,
+                                            text = if (associatedValuesForFilesFromRelations.containsKey(filename))
+                                                "$filename : (${associatedValuesForFilesFromRelations[filename]})"
+                                            else filename,
                                             onLoading = { isLoading = it },
                                             onResult = {
                                                 location = filename
@@ -149,10 +161,10 @@ fun App() {
                                                         fromLocation = location,
                                                         relationshipName = "descendant",
                                                         onLoading = { isLoading = it },
-                                                        onResult = {
+                                                        onResult = { files ->
                                                             displayedInfo =
                                                                 DisplayedInfo(
-                                                                    files = it ?: emptyList()
+                                                                    files = (files ?: emptyList()).map { it.name }
                                                                 )
                                                         }
                                                     )
@@ -187,28 +199,36 @@ fun App() {
                                             }
                                         )
                                 } else
-                                Text(
-                                    text = "${it.name}: ${it.value}",
-                                    modifier = Modifier.onClick(onClick = { println("Clicked $it") })
-                                )
+                                    Text(
+                                        text = "${it.name}: ${it.value}",
+                                        modifier = Modifier.onClick(onClick = { println("Clicked $it") })
+                                    )
                             }
 
                         displayedInfo?.connections
                             ?.apply { Text(text = "Connections", fontWeight = FontWeight.Bold) }
-                            ?.forEach { relationshipName ->
+                            ?.forEach { relationship ->
                                 RelationshipBox(
-                                    relationshipName = relationshipName,
+                                    relationshipName = relationship.name,
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = {
-                                        displayedInfo = DisplayedInfo(files = (it ?: emptyList()))
+                                    onResult = { fileConnections ->
+                                        displayedInfo =
+                                            DisplayedInfo(files = (fileConnections ?: emptyList()).map { it.name })
                                     },
                                     onRefresh = {
                                         coroutineScope.launch {
                                             fetchFilesByLocation(
                                                 location = location,
                                                 onLoading = { isLoading = it },
-                                                onResult = { displayedInfo = it }
+                                                onResult = { info ->
+                                                    displayedInfo = info
+                                                    associatedValuesForFilesFromRelations = info?.connections
+                                                        ?.filter { it.value != null }
+                                                        ?.associateBy { it.name }
+                                                        ?.mapValues { it.value.toString() }
+                                                        ?: emptyMap()
+                                                }
                                             )
                                         }
                                     },

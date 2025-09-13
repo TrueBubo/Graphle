@@ -7,5 +7,5 @@ data class Connection(
     val value: String? = null,
     val from: AbsolutePathString,
     val to: AbsolutePathString,
-    val bidirectional: Boolean
+    val bidirectional: Boolean? = null
 )
