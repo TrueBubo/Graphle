@@ -49,7 +49,7 @@ private fun theme(isDarkTheme: Boolean): Colors =
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 @Preview
-fun App() {
+fun App(setTitle: (String) -> Unit = {}) {
     var location by remember { mutableStateOf("/home") }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
@@ -73,7 +73,7 @@ fun App() {
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
     val coroutineScope = rememberCoroutineScope()
 
-
+    setTitle("Graphle - $location")
 
     MaterialTheme(colors = theme(isDarkTheme = isDarkTheme)) {
         Surface(
@@ -167,7 +167,10 @@ fun App() {
                         FilesView(
                             displayedData = displayedData,
                             onLoading = { isLoading = it },
-                            setLocation = { location = it },
+                            setLocation = {
+                                location = it
+                                setTitle("Graphle - $location")
+                            },
                             setDisplayedInfo = {
                                 displayedData = it
                                 showInvalidFileDialog = true
@@ -183,7 +186,8 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
+    var title by remember { mutableStateOf("Graphle") }
+    Window(onCloseRequest = ::exitApplication, title = title) {
+        App(setTitle = { title = it })
     }
 }
