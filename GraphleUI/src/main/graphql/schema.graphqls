@@ -2,7 +2,7 @@ type Query {
     fileByLocation(location: String!): File # Searches for a file based on its location returns null if not found
     tagsByFileLocation(location: String!): [Tag!]! # Searches for categories the file belongs to
     filesByTag(tagName: String!): [String!]! # Finds locations of all the files with a tag
-    filesFromFileByRelationship(fromLocation: String!, relationshipName: String!): [String!]! # Finds file locations related to fromLocation file via the relationship
+    filesFromFileByRelationship(fromLocation: String!, relationshipName: String!): [Connection!]! # Finds file locations related to fromLocation file via the relationship
     optionsByDslPrefix(dslPrefix: String!, limit: Int = 5): [String!]! # Gives possible next term for the command, like full file locations
     entriesFromDSL(dslCommand: String!, limit: Int): Entries! # Returns entries based on the DSL command provided
 }
@@ -37,7 +37,7 @@ type Connection {
     value: String # What value is associated with the connection
     from: String! # The file the relationship goes from
     to: String! # The file the relationship goes to
-    bidirectional: Boolean! # Whether the relationship is two-way (True) or one-way (False)
+    bidirectional: Boolean # Whether the relationship is two-way (True) or one-way (False)
 }
 
 type MoveFileResponse {
@@ -50,6 +50,7 @@ input ConnectionInput {
     value: String
     locationFrom: String! # The file location the relationship goes from
     locationTo: String! # The file location the relationship goes to
+    bidirectional: Boolean! # Whether the relationship is two-way (True) or one-way (False)
 }
 
 type NeighborConnection {

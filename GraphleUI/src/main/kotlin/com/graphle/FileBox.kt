@@ -24,6 +24,7 @@ import kotlin.io.path.Path
 @Composable
 fun FileBox(
     filename: String,
+    text: String = filename,
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedInfo?) -> Unit,
     onRefresh: () -> Unit,
@@ -32,7 +33,7 @@ fun FileBox(
     var showMenu by remember { mutableStateOf(false) }
     Box {
         Text(
-            text = filename,
+            text = text,
             modifier = Modifier.onClick(
                 onClick = {
                     println("Clicked $filename")
