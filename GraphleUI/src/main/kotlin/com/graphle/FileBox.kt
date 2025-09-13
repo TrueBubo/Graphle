@@ -34,7 +34,7 @@ private fun pillText(relationshipName: String, value: String?): String =
 fun FileBox(
     connection: Connection,
     onLoading: (Boolean) -> Unit,
-    onResult: (DisplayedInfo?) -> Unit,
+    onResult: (DisplayedData?) -> Unit,
     onRefresh: () -> Unit,
     coroutineScope: CoroutineScope
 ) {
