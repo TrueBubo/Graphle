@@ -11,14 +11,15 @@ import org.springframework.stereotype.Service
 class ConnectionService(val connectionRepository: ConnectionRepository) {
     /**
      * Retrieves the list of relations of fromLocation file together with all the files connected by said relationship
-     * @param fromLocation Retrieves all the files connected to the file located at this location
+     * @param locationFrom Retrieves all the files connected to the file located at this location
      * @return List of neighbors
      */
-    fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection> {
-        return listOf()
+    fun neighborsByFileLocation(locationFrom: AbsolutePathString): List<NeighborConnection> {
+        return connectionRepository.neighborsByFileLocation(locationFrom)
     }
 
-    fun addConnection(connection: ConnectionInput, bidirectional: Boolean) = with(connection) {
+    fun addConnection(connection: ConnectionInput) = with(connection) {
+        val bidirectional = connection.bidirectional
         when {
             (value == null) && bidirectional -> {
                 connectionRepository.addConnection(name, locationFrom, locationTo)

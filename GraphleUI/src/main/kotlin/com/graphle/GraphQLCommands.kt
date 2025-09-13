@@ -7,7 +7,7 @@ suspend fun fetchFilesFromFileByRelationship(
     fromLocation: String,
     relationshipName: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (List<String>?) -> Unit
+    onResult: (List<Connection>?) -> Unit
 ) {
     onLoading(true)
     println("Ran relation")
@@ -15,7 +15,13 @@ suspend fun fetchFilesFromFileByRelationship(
         fromLocation = fromLocation,
         relationshipName = relationshipName
     )
-    onResult(if (response.hasErrors()) null else response.data?.filesFromFileByRelationship)
+    onResult(if (response.hasErrors()) null else response.data?.filesFromFileByRelationship?.map {
+        Connection(
+            name = relationshipName,
+            value = it.value,
+            to = it.to
+        )
+    })
     onLoading(false)
 }
 
@@ -32,7 +38,7 @@ suspend fun fetchFilesByLocation(
 ) {
     onLoading(true)
     val response = apolloClient.getFilesByLocation(location)
-    println(response?.data?.fileByLocation)
+    println(response.data?.fileByLocation)
     onResult(
         if (response.hasErrors()) {
             null
@@ -41,7 +47,13 @@ suspend fun fetchFilesByLocation(
             if (file != null)
                 DisplayedInfo(
                     tags = file.tags.map { Tag(it.name, it.value) },
-                    connections = file.connections.map { it.relationship }
+                    connections = file.connections.map {
+                        Connection(
+                            name = it.name,
+                            value = it.value,
+                            to = it.to
+                        )
+                    }
                 )
             else null
         }

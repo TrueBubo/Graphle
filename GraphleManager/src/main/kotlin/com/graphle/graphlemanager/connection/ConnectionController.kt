@@ -13,15 +13,15 @@ import org.springframework.stereotype.Controller
 class ConnectionController(val connectionService: ConnectionService) {
     /**
      * Retrieves the list of relations of fromLocation file together with all the files connected by said relationship
-     * @param fromLocation Shows all the files connected to the file located at this location
+     * @param locationFrom Shows all the files connected to the file located at this location
      * @return List of neighbors
      */
-    fun neighborsByFileLocation(fromLocation: AbsolutePathString): List<NeighborConnection> =
-        connectionService.neighborsByFileLocation(fromLocation)
+    fun neighborsByFileLocation(locationFrom: AbsolutePathString): List<NeighborConnection> =
+        connectionService.neighborsByFileLocation(locationFrom)
 
     @MutationMapping
-    fun addConnection(@Argument connection: ConnectionInput, @Argument bidirectional: Boolean): Connection {
-        connectionService.addConnection(connection, bidirectional)
+    fun addConnection(@Argument connection: ConnectionInput): Connection {
+        connectionService.addConnection(connection)
         return connection.run {
             Connection(
                 name = name,

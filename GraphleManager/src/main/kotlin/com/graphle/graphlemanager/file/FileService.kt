@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.file
 
+import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.dsl.FilenameCompleterService
 import org.springframework.stereotype.Service
 import java.nio.file.Files
@@ -17,11 +18,32 @@ class FileService(
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
-    ): List<AbsolutePathString> =
+    ): List<Connection> =
         when (relationshipName) {
-            "descendant" -> descendantsOfFile(fromLocation)
-            "parent" -> parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()
-            else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName)
+            "descendant" -> descendantsOfFile(fromLocation).map {
+                Connection(
+                    name = "descendant",
+                    value = null,
+                    from = fromLocation,
+                    to = it,
+                )
+            }
+            "parent" -> (parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()).map {
+                Connection(
+                    name = "parent",
+                    value = null,
+                    from = fromLocation,
+                    to = it,
+                )
+            }
+            else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName).map {
+                Connection(
+                    name = relationshipName,
+                    value = null,
+                    from = fromLocation,
+                    to = it,
+                )
+            }
         }
 
     fun descendantsOfFile(

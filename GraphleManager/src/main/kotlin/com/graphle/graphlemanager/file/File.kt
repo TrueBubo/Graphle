@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.file
 
+import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.Tag
 import org.springframework.data.neo4j.core.schema.GeneratedValue
@@ -18,12 +19,12 @@ data class File(
     @Id @GeneratedValue val id: UUID? = null,
     val location: AbsolutePathString,
     val tags: List<Tag>,
-    val connections: List<NeighborConnection>
+    val connections: List<Connection>
 ) {
     constructor(
         location: AbsolutePathString,
         tags: List<Tag>,
-        connections: List<NeighborConnection>
+        connections: List<Connection>
     ) : this(
         id = null,
         location = location,
