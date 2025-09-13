@@ -23,7 +23,7 @@ fun RelationshipBox(
     relationshipName: String,
     location: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (List<String>?) -> Unit,
+    onResult: (List<Connection>?) -> Unit,
     onRefresh: () -> Unit,
     coroutineScope: CoroutineScope
 ) {

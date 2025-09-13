@@ -6,5 +6,6 @@ data class ConnectionInput(
     val name: String,
     val value: String?,
     val locationFrom: AbsolutePathString,
-    val locationTo: AbsolutePathString
+    val locationTo: AbsolutePathString,
+    val bidirectional: Boolean
 )

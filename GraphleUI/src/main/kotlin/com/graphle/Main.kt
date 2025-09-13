@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.onClick
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -33,7 +31,6 @@ import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import java.lang.System.currentTimeMillis
 import java.net.URI
-import java.net.URL
 import kotlin.time.Duration.Companion.milliseconds
 
 const val serverURL = "http://localhost:8080/graphql"
@@ -43,14 +40,9 @@ val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
 
-enum class PropertyType {
-    FILE, TAG, CONNECTION
-}
-
 data class DisplayedInfo(
-    val files: List<String> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val connections: List<String> = emptyList()
+    val connections: List<Connection> = emptyList()
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -63,6 +55,7 @@ fun App() {
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
     var displayedInfo by remember { mutableStateOf<DisplayedInfo?>(null) }
+    var associatedValuesForFilesFromRelations by remember { mutableStateOf<Map<String, String>>(mapOf()) }
     var isLoading by remember { mutableStateOf(false) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
@@ -74,6 +67,12 @@ fun App() {
             color = MaterialTheme.colors.background
         ) {
             Column {
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { isDarkTheme = it }
+                )
+
+                println("Associated" + associatedValuesForFilesFromRelations)
                 CommandLine()
 
                 TextField(
@@ -90,7 +89,15 @@ fun App() {
                                 fetchFilesByLocation(
                                     location = location,
                                     onLoading = { isLoading = it },
-                                    onResult = { println(it); displayedInfo = it }
+                                    onResult = { info ->
+                                        displayedInfo = info
+                                        println("Info $info")
+                                        associatedValuesForFilesFromRelations = info?.connections
+                                            ?.filter { it.value != null }
+                                            ?.associateBy { it.name }
+                                            ?.mapValues { it.value.toString() }
+                                            ?: emptyMap()
+                                    }
                                 )
                             }
 
@@ -127,42 +134,16 @@ fun App() {
                 } else {
                     Text("File:")
                     println(displayedInfo)
+                    println(associatedValuesForFilesFromRelations)
                     if (displayedInfo == null) Text("Could not find the file")
                     else {
-                        displayedInfo?.files
-                            ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
-                            ?.let { filenames ->
-                                if (filenames.isEmpty()) return@let
-                                println(filenames)
-                                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                                    items(items = filenames, key = { it }) { filename ->
-                                        FileBox(
-                                            filename = filename,
-                                            onLoading = { isLoading = it },
-                                            onResult = {
-                                                location = filename
-                                                displayedInfo = it
-                                            },
-                                            onRefresh = {
-                                                coroutineScope.launch {
-                                                    fetchFilesFromFileByRelationship(
-                                                        fromLocation = location,
-                                                        relationshipName = "descendant",
-                                                        onLoading = { isLoading = it },
-                                                        onResult = {
-                                                            displayedInfo =
-                                                                DisplayedInfo(
-                                                                    files = it ?: emptyList()
-                                                                )
-                                                        }
-                                                    )
-                                                }
-                                            },
-                                            coroutineScope = coroutineScope
-                                        )
-                                    }
-                                }
-                            }
+                        FilesView(
+                            displayedInfo = displayedInfo,
+                            onLoading = { isLoading = it },
+                            setLocation = { location = it },
+                            setDisplayedInfo = { displayedInfo = it },
+                            coroutineScope = coroutineScope,
+                        )
                         println("Displayed before tags: $displayedInfo")
                         val uriHandler = LocalUriHandler.current
                         displayedInfo?.tags
@@ -187,42 +168,13 @@ fun App() {
                                             }
                                         )
                                 } else
-                                Text(
-                                    text = "${it.name}: ${it.value}",
-                                    modifier = Modifier.onClick(onClick = { println("Clicked $it") })
-                                )
-                            }
-
-                        displayedInfo?.connections
-                            ?.apply { Text(text = "Connections", fontWeight = FontWeight.Bold) }
-                            ?.forEach { relationshipName ->
-                                RelationshipBox(
-                                    relationshipName = relationshipName,
-                                    location = location,
-                                    onLoading = { isLoading = it },
-                                    onResult = {
-                                        displayedInfo = DisplayedInfo(files = (it ?: emptyList()))
-                                    },
-                                    onRefresh = {
-                                        coroutineScope.launch {
-                                            fetchFilesByLocation(
-                                                location = location,
-                                                onLoading = { isLoading = it },
-                                                onResult = { displayedInfo = it }
-                                            )
-                                        }
-                                    },
-                                    coroutineScope = coroutineScope
-                                )
+                                    Text(
+                                        text = "${it.name}: ${it.value}",
+                                        modifier = Modifier.onClick(onClick = { println("Clicked $it") })
+                                    )
                             }
                     }
                 }
-
-                Switch(
-                    checked = isDarkTheme,
-                    onCheckedChange = { isDarkTheme = it }
-                )
-
             }
         }
     }
