@@ -1,0 +1,75 @@
+package com.graphle
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Colors
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.unit.dp
+import java.net.URI
+
+private fun textsForTag(tag: Tag): List<String> = buildList {
+    add(tag.name)
+    tag.value?.let { add(it) }
+}
+
+@Composable
+fun TagBox(
+    tag: Tag,
+    colors: Colors,
+    uriHandler: UriHandler = LocalUriHandler.current,
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    Box(Modifier.padding(bottom = 10.dp)) {
+        if (tag.name.lowercase() == "url") {
+            var violatesURLSpec = false
+            try {
+                URI.create(tag.value!!).toURL()
+            } catch (_: Exception) {
+                violatesURLSpec = true
+                Pill(
+                    texts = textsForTag(tag),
+                )
+            }
+            if (!violatesURLSpec)
+                Pill(
+                    texts = textsForTag(tag),
+                    contentColor = colors.onPrimary,
+                    background = colors.primary,
+                    onClick = {
+                        uriHandler.openUri(tag.value!!)
+                    }
+                )
+        } else Pill(
+            texts = textsForTag(tag),
+            onClick = { println("Clicked $tag") }
+        )
+
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+        ) {
+            DropdownMenuItem(
+                content = { Text("Open") },
+                onClick = {
+                    showMenu = false
+                },
+            )
+            DropdownMenuItem(
+                content = { Text("Delete") },
+                onClick = {
+                    showMenu = false
+                }
+            )
+        }
+    }
+}
