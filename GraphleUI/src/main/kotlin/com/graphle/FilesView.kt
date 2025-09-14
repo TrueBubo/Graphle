@@ -1,15 +1,22 @@
 package com.graphle
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FilesView(
     displayedData: DisplayedData?,
@@ -22,7 +29,6 @@ fun FilesView(
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
         ?.let { connections ->
             if (connections.isEmpty()) return@let emptyList<Connection>()
-            println(connections)
             val connectionsMap = connections.groupBy { it.name }
             buildList {
                 connectionsMap["parent"]?.let { addAll(it) }
@@ -33,7 +39,6 @@ fun FilesView(
             }
         }
         ?.let { connections ->
-            println(connections)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(items = connections, key = { it }) { connection ->
                     FileBox(

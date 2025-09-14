@@ -30,13 +30,13 @@ fun TagsView(
     Text(text = "URLs", fontWeight = FontWeight.Bold)
     FlowRow {
         urls.forEach {
-            TagBox(tag = it, colors = colors)
+            TagBox(tag = it)
         }
     }
     Text(text = "Tags", fontWeight = FontWeight.Bold)
     FlowRow {
         nonUrls.forEach {
-            TagBox(tag = it, colors = colors)
+            TagBox(tag = it)
         }
     }
 }

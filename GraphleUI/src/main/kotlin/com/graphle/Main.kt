@@ -4,6 +4,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Colors
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
@@ -28,6 +30,8 @@ import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.awt.Desktop
+import java.io.File
 import java.lang.System.currentTimeMillis
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -46,7 +50,24 @@ data class DisplayedData(
 private fun theme(isDarkTheme: Boolean): Colors =
     if (isDarkTheme) DarkColorPalette else LightColorPalette
 
-@OptIn(ExperimentalFoundationApi::class)
+fun openFile(file: File) {
+    if (!file.exists()) {
+        return
+    }
+
+    if (Desktop.isDesktopSupported()) {
+        val desktop = Desktop.getDesktop()
+        if (desktop.isSupported(Desktop.Action.OPEN)) {
+            desktop.open(file)
+        } else {
+            println("OPEN action is not supported on this platform")
+        }
+    } else {
+        println("Desktop API is not supported")
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 @Preview
 fun App(setTitle: (String) -> Unit = {}) {
@@ -86,8 +107,10 @@ fun App(setTitle: (String) -> Unit = {}) {
                     onCheckedChange = { isDarkTheme = it }
                 )
 
-                CommandLine()
-
+                Row {
+                    TopBar(location = location)
+                    Text("Text")
+                }
                 TextField(
                     value = location,
                     onValueChange = { location = it },
@@ -105,8 +128,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     onResult = { info ->
                                         showInvalidFileDialog = true
                                         displayedData = info
-                                        println("Info $info")
-
                                     }
                                 )
                             }
@@ -142,8 +163,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                 if (isLoading) {
                     Text("Loading...")
                 } else {
-                    Text("File:")
-                    println(displayedData)
                     if (displayedData == null) {
                         Text("Could not find the file")
                         if (showInvalidFileDialog) AlertDialog(
@@ -157,8 +176,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                             }
                         )
                     } else {
-                        println("Displayed before tags: $displayedData")
-
                         TagsView(
                             displayedData = displayedData,
                             colors = theme(isDarkTheme)
