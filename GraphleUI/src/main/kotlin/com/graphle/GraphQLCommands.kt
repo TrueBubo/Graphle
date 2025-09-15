@@ -34,11 +34,12 @@ private suspend fun ApolloClient.getFilesFromFileByRelationship(
 
 suspend fun fetchFilesByLocation(
     location: String,
+    showHiddenFiles: Boolean,
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit
 ): DisplayedData? {
     onLoading(true)
-    val response = apolloClient.getFilesByLocation(location)
+    val response = apolloClient.getFilesByLocation(location, showHiddenFiles)
     val result = if (response.hasErrors()) {
         null
     } else {
@@ -61,8 +62,8 @@ suspend fun fetchFilesByLocation(
     return result
 }
 
-private suspend fun ApolloClient.getFilesByLocation(location: String): ApolloResponse<FileByLocationQuery.Data> =
-    query(FileByLocationQuery(location)).execute()
+private suspend fun ApolloClient.getFilesByLocation(location: String, showHiddenFiles: Boolean): ApolloResponse<FileByLocationQuery.Data> =
+    query(FileByLocationQuery(location, showHiddenFiles)).execute()
 
 
 suspend fun ApolloClient.addTagToFile(

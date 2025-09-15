@@ -1,5 +1,5 @@
-query fileByLocation($location: String!) {
-    fileByLocation(location: $location) {
+query fileByLocation($location: String!, $showHiddenFiles: Boolean!) {
+    fileByLocation(location: $location, showHiddenFiles: $showHiddenFiles) {
         location,
         tags {
             name

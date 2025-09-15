@@ -83,11 +83,13 @@ fun App(setTitle: (String) -> Unit = {}) {
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
+    var showHiddenFiles by remember { mutableStateOf(false) }
     var displayedData by remember {
         mutableStateOf(
             runBlocking {
                 fetchFilesByLocation(
                     location = location,
+                    showHiddenFiles = showHiddenFiles,
                     onLoading = { isLoading = it },
                     onResult = { }
                 )
@@ -102,6 +104,8 @@ fun App(setTitle: (String) -> Unit = {}) {
 
     setTitle("Graphle - $location")
 
+    println("Show hidden files: $showHiddenFiles")
+
     MaterialTheme(colors = theme(isDarkTheme = isDarkTheme)) {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -114,7 +118,16 @@ fun App(setTitle: (String) -> Unit = {}) {
                         onCheckedChange = { isDarkTheme = it }
                     )
                     Row {
-                        TopBar(location = location)
+                        TopBar(
+                            location = location,
+                            showHiddenFiles = showHiddenFiles,
+                            setShowHiddenFiles = { showHiddenFiles = it },
+                            onLoading = { isLoading = it },
+                            onResult = {
+                                showInvalidFileDialog = true
+                                displayedData = it
+                            }
+                        )
                         Text("Text")
                     }
                     TextField(
@@ -131,6 +144,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     fetchFilesByLocation(
                                         location = location,
                                         onLoading = { isLoading = it },
+                                        showHiddenFiles = showHiddenFiles,
                                         onResult = { info ->
                                             showInvalidFileDialog = true
                                             displayedData = info
@@ -197,6 +211,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                         item {
                             FilesView(
                                 displayedData = displayedData,
+                                showHiddenFiles = showHiddenFiles,
                                 onLoading = { isLoading = it },
                                 setLocation = {
                                     location = it
