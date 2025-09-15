@@ -2,10 +2,16 @@ package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
@@ -101,100 +107,108 @@ fun App(setTitle: (String) -> Unit = {}) {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
-            Column {
-                Switch(
-                    checked = isDarkTheme,
-                    onCheckedChange = { isDarkTheme = it }
-                )
-
-                Row {
-                    TopBar(location = location)
-                    Text("Text")
-                }
-                TextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    singleLine = true,
-                    modifier = Modifier.onPreviewKeyEvent { event ->
-                        val canRefresh = !isLoading && ((location != oldLocation)
-                                || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds))
-                        if (event.key == Key.Enter && canRefresh) {
-                            oldLocation = location
-                            lastUpdated = currentTimeMillis()
-                            coroutineScope.launch {
-                                fetchFilesByLocation(
-                                    location = location,
-                                    onLoading = { isLoading = it },
-                                    onResult = { info ->
-                                        showInvalidFileDialog = true
-                                        displayedData = info
-                                    }
-                                )
-                            }
-
-                            true
-
-                        } else false
+            LazyColumn {
+                item {
+                    Switch(
+                        checked = isDarkTheme,
+                        onCheckedChange = { isDarkTheme = it }
+                    )
+                    Row {
+                        TopBar(location = location)
+                        Text("Text")
                     }
-                )
+                    TextField(
+                        value = location,
+                        onValueChange = { location = it },
+                        singleLine = true,
+                        modifier = Modifier.onPreviewKeyEvent { event ->
+                            val canRefresh = !isLoading && ((location != oldLocation)
+                                    || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds))
+                            if (event.key == Key.Enter && canRefresh) {
+                                oldLocation = location
+                                lastUpdated = currentTimeMillis()
+                                coroutineScope.launch {
+                                    fetchFilesByLocation(
+                                        location = location,
+                                        onLoading = { isLoading = it },
+                                        onResult = { info ->
+                                            showInvalidFileDialog = true
+                                            displayedData = info
+                                        }
+                                    )
+                                }
 
-                TagTextField(
-                    value = tagName,
-                    onValueChange = { tagName = it },
-                    location = location,
-                    tagName = tagName,
-                    tagValue = tagValue,
-                    tagNameSetter = { tagName = it },
-                    tagValueSetter = { tagValue = it },
-                    coroutineScope = coroutineScope,
-                )
+                                true
 
-                TagTextField(
-                    value = tagValue,
-                    onValueChange = { tagValue = it },
-                    location = location,
-                    tagName = tagName,
-                    tagValue = tagValue,
-                    tagNameSetter = { tagName = it },
-                    tagValueSetter = { tagValue = it },
-                    coroutineScope = coroutineScope,
-                )
+                            } else false
+                        }
+                    )
+
+                    TagTextField(
+                        value = tagName,
+                        onValueChange = { tagName = it },
+                        location = location,
+                        tagName = tagName,
+                        tagValue = tagValue,
+                        tagNameSetter = { tagName = it },
+                        tagValueSetter = { tagValue = it },
+                        coroutineScope = coroutineScope,
+                    )
+
+                    TagTextField(
+                        value = tagValue,
+                        onValueChange = { tagValue = it },
+                        location = location,
+                        tagName = tagName,
+                        tagValue = tagValue,
+                        tagNameSetter = { tagName = it },
+                        tagValueSetter = { tagValue = it },
+                        coroutineScope = coroutineScope,
+                    )
+                }
 
                 if (isLoading) {
-                    Text("Loading...")
+                    item {
+                        Text("Loading...")
+                    }
                 } else {
                     if (displayedData == null) {
-                        Text("Could not find the file")
-                        if (showInvalidFileDialog) AlertDialog(
-                            onDismissRequest = { showInvalidFileDialog = false },
-                            title = { Text("Error") },
-                            text = { Text("Could not find the file at $location") },
-                            confirmButton = {
-                                TextButton(onClick = { showInvalidFileDialog = false }) {
-                                    Text("OK")
+                        item {
+                            Text("Could not find the file")
+                            if (showInvalidFileDialog) AlertDialog(
+                                onDismissRequest = { showInvalidFileDialog = false },
+                                title = { Text("Error") },
+                                text = { Text("Could not find the file at $location") },
+                                confirmButton = {
+                                    TextButton(onClick = { showInvalidFileDialog = false }) {
+                                        Text("OK")
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     } else {
-                        TagsView(
-                            displayedData = displayedData,
-                            colors = theme(isDarkTheme)
-                        )
+                        item {
+                            TagsView(
+                                displayedData = displayedData,
+                                colors = theme(isDarkTheme)
+                            )
+                        }
 
-                        FilesView(
-                            displayedData = displayedData,
-                            onLoading = { isLoading = it },
-                            setLocation = {
-                                location = it
-                                setTitle("Graphle - $location")
-                            },
-                            setDisplayedInfo = {
-                                displayedData = it
-                                showInvalidFileDialog = true
-                            },
-                            coroutineScope = coroutineScope,
-                        )
-
+                        item {
+                            FilesView(
+                                displayedData = displayedData,
+                                onLoading = { isLoading = it },
+                                setLocation = {
+                                    location = it
+                                    setTitle("Graphle - $location")
+                                },
+                                setDisplayedInfo = {
+                                    displayedData = it
+                                    showInvalidFileDialog = true
+                                },
+                                coroutineScope = coroutineScope,
+                            )
+                        }
                     }
                 }
             }
@@ -202,9 +216,12 @@ fun App(setTitle: (String) -> Unit = {}) {
     }
 }
 
+const val minWidthPx = 600
+const val minHeightPx = 400
 fun main() = application {
     var title by remember { mutableStateOf("Graphle") }
     Window(onCloseRequest = ::exitApplication, title = title) {
+        window.minimumSize = java.awt.Dimension(minWidthPx, minHeightPx)
         App(setTitle = { title = it })
     }
 }
