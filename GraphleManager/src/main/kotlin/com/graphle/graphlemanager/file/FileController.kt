@@ -36,7 +36,8 @@ class FileController(
      * @return File information if the file exists or null
      */
     @QueryMapping
-    fun fileByLocation(@Argument location: AbsolutePathString): File? {
+    fun fileByLocation(@Argument location: AbsolutePathString, @Argument showHiddenFiles: Boolean = true): File? {
+        println("Show hidden = $showHiddenFiles")
         val descendants = fileService.descendantsOfFile(location)
             .map {
                 Connection(
@@ -61,22 +62,27 @@ class FileController(
             parentConnection?.let { add(it) }
         }
 
+        val customConnections = connectionController.neighborsByFileLocation(location)
+            .map {
+                Connection(
+                    name = it.relationship,
+                    value = it.value,
+                    from = location,
+                    to = it.to
+                )
+            }
+
+        val connections = (hierarchyNeighbors + customConnections)
+            .filter { Files.exists(Path(it.to)) && (showHiddenFiles || !Files.isHidden(Path(it.to))) }
+
         println("Called $hierarchyNeighbors")
 
         return if (Files.exists(Path(location))) {
             File(
                 location = location,
                 tags = tagController.tagsByFileLocation(location),
-                connections = hierarchyNeighbors +
-                        connectionController.neighborsByFileLocation(location)
-                            .map {
-                                Connection(
-                                    name = it.relationship,
-                                    value = it.value,
-                                    from = location,
-                                    to = it.to
-                                )
-                            }
+                connections = connections
+
             )
         } else null
     }

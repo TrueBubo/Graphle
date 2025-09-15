@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FilesView(
     displayedData: DisplayedData?,
+    showHiddenFiles: Boolean,
     onLoading: (Boolean) -> Unit,
     setLocation: (String) -> Unit,
     setDisplayedInfo: (DisplayedData?) -> Unit,
@@ -44,13 +45,20 @@ fun FilesView(
             Column {
                 connections.forEach { connection ->
                     FileBox(
-                        connection = connection, onLoading = onLoading, onResult = {
+                        connection = connection,
+                        showHiddenFiles = showHiddenFiles,
+                        onLoading = onLoading,
+                        onResult = {
                             setLocation(connection.to)
                             setDisplayedInfo(it)
-                        }, onRefresh = {
+                        },
+                        onRefresh = {
                             coroutineScope.launch {
                                 fetchFilesByLocation(
-                                    location = connection.to, onLoading = onLoading, onResult = { displayedInfo ->
+                                    location = connection.to,
+                                    showHiddenFiles = showHiddenFiles,
+                                    onLoading = onLoading,
+                                    onResult = { displayedInfo ->
                                         setDisplayedInfo(
                                             DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
@@ -60,25 +68,10 @@ fun FilesView(
                                         )
                                     })
                             }
-                        }, coroutineScope = coroutineScope
+                        },
+                        coroutineScope = coroutineScope
                     )
                 }
-//                (1..100000000).forEach {
-//                    FileBox(
-//                        connection = Connection(
-//                            name = "descendant",
-//                            value = null,
-//                            to = "/home/user/file$it.txt"
-//                        ),
-//                        onLoading = onLoading,
-//                        onResult = {
-//                            setLocation("/home/user/file$it.txt")
-//                            setDisplayedInfo(it)
-//                        },
-//                        onRefresh = {},
-//                        coroutineScope = coroutineScope
-//                    )
-//                }
             }
         }
 }
