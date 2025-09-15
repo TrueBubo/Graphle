@@ -39,11 +39,11 @@ private fun WebSocketFailedPopUp() {
 
     if (!showDialog) return
     AlertDialog(
-        onDismissRequest = {showDialog = false},
+        onDismissRequest = { showDialog = false },
         title = { Text("Error") },
         text = { Text("Failed to connect to the autocompleter.") },
         confirmButton = {
-            TextButton(onClick = {showDialog = false}) {
+            TextButton(onClick = { showDialog = false }) {
                 Text("OK")
             }
         }
