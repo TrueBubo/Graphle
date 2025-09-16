@@ -16,9 +16,10 @@ suspend fun fetchFilesFromFileByRelationship(
     )
     val result = if (response.hasErrors()) null else response.data?.filesFromFileByRelationship?.map {
         Connection(
+            from = it.from,
+            to = it.to,
             name = relationshipName,
-            value = it.value,
-            to = it.to
+            value = it.value
         )
     }
     onResult(result)
@@ -51,6 +52,7 @@ suspend fun fetchFilesByLocation(
                     Connection(
                         name = it.name,
                         value = it.value,
+                        from = it.from,
                         to = it.to
                     )
                 }
@@ -83,3 +85,9 @@ suspend fun ApolloClient.removeFileByLocation(
     location: String
 ): ApolloResponse<RemoveFileMutation.Data> =
     mutation(RemoveFileMutation(location)).execute()
+
+suspend fun ApolloClient.moveFile(
+    locationFrom: String,
+    locationTo: String
+): ApolloResponse<MoveFileMutation.Data> =
+    mutation(MoveFileMutation(locationFrom, locationTo)).execute()

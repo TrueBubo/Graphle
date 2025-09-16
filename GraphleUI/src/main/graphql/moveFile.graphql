@@ -1,0 +1,6 @@
+mutation moveFile($locationFrom: String!, $locationTo: String!) {
+    moveFile(locationFrom: $locationFrom, locationTo: $locationTo) {
+        from,
+        to
+    }
+}

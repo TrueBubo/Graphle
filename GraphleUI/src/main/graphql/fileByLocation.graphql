@@ -7,9 +7,10 @@ query fileByLocation($location: String!, $showHiddenFiles: Boolean!) {
         }
 
         connections {
-            name,
-            value,
+            from
             to
+            name
+            value
         }
     }
 }
