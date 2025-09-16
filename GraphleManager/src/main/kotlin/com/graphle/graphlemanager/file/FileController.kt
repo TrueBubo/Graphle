@@ -37,7 +37,7 @@ class FileController(
      */
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString, @Argument showHiddenFiles: Boolean = true): File? {
-        println("Show hidden = $showHiddenFiles")
+        println("fileByLocation called for $location")
         val descendants = fileService.descendantsOfFile(location)
             .map {
                 Connection(

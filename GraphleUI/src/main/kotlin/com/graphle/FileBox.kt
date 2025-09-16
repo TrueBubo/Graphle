@@ -16,8 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.awt.Desktop
-import java.io.File
 import kotlin.io.path.Path
 
 private fun pillText(relationshipName: String, value: String?): String =
@@ -73,13 +71,23 @@ fun FileBox(
                     },
                 )
                 DropdownMenuItem(
-                    content = { Text("Delete") },
+                    content = { Text("Delete permanently") },
                     onClick = {
+                        showMenu = false
                         coroutineScope.launch {
                             apolloClient.removeFileByLocation(connection.to)
                             onRefresh()
                         }
+                    }
+                )
+                DropdownMenuItem(
+                    content = { Text("Move to trash") },
+                    onClick = {
                         showMenu = false
+                        coroutineScope.launch {
+                            Trash.moveToTrash(Path(connection.to))
+                            onRefresh()
+                        }
                     }
                 )
             }

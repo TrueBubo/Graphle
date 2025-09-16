@@ -36,6 +36,7 @@ import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.io.FileUtils
 import java.awt.Desktop
 import java.io.File
 import java.lang.System.currentTimeMillis
@@ -47,6 +48,8 @@ val minUpdateDelay = 1000.milliseconds
 val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
+
+val userHome: String = FileUtils.getUserDirectory().path
 
 data class DisplayedData(
     val tags: List<Tag> = emptyList(),
@@ -77,7 +80,7 @@ fun openFile(file: File) {
 @Composable
 @Preview
 fun App(setTitle: (String) -> Unit = {}) {
-    var location by remember { mutableStateOf("/home") }
+    var location by remember { mutableStateOf(userHome) }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
@@ -103,8 +106,6 @@ fun App(setTitle: (String) -> Unit = {}) {
     val coroutineScope = rememberCoroutineScope()
 
     setTitle("Graphle - $location")
-
-    println("Show hidden files: $showHiddenFiles")
 
     MaterialTheme(colors = theme(isDarkTheme = isDarkTheme)) {
         Surface(
@@ -204,7 +205,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                         item {
                             TagsView(
                                 displayedData = displayedData,
-                                colors = theme(isDarkTheme)
                             )
                         }
 

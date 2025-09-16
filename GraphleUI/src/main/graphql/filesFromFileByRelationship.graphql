@@ -1,6 +1,8 @@
 query filesFromFileByRelationship($location: String!, $relationship: String!) {
     filesFromFileByRelationship(fromLocation: $location, relationshipName: $relationship) {
-        to,
+        from
+        to
+        name
         value
     }
 }
