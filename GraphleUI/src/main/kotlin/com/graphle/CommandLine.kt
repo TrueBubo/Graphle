@@ -91,7 +91,6 @@ fun TopBar(
             Button(
                 colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.surface),
                 onClick = {
-                    println("Show menu")
                     showAppMenu = true
                 },
                 modifier = Modifier.height(fieldHeight)

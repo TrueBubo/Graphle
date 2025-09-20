@@ -169,26 +169,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                             } else false
                         }
                     )
-
-                    TagTextField(
-                        value = tagName,
-                        onValueChange = { tagName = it },
-                        location = location,
-                        tagName = tagName,
-                        tagValue = tagValue,
-                        tagNameSetter = { tagName = it },
-                        tagValueSetter = { tagValue = it },
-                    )
-
-                    TagTextField(
-                        value = tagValue,
-                        onValueChange = { tagValue = it },
-                        location = location,
-                        tagName = tagName,
-                        tagValue = tagValue,
-                        tagNameSetter = { tagName = it },
-                        tagValueSetter = { tagValue = it },
-                    )
                 }
 
                 if (isLoading) {
