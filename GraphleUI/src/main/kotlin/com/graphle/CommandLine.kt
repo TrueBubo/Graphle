@@ -11,6 +11,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Checkbox
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
@@ -29,6 +30,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.HorizontalRuler
+import androidx.compose.ui.layout.VerticalRuler
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlin.io.path.Path
@@ -68,7 +71,6 @@ fun TopBar(
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
     setShowHiddenFiles: (Boolean) -> Unit,
-    setShowAddTagDialog: (Boolean) -> Unit,
 ) {
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
@@ -96,15 +98,44 @@ fun TopBar(
             ) {
                 Text("☰")
             }
+
             DropdownMenu(expanded = showAppMenu, onDismissRequest = { showAppMenu = false }) {
-                DropdownMenuItem(
-                    content = { Text("Open") },
-                    onClick = {
-                        showAppMenu = false
-                        openFile(Path(location).toFile())
+                FileMenu(
+                    location = location,
+                    setShowMenu = { showAppMenu = it },
+                    onRefresh = {
+                        supervisorIoScope.launch {
+                            fetchFilesByLocation(
+                                location = location,
+                                showHiddenFiles = showHiddenFiles,
+                                onLoading = onLoading,
+                                onResult = { displayedInfo ->
+                                    onResult(
+                                        DisplayedData(
+                                            tags = displayedInfo?.tags ?: emptyList(),
+                                            connections = displayedInfo?.connections ?: emptyList(
+                                            )
+                                        )
+                                    )
+                                }
+                            )
+                        }
                     }
                 )
+
+                Divider()
+
                 DropdownMenuItem(
+                    content = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Show Hidden Files")
+                            Spacer(Modifier.width(8.dp))
+                            Checkbox(
+                                checked = showHiddenFiles,
+                                onCheckedChange = null
+                            )
+                        }
+                    },
                     onClick = {
                         val newShowHiddenFilesState = !showHiddenFiles
                         setShowHiddenFiles(newShowHiddenFilesState)
@@ -118,26 +149,6 @@ fun TopBar(
                                 onResult = onResult
                             )
                         }
-                    },
-                    content = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Show Hidden Files")
-                            Spacer(Modifier.width(8.dp))
-                            Checkbox(
-                                checked = showHiddenFiles,
-                                onCheckedChange = null
-                            )
-                        }
-                    }
-                )
-                DropdownMenuItem(
-                    onClick = {
-                        setShowAddTagDialog(true)
-
-                        showAppMenu = false
-                    },
-                    content = {
-                        Text("Add tag")
                     }
                 )
             }

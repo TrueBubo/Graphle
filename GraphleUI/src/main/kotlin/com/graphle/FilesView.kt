@@ -47,7 +47,6 @@ fun FilesView(
                                     showHiddenFiles = showHiddenFiles,
                                     onLoading = onLoading,
                                     onResult = { displayedInfo ->
-                                        println("Displayed info: $displayedInfo")
                                         setDisplayedInfo(
                                             DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
@@ -55,7 +54,8 @@ fun FilesView(
                                                 )
                                             )
                                         )
-                                    })
+                                    }
+                                )
                             }
                         },
                     )
