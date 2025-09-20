@@ -21,7 +21,6 @@ fun TagTextField(
     tagValue: String,
     tagNameSetter: (String) -> Unit,
     tagValueSetter: (String) -> Unit,
-    coroutineScope: CoroutineScope,
 ) {
     TextField(
         value = value,
@@ -35,7 +34,6 @@ fun TagTextField(
                 tagValue = tagValue,
                 tagNameSetter = tagNameSetter,
                 tagValueSetter = tagValueSetter,
-                coroutineScope = coroutineScope,
             )
         }
     )
@@ -48,10 +46,9 @@ fun handleTagFieldKeyEvent(
     tagValue: String,
     tagNameSetter: (String) -> Unit,
     tagValueSetter: (String) -> Unit,
-    coroutineScope: CoroutineScope,
 ): Boolean =
     if (event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
-        coroutineScope.launch {
+        supervisorIoScope.launch {
             if (tagName == "") return@launch
             if (tagValue != "") apolloClient.addTagToFile(
                 location,

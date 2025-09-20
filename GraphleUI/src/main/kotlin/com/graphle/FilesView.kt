@@ -16,7 +16,6 @@ fun FilesView(
     onLoading: (Boolean) -> Unit,
     setLocation: (String) -> Unit,
     setDisplayedInfo: (DisplayedData?) -> Unit,
-    coroutineScope: CoroutineScope,
 ) {
     displayedData?.connections
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
@@ -42,7 +41,7 @@ fun FilesView(
                             setDisplayedInfo(it)
                         },
                         onRefresh = {
-                            coroutineScope.launch {
+                            supervisorIoScope.launch {
                                 fetchFilesByLocation(
                                     location = connection.from,
                                     showHiddenFiles = showHiddenFiles,
@@ -59,7 +58,6 @@ fun FilesView(
                                     })
                             }
                         },
-                        coroutineScope = coroutineScope
                     )
                 }
             }
