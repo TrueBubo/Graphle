@@ -26,48 +26,14 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.io.FileUtils
-import java.awt.Desktop
-import java.io.File
 import java.lang.System.currentTimeMillis
-import kotlin.time.Duration.Companion.milliseconds
-
-const val serverURL = "http://localhost:8080/graphql"
-val minUpdateDelay = 1000.milliseconds
-
-val apolloClient = ApolloClient.Builder()
-    .serverUrl(serverURL)
-    .build()
-
-val userHome: String = FileUtils.getUserDirectory().path
 
 data class DisplayedData(
     val tags: List<Tag> = emptyList(),
     val connections: List<Connection> = emptyList()
 )
-
-private fun theme(isDarkTheme: Boolean): Colors =
-    if (isDarkTheme) DarkColorPalette else LightColorPalette
-
-fun openFile(file: File) {
-    if (!file.exists()) {
-        return
-    }
-
-    if (Desktop.isDesktopSupported()) {
-        val desktop = Desktop.getDesktop()
-        if (desktop.isSupported(Desktop.Action.OPEN)) {
-            desktop.open(file)
-        } else {
-            println("OPEN action is not supported on this platform")
-        }
-    } else {
-        println("Desktop API is not supported")
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -76,18 +42,13 @@ fun App(setTitle: (String) -> Unit = {}) {
     var location by remember { mutableStateOf(userHome) }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showHiddenFiles by remember { mutableStateOf(false) }
     var displayedData by remember {
-        mutableStateOf(
-            runBlocking {
-                fetchFilesByLocation(
-                    location = location,
-                    showHiddenFiles = showHiddenFiles,
-                    onLoading = { isLoading = it },
-                    onResult = { }
-                )
-            }
+        mutableStateOf(runBlocking {
+            FileFetcher.fetch(
+                location = location,
+                onResult = { }
+            )
+        }
         )
     }
 
@@ -97,17 +58,15 @@ fun App(setTitle: (String) -> Unit = {}) {
 
     setTitle("Graphle - $location")
 
-    MaterialTheme(colors = theme(isDarkTheme = isDarkTheme)) {
+    MaterialTheme(colors = if (isDarkTheme) DarkColorPalette else LightColorPalette) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
             AddTagDialog(
                 onSubmitted = {
-                    fetchFilesByLocation(
+                    FileFetcher.fetch(
                         location = location,
-                        onLoading = { isLoading = it },
-                        showHiddenFiles = showHiddenFiles,
                         onResult = { info ->
                             showInvalidFileDialog = true
                             displayedData = info
@@ -121,33 +80,27 @@ fun App(setTitle: (String) -> Unit = {}) {
                         checked = isDarkTheme,
                         onCheckedChange = { isDarkTheme = it }
                     )
-                    Row {
-                        TopBar(
-                            location = location,
-                            showHiddenFiles = showHiddenFiles,
-                            setShowHiddenFiles = { showHiddenFiles = it },
-                            onLoading = { isLoading = it },
-                            onResult = {
-                                showInvalidFileDialog = true
-                                displayedData = it
-                            }
-                        )
-                    }
+                    TopBar(
+                        location = location,
+                        onResult = {
+                            showInvalidFileDialog = true
+                            displayedData = it
+                        }
+                    )
                     TextField(
                         value = location,
                         onValueChange = { location = it },
                         singleLine = true,
                         modifier = Modifier.onPreviewKeyEvent { event ->
-                            val canRefresh = !isLoading && ((location != oldLocation)
-                                    || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds))
+                            val canRefresh = (location != oldLocation)
+                                    || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds)
                             if (event.key == Key.Enter && canRefresh) {
                                 oldLocation = location
                                 lastUpdated = currentTimeMillis()
+
                                 supervisorIoScope.launch {
-                                    fetchFilesByLocation(
+                                    FileFetcher.fetch(
                                         location = location,
-                                        onLoading = { isLoading = it },
-                                        showHiddenFiles = showHiddenFiles,
                                         onResult = { info ->
                                             showInvalidFileDialog = true
                                             displayedData = info
@@ -162,7 +115,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                     )
                 }
 
-                if (isLoading) {
+                if (FileFetcher.isLoading) {
                     item {
                         Text("Loading...")
                     }
@@ -191,8 +144,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                         item {
                             FilesView(
                                 displayedData = displayedData,
-                                showHiddenFiles = showHiddenFiles,
-                                onLoading = { isLoading = it },
                                 setLocation = {
                                     location = it
                                     setTitle("Graphle - $location")

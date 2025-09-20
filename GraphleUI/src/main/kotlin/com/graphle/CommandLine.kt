@@ -60,14 +60,12 @@ val fieldHeight = 56.dp
 @Composable
 fun TopBar(
     location: String,
-    showHiddenFiles: Boolean,
-    onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
-    setShowHiddenFiles: (Boolean) -> Unit,
 ) {
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
     var showAppMenu by remember { mutableStateOf(false) }
+    var showHiddenFiles by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         DSLWebSocketManager.connect()
@@ -97,10 +95,8 @@ fun TopBar(
                     setShowMenu = { showAppMenu = it },
                     onRefresh = {
                         supervisorIoScope.launch {
-                            fetchFilesByLocation(
+                            FileFetcher.fetch(
                                 location = location,
-                                showHiddenFiles = showHiddenFiles,
-                                onLoading = onLoading,
                                 onResult = { displayedInfo ->
                                     onResult(
                                         DisplayedData(
@@ -130,14 +126,12 @@ fun TopBar(
                     },
                     onClick = {
                         val newShowHiddenFilesState = !showHiddenFiles
-                        setShowHiddenFiles(newShowHiddenFilesState)
+                        FileFetcher.showHiddenFiles = newShowHiddenFilesState
 
                         showAppMenu = false
                         supervisorIoScope.launch {
-                            fetchFilesByLocation(
+                            FileFetcher.fetch(
                                 location = location,
-                                showHiddenFiles = newShowHiddenFilesState,
-                                onLoading = onLoading,
                                 onResult = onResult
                             )
                         }

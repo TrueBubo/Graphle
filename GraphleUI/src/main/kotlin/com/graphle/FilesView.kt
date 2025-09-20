@@ -11,8 +11,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun FilesView(
     displayedData: DisplayedData?,
-    showHiddenFiles: Boolean,
-    onLoading: (Boolean) -> Unit,
     setLocation: (String) -> Unit,
     setDisplayedInfo: (DisplayedData?) -> Unit,
 ) {
@@ -33,18 +31,14 @@ fun FilesView(
                 connections.forEach { connection ->
                     FileBox(
                         connection = connection,
-                        showHiddenFiles = showHiddenFiles,
-                        onLoading = onLoading,
                         onResult = {
                             setLocation(connection.to)
                             setDisplayedInfo(it)
                         },
                         onRefresh = {
                             supervisorIoScope.launch {
-                                fetchFilesByLocation(
+                                FileFetcher.fetch(
                                     location = connection.from,
-                                    showHiddenFiles = showHiddenFiles,
-                                    onLoading = onLoading,
                                     onResult = { displayedInfo ->
                                         setDisplayedInfo(
                                             DisplayedData(
