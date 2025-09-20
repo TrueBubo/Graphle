@@ -10,7 +10,6 @@ suspend fun fetchFilesFromFileByRelationship(
     onResult: (List<Connection>?) -> Unit
 ): List<Connection>? {
     onLoading(true)
-    println("Ran relation")
     val response = apolloClient.getFilesFromFileByRelationship(
         fromLocation = fromLocation,
         relationshipName = relationshipName
