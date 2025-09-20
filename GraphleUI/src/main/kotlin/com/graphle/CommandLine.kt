@@ -68,11 +68,11 @@ fun TopBar(
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
     setShowHiddenFiles: (Boolean) -> Unit,
+    setShowAddTagDialog: (Boolean) -> Unit,
 ) {
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
     var showAppMenu by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         DSLWebSocketManager.connect()
@@ -110,7 +110,7 @@ fun TopBar(
                         setShowHiddenFiles(newShowHiddenFilesState)
 
                         showAppMenu = false
-                        coroutineScope.launch {
+                        supervisorIoScope.launch {
                             fetchFilesByLocation(
                                 location = location,
                                 showHiddenFiles = newShowHiddenFilesState,
@@ -130,6 +130,16 @@ fun TopBar(
                         }
                     }
                 )
+                DropdownMenuItem(
+                    onClick = {
+                        setShowAddTagDialog(true)
+
+                        showAppMenu = false
+                    },
+                    content = {
+                        Text("Add tag")
+                    }
+                )
             }
         }
         TextField(
@@ -144,7 +154,7 @@ fun TopBar(
 
     Button(
         onClick = {
-            coroutineScope.launch {
+            supervisorIoScope.launch {
                 DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
             }
         }
