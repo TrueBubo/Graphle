@@ -83,8 +83,6 @@ fun App(setTitle: (String) -> Unit = {}) {
     var location by remember { mutableStateOf(userHome) }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
-    var tagName by remember { mutableStateOf("Name") }
-    var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
     var showHiddenFiles by remember { mutableStateOf(false) }
     var displayedData by remember {
