@@ -36,8 +36,8 @@ private suspend fun ApolloClient.getFilesFromFileByRelationship(
 suspend fun fetchFilesByLocation(
     location: String,
     onLoading: (Boolean) -> Unit,
-    onResult: (DisplayedInfo?) -> Unit
-): DisplayedInfo? {
+    onResult: (DisplayedData?) -> Unit
+): DisplayedData? {
     onLoading(true)
     val response = apolloClient.getFilesByLocation(location)
     val result = if (response.hasErrors()) {
@@ -45,7 +45,7 @@ suspend fun fetchFilesByLocation(
     } else {
         val file = response.data?.fileByLocation
         if (file != null)
-            DisplayedInfo(
+            DisplayedData(
                 tags = file.tags.map { Tag(it.name, it.value) },
                 connections = file.connections.map {
                     Connection(
