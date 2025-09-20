@@ -51,7 +51,7 @@ fun FileBox(
                             showHiddenFiles = showHiddenFiles,
                             onLoading = onLoading,
                             onResult = onResult
-                        )
+                         )
                     }
                 },
                 onRightClick = {
@@ -62,32 +62,10 @@ fun FileBox(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false },
             ) {
-                DropdownMenuItem(
-                    content = { Text("Open") },
-                    onClick = {
-                        openFile(Path(connection.to).toFile())
-                        showMenu = false
-                    },
-                )
-                DropdownMenuItem(
-                    content = { Text("Delete permanently") },
-                    onClick = {
-                        showMenu = false
-                        supervisorIoScope.launch {
-                            apolloClient.removeFileByLocation(connection.to)
-                            onRefresh()
-                        }
-                    }
-                )
-                DropdownMenuItem(
-                    content = { Text("Move to trash") },
-                    onClick = {
-                        showMenu = false
-                        supervisorIoScope.launch {
-                            Trash.moveToTrash(Path(connection.to))
-                            onRefresh()
-                        }
-                    }
+                FileMenu(
+                    location = connection.to,
+                    setShowMenu = { showMenu = it },
+                    onRefresh = onRefresh,
                 )
             }
         }

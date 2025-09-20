@@ -87,7 +87,6 @@ fun App(setTitle: (String) -> Unit = {}) {
     var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
     var showHiddenFiles by remember { mutableStateOf(false) }
-    var showAddTagDialog by remember { mutableStateOf(false) }
     var displayedData by remember {
         mutableStateOf(
             runBlocking {
@@ -113,9 +112,6 @@ fun App(setTitle: (String) -> Unit = {}) {
             color = MaterialTheme.colors.background
         ) {
             AddTagDialog(
-                location = location,
-                isShown = showAddTagDialog,
-                onDismiss = { showAddTagDialog = false },
                 onSubmitted = {
                     fetchFilesByLocation(
                         location = location,
@@ -139,14 +135,12 @@ fun App(setTitle: (String) -> Unit = {}) {
                             location = location,
                             showHiddenFiles = showHiddenFiles,
                             setShowHiddenFiles = { showHiddenFiles = it },
-                            setShowAddTagDialog = { showAddTagDialog = it },
                             onLoading = { isLoading = it },
                             onResult = {
                                 showInvalidFileDialog = true
                                 displayedData = it
                             }
                         )
-                        Text("Text")
                     }
                     TextField(
                         value = location,
