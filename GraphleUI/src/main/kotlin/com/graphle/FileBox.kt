@@ -35,7 +35,6 @@ fun FileBox(
     onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
     onRefresh: () -> Unit,
-    coroutineScope: CoroutineScope
 ) {
     var showMenu by remember { mutableStateOf(false) }
     Box(Modifier.padding(bottom = 10.dp)) {
@@ -46,7 +45,7 @@ fun FileBox(
                     connection.to
                 ),
                 onClick = {
-                    coroutineScope.launch {
+                    supervisorIoScope.launch {
                         fetchFilesByLocation(
                             location = connection.to,
                             showHiddenFiles = showHiddenFiles,
@@ -74,7 +73,7 @@ fun FileBox(
                     content = { Text("Delete permanently") },
                     onClick = {
                         showMenu = false
-                        coroutineScope.launch {
+                        supervisorIoScope.launch {
                             apolloClient.removeFileByLocation(connection.to)
                             onRefresh()
                         }
@@ -84,7 +83,7 @@ fun FileBox(
                     content = { Text("Move to trash") },
                     onClick = {
                         showMenu = false
-                        coroutineScope.launch {
+                        supervisorIoScope.launch {
                             Trash.moveToTrash(Path(connection.to))
                             onRefresh()
                         }

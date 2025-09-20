@@ -87,6 +87,7 @@ fun App(setTitle: (String) -> Unit = {}) {
     var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
     var showHiddenFiles by remember { mutableStateOf(false) }
+    var showAddTagDialog by remember { mutableStateOf(false) }
     var displayedData by remember {
         mutableStateOf(
             runBlocking {
@@ -103,7 +104,6 @@ fun App(setTitle: (String) -> Unit = {}) {
     var showInvalidFileDialog by remember { mutableStateOf(true) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
-    val coroutineScope = rememberCoroutineScope()
 
     setTitle("Graphle - $location")
 
@@ -112,6 +112,22 @@ fun App(setTitle: (String) -> Unit = {}) {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colors.background
         ) {
+            AddTagDialog(
+                location = location,
+                isShown = showAddTagDialog,
+                onDismiss = { showAddTagDialog = false },
+                onSubmitted = {
+                    fetchFilesByLocation(
+                        location = location,
+                        onLoading = { isLoading = it },
+                        showHiddenFiles = showHiddenFiles,
+                        onResult = { info ->
+                            showInvalidFileDialog = true
+                            displayedData = info
+                        }
+                    )
+                }
+            )
             LazyColumn {
                 item {
                     Switch(
@@ -123,6 +139,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                             location = location,
                             showHiddenFiles = showHiddenFiles,
                             setShowHiddenFiles = { showHiddenFiles = it },
+                            setShowAddTagDialog = { showAddTagDialog = it },
                             onLoading = { isLoading = it },
                             onResult = {
                                 showInvalidFileDialog = true
@@ -141,7 +158,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                             if (event.key == Key.Enter && canRefresh) {
                                 oldLocation = location
                                 lastUpdated = currentTimeMillis()
-                                coroutineScope.launch {
+                                supervisorIoScope.launch {
                                     fetchFilesByLocation(
                                         location = location,
                                         onLoading = { isLoading = it },
@@ -167,7 +184,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                         tagValue = tagValue,
                         tagNameSetter = { tagName = it },
                         tagValueSetter = { tagValue = it },
-                        coroutineScope = coroutineScope,
                     )
 
                     TagTextField(
@@ -178,7 +194,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                         tagValue = tagValue,
                         tagNameSetter = { tagName = it },
                         tagValueSetter = { tagValue = it },
-                        coroutineScope = coroutineScope,
                     )
                 }
 
@@ -221,7 +236,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     displayedData = it
                                     showInvalidFileDialog = true
                                 },
-                                coroutineScope = coroutineScope,
                             )
                         }
                     }
