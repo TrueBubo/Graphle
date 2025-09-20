@@ -36,6 +36,7 @@ import androidx.compose.ui.window.application
 import com.apollographql.apollo.ApolloClient
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.apache.commons.io.FileUtils
 import java.awt.Desktop
 import java.io.File
 import java.lang.System.currentTimeMillis
@@ -47,6 +48,8 @@ val minUpdateDelay = 1000.milliseconds
 val apolloClient = ApolloClient.Builder()
     .serverUrl(serverURL)
     .build()
+
+val userHome: String = FileUtils.getUserDirectory().path
 
 data class DisplayedData(
     val tags: List<Tag> = emptyList(),
@@ -77,17 +80,19 @@ fun openFile(file: File) {
 @Composable
 @Preview
 fun App(setTitle: (String) -> Unit = {}) {
-    var location by remember { mutableStateOf("/home") }
+    var location by remember { mutableStateOf(userHome) }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
     var tagName by remember { mutableStateOf("Name") }
     var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
+    var showHiddenFiles by remember { mutableStateOf(false) }
     var displayedData by remember {
         mutableStateOf(
             runBlocking {
                 fetchFilesByLocation(
                     location = location,
+                    showHiddenFiles = showHiddenFiles,
                     onLoading = { isLoading = it },
                     onResult = { }
                 )
@@ -114,7 +119,16 @@ fun App(setTitle: (String) -> Unit = {}) {
                         onCheckedChange = { isDarkTheme = it }
                     )
                     Row {
-                        TopBar(location = location)
+                        TopBar(
+                            location = location,
+                            showHiddenFiles = showHiddenFiles,
+                            setShowHiddenFiles = { showHiddenFiles = it },
+                            onLoading = { isLoading = it },
+                            onResult = {
+                                showInvalidFileDialog = true
+                                displayedData = it
+                            }
+                        )
                         Text("Text")
                     }
                     TextField(
@@ -131,6 +145,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     fetchFilesByLocation(
                                         location = location,
                                         onLoading = { isLoading = it },
+                                        showHiddenFiles = showHiddenFiles,
                                         onResult = { info ->
                                             showInvalidFileDialog = true
                                             displayedData = info
@@ -190,13 +205,13 @@ fun App(setTitle: (String) -> Unit = {}) {
                         item {
                             TagsView(
                                 displayedData = displayedData,
-                                colors = theme(isDarkTheme)
                             )
                         }
 
                         item {
                             FilesView(
                                 displayedData = displayedData,
+                                showHiddenFiles = showHiddenFiles,
                                 onLoading = { isLoading = it },
                                 setLocation = {
                                     location = it
