@@ -2,16 +2,10 @@ package com.graphle
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
@@ -24,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -83,11 +76,8 @@ fun App(setTitle: (String) -> Unit = {}) {
     var location by remember { mutableStateOf(userHome) }
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
-    var tagName by remember { mutableStateOf("Name") }
-    var tagValue by remember { mutableStateOf("Value") }
     var isLoading by remember { mutableStateOf(false) }
     var showHiddenFiles by remember { mutableStateOf(false) }
-    var showAddTagDialog by remember { mutableStateOf(false) }
     var displayedData by remember {
         mutableStateOf(
             runBlocking {
@@ -113,9 +103,6 @@ fun App(setTitle: (String) -> Unit = {}) {
             color = MaterialTheme.colors.background
         ) {
             AddTagDialog(
-                location = location,
-                isShown = showAddTagDialog,
-                onDismiss = { showAddTagDialog = false },
                 onSubmitted = {
                     fetchFilesByLocation(
                         location = location,
@@ -139,14 +126,12 @@ fun App(setTitle: (String) -> Unit = {}) {
                             location = location,
                             showHiddenFiles = showHiddenFiles,
                             setShowHiddenFiles = { showHiddenFiles = it },
-                            setShowAddTagDialog = { showAddTagDialog = it },
                             onLoading = { isLoading = it },
                             onResult = {
                                 showInvalidFileDialog = true
                                 displayedData = it
                             }
                         )
-                        Text("Text")
                     }
                     TextField(
                         value = location,
@@ -174,26 +159,6 @@ fun App(setTitle: (String) -> Unit = {}) {
 
                             } else false
                         }
-                    )
-
-                    TagTextField(
-                        value = tagName,
-                        onValueChange = { tagName = it },
-                        location = location,
-                        tagName = tagName,
-                        tagValue = tagValue,
-                        tagNameSetter = { tagName = it },
-                        tagValueSetter = { tagValue = it },
-                    )
-
-                    TagTextField(
-                        value = tagValue,
-                        onValueChange = { tagValue = it },
-                        location = location,
-                        tagName = tagName,
-                        tagValue = tagValue,
-                        tagNameSetter = { tagName = it },
-                        tagValueSetter = { tagValue = it },
                     )
                 }
 

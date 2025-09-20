@@ -5,7 +5,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.text.font.FontWeight
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -47,7 +46,6 @@ fun FilesView(
                                     showHiddenFiles = showHiddenFiles,
                                     onLoading = onLoading,
                                     onResult = { displayedInfo ->
-                                        println("Displayed info: $displayedInfo")
                                         setDisplayedInfo(
                                             DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
@@ -55,7 +53,8 @@ fun FilesView(
                                                 )
                                             )
                                         )
-                                    })
+                                    }
+                                )
                             }
                         },
                     )

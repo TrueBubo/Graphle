@@ -16,55 +16,57 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-@Composable
-fun AddTagDialog(location: String, isShown: Boolean, onDismiss: () -> Unit, onSubmitted: suspend () -> Unit) {
-    if (!isShown) return
-    var name by remember { mutableStateOf("") }
-    var value by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Enter Your Info") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { value = it },
-                    label = { Text("Value") },
-                    singleLine = true
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onDismiss()
-                    supervisorIoScope.launch {
-                        if (name == "") return@launch
-                        if (value != "") apolloClient.addTagToFile(
-                            location,
-                            name,
-                            value
-                        )
-                        else apolloClient.addTagToFile(location, name)
-                        onSubmitted()
-                    }
+object AddTagDialog {
+    var location by mutableStateOf("")
+    var isShown by mutableStateOf(false)
 
+
+    @Composable
+    operator fun invoke(onSubmitted: suspend () -> Unit)
+    {
+        if (!isShown) return
+        var name by remember { mutableStateOf("") }
+        var value by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { isShown = false },
+            title = { Text("Enter Your Info") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Name") },
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = value,
+                        onValueChange = { value = it },
+                        label = { Text("Value") },
+                        singleLine = true
+                    )
                 }
-            ) {
-                Text("OK")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        isShown = false
+                        supervisorIoScope.launch {
+                            if (name == "") return@launch
+                            Tag(name = name, value = value.ifBlank { null }).save(location = location)
+                            onSubmitted()
+                        }
+
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { isShown = false }) {
+                    Text("Cancel")
+                }
             }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
+        )
+    }
 }
