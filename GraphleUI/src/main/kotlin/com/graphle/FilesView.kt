@@ -1,20 +1,9 @@
 package com.graphle
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isSecondaryPressed
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -23,6 +12,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FilesView(
     displayedData: DisplayedData?,
+    showHiddenFiles: Boolean,
     onLoading: (Boolean) -> Unit,
     setLocation: (String) -> Unit,
     setDisplayedInfo: (DisplayedData?) -> Unit,
@@ -31,7 +21,7 @@ fun FilesView(
     displayedData?.connections
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
         ?.let { connections ->
-            if (connections.isEmpty()) return@let emptyList<Connection>()
+            if (connections.isEmpty()) return@let emptyList()
             val connectionsMap = connections.groupBy { it.name }
             buildList {
                 connectionsMap["parent"]?.let { addAll(it) }
@@ -44,13 +34,21 @@ fun FilesView(
             Column {
                 connections.forEach { connection ->
                     FileBox(
-                        connection = connection, onLoading = onLoading, onResult = {
+                        connection = connection,
+                        showHiddenFiles = showHiddenFiles,
+                        onLoading = onLoading,
+                        onResult = {
                             setLocation(connection.to)
                             setDisplayedInfo(it)
-                        }, onRefresh = {
+                        },
+                        onRefresh = {
                             coroutineScope.launch {
                                 fetchFilesByLocation(
-                                    location = connection.to, onLoading = onLoading, onResult = { displayedInfo ->
+                                    location = connection.from,
+                                    showHiddenFiles = showHiddenFiles,
+                                    onLoading = onLoading,
+                                    onResult = { displayedInfo ->
+                                        println("Displayed info: $displayedInfo")
                                         setDisplayedInfo(
                                             DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
@@ -60,25 +58,10 @@ fun FilesView(
                                         )
                                     })
                             }
-                        }, coroutineScope = coroutineScope
+                        },
+                        coroutineScope = coroutineScope
                     )
                 }
-//                (1..100000000).forEach {
-//                    FileBox(
-//                        connection = Connection(
-//                            name = "descendant",
-//                            value = null,
-//                            to = "/home/user/file$it.txt"
-//                        ),
-//                        onLoading = onLoading,
-//                        onResult = {
-//                            setLocation("/home/user/file$it.txt")
-//                            setDisplayedInfo(it)
-//                        },
-//                        onRefresh = {},
-//                        coroutineScope = coroutineScope
-//                    )
-//                }
             }
         }
 }
