@@ -47,7 +47,6 @@ fun FileBox(
                     connection.to
                 ),
                 onClick = {
-                    println("Clicked ${connection.to}")
                     coroutineScope.launch {
                         fetchFilesByLocation(
                             location = connection.to,
@@ -57,7 +56,6 @@ fun FileBox(
                     }
                 },
                 onRightClick = {
-                    println("Right Clicked ${connection.to}")
                     showMenu = true
                 }
             )
@@ -87,19 +85,3 @@ fun FileBox(
     }
 }
 
-private fun openFile(file: File) {
-    if (!file.exists()) {
-        return
-    }
-
-    if (Desktop.isDesktopSupported()) {
-        val desktop = Desktop.getDesktop()
-        if (desktop.isSupported(Desktop.Action.OPEN)) {
-            desktop.open(file)
-        } else {
-            println("OPEN action is not supported on this platform")
-        }
-    } else {
-        println("Desktop API is not supported")
-    }
-}

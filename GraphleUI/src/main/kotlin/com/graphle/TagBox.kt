@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Colors
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ private fun textsForTag(tag: Tag): List<String> = buildList {
 @Composable
 fun TagBox(
     tag: Tag,
-    colors: Colors,
     uriHandler: UriHandler = LocalUriHandler.current,
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -43,8 +43,8 @@ fun TagBox(
             if (!violatesURLSpec)
                 Pill(
                     texts = textsForTag(tag),
-                    contentColor = colors.onPrimary,
-                    background = colors.primary,
+                    contentColor = MaterialTheme.colors.onPrimary,
+                    background = MaterialTheme.colors.primary,
                     onClick = {
                         uriHandler.openUri(tag.value!!)
                     }
