@@ -12,13 +12,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun FilesView(
-    displayedInfo: DisplayedInfo?,
+    displayedData: DisplayedData?,
     onLoading: (Boolean) -> Unit,
     setLocation: (String) -> Unit,
-    setDisplayedInfo: (DisplayedInfo?) -> Unit,
+    setDisplayedInfo: (DisplayedData?) -> Unit,
     coroutineScope: CoroutineScope,
 ) {
-    displayedInfo?.connections
+    displayedData?.connections
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
         ?.let { connections ->
             if (connections.isEmpty()) return@let emptyList<Connection>()
@@ -50,7 +50,7 @@ fun FilesView(
                                     onLoading = onLoading,
                                     onResult = { displayedInfo ->
                                         setDisplayedInfo(
-                                            DisplayedInfo(
+                                            DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
                                                 connections = displayedInfo?.connections ?: emptyList(
                                                 )
