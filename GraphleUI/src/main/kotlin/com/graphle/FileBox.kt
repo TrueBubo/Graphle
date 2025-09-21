@@ -27,8 +27,6 @@ private fun pillText(relationshipName: String, value: String?): String =
 @Composable
 fun FileBox(
     connection: Connection,
-    showHiddenFiles: Boolean,
-    onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -42,12 +40,10 @@ fun FileBox(
                 ),
                 onClick = {
                     supervisorIoScope.launch {
-                        fetchFilesByLocation(
+                        FileFetcher.fetch(
                             location = connection.to,
-                            showHiddenFiles = showHiddenFiles,
-                            onLoading = onLoading,
-                            onResult = onResult
-                         )
+                            onResult = onResult,
+                        )
                     }
                 },
                 onRightClick = {

@@ -17,6 +17,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,10 +61,7 @@ val fieldHeight = 56.dp
 @Composable
 fun TopBar(
     location: String,
-    showHiddenFiles: Boolean,
-    onLoading: (Boolean) -> Unit,
     onResult: (DisplayedData?) -> Unit,
-    setShowHiddenFiles: (Boolean) -> Unit,
 ) {
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
@@ -97,10 +95,8 @@ fun TopBar(
                     setShowMenu = { showAppMenu = it },
                     onRefresh = {
                         supervisorIoScope.launch {
-                            fetchFilesByLocation(
+                            FileFetcher.fetch(
                                 location = location,
-                                showHiddenFiles = showHiddenFiles,
-                                onLoading = onLoading,
                                 onResult = { displayedInfo ->
                                     onResult(
                                         DisplayedData(
@@ -123,21 +119,18 @@ fun TopBar(
                             Text("Show Hidden Files")
                             Spacer(Modifier.width(8.dp))
                             Checkbox(
-                                checked = showHiddenFiles,
+                                checked = FileFetcher.showHiddenFiles,
                                 onCheckedChange = null
                             )
                         }
                     },
                     onClick = {
-                        val newShowHiddenFilesState = !showHiddenFiles
-                        setShowHiddenFiles(newShowHiddenFilesState)
+                        FileFetcher.showHiddenFiles = !FileFetcher.showHiddenFiles
 
                         showAppMenu = false
                         supervisorIoScope.launch {
-                            fetchFilesByLocation(
+                            FileFetcher.fetch(
                                 location = location,
-                                showHiddenFiles = newShowHiddenFilesState,
-                                onLoading = onLoading,
                                 onResult = onResult
                             )
                         }
@@ -151,7 +144,10 @@ fun TopBar(
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(fieldHeight)
+                .height(fieldHeight),
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primaryVariant,
+            )
         )
     }
 
