@@ -4,6 +4,7 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import kotlinx.coroutines.launch
+import java.awt.datatransfer.StringSelection
 import kotlin.io.path.Path
 
 @Composable
@@ -20,13 +21,19 @@ fun FileMenu(
     )
 
     DropdownMenuItem(
+        content = { Text("Copy path") },
+        onClick = {
+            clipboard.setContents(StringSelection(location), null)
+            setShowMenu(false)
+        }
+    )
+
+    DropdownMenuItem(
+        content = { Text("Add tag") },
         onClick = {
             AddTagDialog.location = location
             AddTagDialog.isShown = true
             setShowMenu(false)
-        },
-        content = {
-            Text("Add tag")
         }
     )
 
