@@ -17,6 +17,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,7 +66,6 @@ fun TopBar(
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
     var showAppMenu by remember { mutableStateOf(false) }
-    var showHiddenFiles by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         DSLWebSocketManager.connect()
@@ -119,14 +119,13 @@ fun TopBar(
                             Text("Show Hidden Files")
                             Spacer(Modifier.width(8.dp))
                             Checkbox(
-                                checked = showHiddenFiles,
+                                checked = FileFetcher.showHiddenFiles,
                                 onCheckedChange = null
                             )
                         }
                     },
                     onClick = {
-                        val newShowHiddenFilesState = !showHiddenFiles
-                        FileFetcher.showHiddenFiles = newShowHiddenFilesState
+                        FileFetcher.showHiddenFiles = !FileFetcher.showHiddenFiles
 
                         showAppMenu = false
                         supervisorIoScope.launch {
@@ -145,7 +144,10 @@ fun TopBar(
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(fieldHeight)
+                .height(fieldHeight),
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.primaryVariant,
+            )
         )
     }
 

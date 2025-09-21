@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 fun FilesView(
     displayedData: DisplayedData?,
     setLocation: (String) -> Unit,
-    setDisplayedInfo: (DisplayedData?) -> Unit,
+    setDisplayedData: (DisplayedData?) -> Unit,
 ) {
     displayedData?.connections
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
@@ -33,14 +33,14 @@ fun FilesView(
                         connection = connection,
                         onResult = {
                             setLocation(connection.to)
-                            setDisplayedInfo(it)
+                            setDisplayedData(it)
                         },
                         onRefresh = {
                             supervisorIoScope.launch {
                                 FileFetcher.fetch(
                                     location = connection.from,
                                     onResult = { displayedInfo ->
-                                        setDisplayedInfo(
+                                        setDisplayedData(
                                             DisplayedData(
                                                 tags = displayedInfo?.tags ?: emptyList(),
                                                 connections = displayedInfo?.connections ?: emptyList(
