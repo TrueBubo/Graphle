@@ -29,20 +29,20 @@ object AddTagDialog {
         var value by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { isShown = false },
-            title = { Text("Enter Your Info") },
+            title = { Text("Enter information about the tag") },
             text = {
                 Column {
                     OutlinedTextField(
                         value = name,
                         onValueChange = { name = it },
-                        label = { Text("Name") },
+                        label = { Text("Tag name") },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = value,
                         onValueChange = { value = it },
-                        label = { Text("Value") },
+                        label = { Text("Tag value") },
                         singleLine = true
                     )
                 }

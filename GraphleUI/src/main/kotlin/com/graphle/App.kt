@@ -55,6 +55,7 @@ fun App(setTitle: (String) -> Unit = {}) {
             Dialogs(
                 location = location,
                 setDisplayedData = { displayedData = it },
+                getDisplayedData = { displayedData },
                 isInvalidFile = displayedData == null,
             )
 
