@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 fun Dialogs(
     location: String,
     setDisplayedData: (DisplayedData?) -> Unit,
+    getDisplayedData: () -> DisplayedData?,
     isInvalidFile: Boolean,
 ) {
     AddTagDialog(
@@ -16,6 +17,18 @@ fun Dialogs(
             )
         }
     )
+
+    AddRelationshipDialog(
+        onSubmitted = {
+            FileFetcher.fetch(
+                location = location,
+                onResult = setDisplayedData
+            )
+        },
+        onUpdatedData = getDisplayedData
+    )
+
+    ErrorMessage()
 
     InvalidFileDialog(
         location = location,

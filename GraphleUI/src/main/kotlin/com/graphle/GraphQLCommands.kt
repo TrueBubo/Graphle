@@ -48,6 +48,24 @@ suspend fun ApolloClient.addTagToFile(
 ): ApolloResponse<AddTagToFileWithNameAndValueMutation.Data> =
     mutation(AddTagToFileWithNameAndValueMutation(location, name, value)).execute()
 
+suspend fun ApolloClient.addRelationshipToFile(
+    from: String,
+    to: String,
+    name: String,
+    bidirectional: Boolean
+): ApolloResponse<AddRelationshipToFileWithNameMutation.Data> =
+    mutation(AddRelationshipToFileWithNameMutation(from, to, name, bidirectional)).execute()
+
+suspend fun ApolloClient.addRelationshipToFile(
+    from: String,
+    to: String,
+    name: String,
+    value: String,
+    bidirectional: Boolean
+): ApolloResponse<AddRelationshipToFileWithNameAndValueMutation.Data> =
+    mutation(AddRelationshipToFileWithNameAndValueMutation(from, to, name, value, bidirectional)).execute()
+
+
 suspend fun ApolloClient.removeFileByLocation(
     location: String
 ): ApolloResponse<RemoveFileMutation.Data> =

@@ -38,6 +38,15 @@ fun FileMenu(
     )
 
     DropdownMenuItem(
+        content = { Text("Add relationship") },
+        onClick = {
+            AddRelationshipDialog.location = location
+            AddRelationshipDialog.isShown = true
+            setShowMenu(false)
+        }
+    )
+
+    DropdownMenuItem(
         content = { Text("Move to trash") },
         onClick = {
             setShowMenu(false)
