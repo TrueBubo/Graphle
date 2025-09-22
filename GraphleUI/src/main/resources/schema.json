@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "server": {
+      "type": "string",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "description": "The GraphleManager server runs on this port"
+        },
+        "localhost": {
+          "type": "boolean",
+          "description": "Whether the server is running on the same machine, or whether it was port forwarded"
+        }
+      },
+      "required": ["port", "localhost"]
+    }
+  },
+  "required": ["server"]
+}

@@ -5,6 +5,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import kotlinx.coroutines.launch
 import java.awt.datatransfer.StringSelection
+import java.io.File
 import kotlin.io.path.Path
 
 @Composable
@@ -17,6 +18,16 @@ fun FileMenu(
         content = { Text("Open") },
         onClick = {
             openFile(Path(location).toFile())
+            supervisorIoScope.launch {
+                downloadFile(location, File("/home/bubo/downloadedFile"))
+                    .also {
+                        if (!it) ErrorMessage.set(
+                            showErrorMessage = true,
+                            errorMessage = "Could not download the file $location, " +
+                                    "check whether it is not a directory or if you have necessary permissions set"
+                        )
+                    }
+            }
             setShowMenu(false)
         },
     )
