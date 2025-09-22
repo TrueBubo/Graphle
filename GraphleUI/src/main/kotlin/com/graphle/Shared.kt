@@ -12,9 +12,11 @@ import kotlin.time.Duration.Companion.milliseconds
 
 val supervisorIoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-private const val serverURL = "http://localhost:8080/graphql"
+private const val serverURL = "http://localhost:8080"
+private const val graphQlServerURL = "${serverURL}/graphql"
+val downloadURL = "${serverURL}/download"
 val apolloClient = ApolloClient.Builder()
-    .serverUrl(serverURL)
+    .serverUrl(graphQlServerURL)
     .build()
 
 val minUpdateDelay = 1000.milliseconds

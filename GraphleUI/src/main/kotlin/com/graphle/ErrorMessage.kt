@@ -9,8 +9,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 object ErrorMessage {
-    var showErrorMessage by mutableStateOf( false )
-    var errorMessage by mutableStateOf("")
+    private var showErrorMessage by mutableStateOf( false )
+    private var errorMessage by mutableStateOf("")
+
+    fun set(
+        showErrorMessage: Boolean,
+        errorMessage: String,
+    ) {
+        this.showErrorMessage = showErrorMessage
+        this.errorMessage = errorMessage
+    }
 
     @Composable
     operator fun invoke() {
