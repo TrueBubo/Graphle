@@ -21,10 +21,14 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 object AddRelationshipDialog {
-    var location by mutableStateOf("")
-    var isShown by mutableStateOf(false)
-    var isBidirectional by mutableStateOf(false)
+    private var location by mutableStateOf("")
+    private var isShown by mutableStateOf(false)
+    private var isBidirectional by mutableStateOf(false)
 
+    fun set(location: String, isShown: Boolean) {
+        this.location = location
+        this.isShown = isShown
+    }
 
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit, onUpdatedData: () -> DisplayedData?) {

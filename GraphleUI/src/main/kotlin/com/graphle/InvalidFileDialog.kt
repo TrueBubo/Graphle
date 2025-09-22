@@ -23,7 +23,6 @@ object InvalidFileDialog {
             text = { Text("Could not find the file at $location") },
             confirmButton = {
                 TextButton(onClick = {
-                    println("Show InvalidFileDialog $showInvalidFileDialog")
                     showInvalidFileDialog = false
                 }) {
                     Text("OK")

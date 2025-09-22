@@ -11,7 +11,8 @@ import kotlin.io.path.Path
 fun FileMenu(
     location: String,
     setShowMenu: (Boolean) -> Unit,
-    onRefresh: () -> Unit) {
+    onRefresh: () -> Unit
+) {
     DropdownMenuItem(
         content = { Text("Open") },
         onClick = {
@@ -31,8 +32,7 @@ fun FileMenu(
     DropdownMenuItem(
         content = { Text("Add tag") },
         onClick = {
-            AddTagDialog.location = location
-            AddTagDialog.isShown = true
+            AddTagDialog.set(location = location, isShown = true)
             setShowMenu(false)
         }
     )
@@ -40,8 +40,7 @@ fun FileMenu(
     DropdownMenuItem(
         content = { Text("Add relationship") },
         onClick = {
-            AddRelationshipDialog.location = location
-            AddRelationshipDialog.isShown = true
+            AddRelationshipDialog.set(location = location, isShown = true)
             setShowMenu(false)
         }
     )
