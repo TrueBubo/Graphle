@@ -21,7 +21,7 @@ private fun pillText(relationshipName: String, value: String?): String =
             "parent" -> "⬆"
             else -> relationshipName
         }
-    }${value?.let { " : ($it)" } ?: ""}"
+    }${value?.let { " = $it" } ?: ""}"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
