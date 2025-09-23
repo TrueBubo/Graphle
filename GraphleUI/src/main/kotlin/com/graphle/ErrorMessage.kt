@@ -8,26 +8,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-object InvalidFileDialog {
-    var showInvalidFileDialog by mutableStateOf( true )
+object ErrorMessage {
+    var showErrorMessage by mutableStateOf( false )
+    var errorMessage by mutableStateOf("")
 
     @Composable
-    operator fun invoke(
-        location: String,
-        isInvalidFile: Boolean,
-    ) {
-        if (!showInvalidFileDialog || !isInvalidFile) return
+    operator fun invoke() {
+        if (!showErrorMessage) return
         AlertDialog(
-            onDismissRequest = { showInvalidFileDialog = false },
+            onDismissRequest = { showErrorMessage = false },
             title = { Text("Error") },
-            text = { Text("Could not find the file at $location") },
+            text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = {
-                    showInvalidFileDialog = false
+                    showErrorMessage = false
                 }) {
                     Text("OK")
                 }
             }
-        )
-    }
+        )    }
 }
