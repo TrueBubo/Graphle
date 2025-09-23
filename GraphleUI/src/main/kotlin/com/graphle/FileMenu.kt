@@ -17,16 +17,20 @@ fun FileMenu(
     DropdownMenuItem(
         content = { Text("Open") },
         onClick = {
-            openFile(Path(location).toFile())
-            supervisorIoScope.launch {
-                downloadFile(location, File("/home/bubo/downloadedFile"))
-                    .also {
-                        if (!it) ErrorMessage.set(
-                            showErrorMessage = true,
-                            errorMessage = "Could not download the file $location, " +
-                                    "check whether it is not a directory or if you have necessary permissions set"
-                        )
-                    }
+            if (config.server.localhost) openFile(Path(location).toFile())
+            else {
+                supervisorIoScope.launch {
+                    val downloadPath = "${userHome}${File.separator}GraphleDownloads${File.separator}$location"
+                    downloadFile(location, createParentDirectories(downloadPath))
+                        .also { downloadSuccessful ->
+                            if (!downloadSuccessful) ErrorMessage.set(
+                                showErrorMessage = true,
+                                errorMessage = "Could not download the file $location, " +
+                                        "check whether it is not a directory or if you have necessary permissions set"
+                            )
+                            else openFile(Path(downloadPath).toFile())
+                        }
+                }
             }
             setShowMenu(false)
         },

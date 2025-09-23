@@ -32,7 +32,6 @@ dependencies {
     implementation("com.apollographql.apollo:apollo-runtime:4.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
     implementation("commons-io:commons-io:2.20.0")
-    implementation("org.everit.json:json-schema:1.14.1")
     implementation("org.yaml:snakeyaml:2.0")
 
     val ktorVersion = "3.2.1"
