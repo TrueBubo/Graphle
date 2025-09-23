@@ -87,8 +87,10 @@ object AddRelationshipDialog {
                                 .none { it.to == to }
                                 .also {
                                     if (it) {
-                                        ErrorMessage.showErrorMessage = true
-                                        ErrorMessage.errorMessage = "Could not create a relationship with $to"
+                                        ErrorMessage.set(
+                                            showErrorMessage = true,
+                                            errorMessage = "Could not create a relationship with $to"
+                                        )
                                     }
                                 }
                         }
