@@ -6,7 +6,9 @@
       "properties": {
         "port": {
           "type": "integer",
-          "description": "The GraphleManager server runs on this port"
+          "description": "The GraphleManager server runs on this port",
+          "minimum": 1,
+          "maximum": 65535
         },
         "localhost": {
           "type": "boolean",
