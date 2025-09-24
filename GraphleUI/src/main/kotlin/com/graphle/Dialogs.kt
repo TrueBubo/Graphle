@@ -33,7 +33,6 @@ fun Dialogs(
             FileFetcher.fetch(
                 location = location,
                 onResult = {
-                    println(it)
                     setDisplayedData(it)
                 }
             )
