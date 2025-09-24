@@ -87,6 +87,9 @@ class FileController(
         } else null
     }
 
+    @QueryMapping
+    fun fileType(@Argument location: AbsolutePathString): FileType? = fileService.fileType(location)
+
     /**
      * Finds file locations related to [fromLocation] file via the relationship named [relationshipName]
      * @param fromLocation Absolute path of the file on the server
