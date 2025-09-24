@@ -3,7 +3,12 @@ package com.graphle
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.graphle.type.FileType
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.datatransfer.StringSelection
@@ -16,7 +21,9 @@ fun FileMenu(
     setShowMenu: (Boolean) -> Unit,
     onRefresh: () -> Unit
 ) {
-    if (config.server.localhost || runBlocking { fileType(location) == FileType.File }) {
+    var isAddFileMenuShown by remember { mutableStateOf(false) }
+    val fileType = supervisorIoScope.async { fileType(location) }
+    if (config.server.localhost || runBlocking { fileType.await() == FileType.File }) {
         DropdownMenuItem(
             content = { Text("Open") },
             onClick = {
@@ -37,6 +44,19 @@ fun FileMenu(
                 }
                 setShowMenu(false)
             },
+        )
+    }
+
+    if (runBlocking { fileType.await() == FileType.Directory}) {
+        DropdownMenuItem(
+            content = { Text("Add file") },
+            onClick = {
+                AddFileDialog.set(
+                    location = location,
+                    isShown = true
+                )
+                setShowMenu(false)
+            }
         )
     }
 

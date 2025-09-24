@@ -28,6 +28,17 @@ fun Dialogs(
         onUpdatedData = getDisplayedData
     )
 
+    AddFileDialog(
+        onConfirmed = {
+            FileFetcher.fetch(
+                location = location,
+                onResult = {
+                    setDisplayedData(it)
+                }
+            )
+        }
+    )
+
     ErrorMessage()
 
     InvalidFileDialog(
