@@ -8,6 +8,14 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.awt.Desktop
 import java.io.File
 
+fun createParentDirectories(filePath: String): File {
+    val file = File(filePath)
+
+    file.parentFile?.takeIf { !it.exists() }?.mkdirs()
+
+    return file
+}
+
 fun openFile(file: File) {
     if (!file.exists()) {
         return

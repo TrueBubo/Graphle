@@ -1,5 +1,6 @@
 type Query {
     fileByLocation(location: String!, showHiddenFiles: Boolean! = true): File # Searches for a file based on its location returns null if not found
+    fileType(location: String!): FileType # Finds the type of a file returns null if not found
     tagsByFileLocation(location: String!): [Tag!]! # Searches for categories the file belongs to
     filesByTag(tagName: String!): [String!]! # Finds locations of all the files with a tag
     filesFromFileByRelationship(fromLocation: String!, relationshipName: String!): [Connection!]! # Finds file locations related to fromLocation file via the relationship
@@ -65,4 +66,9 @@ type Entries {
 enum EntryTypeName {
     File,
     Connection
+}
+
+enum FileType {
+    File,
+    Directory
 }
