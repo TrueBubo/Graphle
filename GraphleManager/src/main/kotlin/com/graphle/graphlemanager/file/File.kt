@@ -1,7 +1,6 @@
 package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.Connection
-import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.Tag
 import org.springframework.data.neo4j.core.schema.GeneratedValue
 import org.springframework.data.neo4j.core.schema.Id
@@ -33,4 +32,8 @@ data class File(
     )
 }
 
+enum class FileType {
+    File,
+    Directory
+}
 

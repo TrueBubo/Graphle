@@ -46,6 +46,12 @@ class FileService(
             }
         }
 
+    fun fileType(location: String): FileType? {
+        val file = File(location)
+        if (!file.exists()) return null
+        return if (file.isDirectory) FileType.Directory else FileType.File
+    }
+
     fun descendantsOfFile(
         fromLocation: AbsolutePathString,
         getDescendantsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->

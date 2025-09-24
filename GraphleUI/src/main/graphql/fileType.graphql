@@ -1,0 +1,3 @@
+query fileType($location: String!) {
+    fileType(location: $location)
+}
