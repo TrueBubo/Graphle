@@ -1,0 +1,5 @@
+mutation addFile($location: String!) {
+    addFile(location: $location) {
+        location
+    }
+}

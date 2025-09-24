@@ -83,3 +83,9 @@ private suspend fun ApolloClient.fileType(
 ): ApolloResponse<FileTypeQuery.Data> = query(FileTypeQuery(location)).execute()
 
 suspend fun fileType(location: String): FileType? = apolloClient.fileType(location).data?.fileType
+
+private suspend fun ApolloClient.addFile(
+    location: String
+): ApolloResponse<AddFileMutation.Data> = mutation(AddFileMutation(location)).execute()
+
+suspend fun addFile(location: String) = apolloClient.addFile(location)
