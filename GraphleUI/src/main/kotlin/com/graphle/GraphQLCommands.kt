@@ -2,6 +2,7 @@ package com.graphle
 
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
+import com.graphle.type.FileType
 
 suspend fun fetchFilesFromFileByRelationship(
     fromLocation: String,
@@ -76,3 +77,9 @@ suspend fun ApolloClient.moveFile(
     locationTo: String
 ): ApolloResponse<MoveFileMutation.Data> =
     mutation(MoveFileMutation(locationFrom, locationTo)).execute()
+
+private suspend fun ApolloClient.fileType(
+    location: String
+): ApolloResponse<FileTypeQuery.Data> = query(FileTypeQuery(location)).execute()
+
+suspend fun fileType(location: String): FileType? = apolloClient.fileType(location).data?.fileType

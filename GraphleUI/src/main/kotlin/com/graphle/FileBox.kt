@@ -29,15 +29,16 @@ fun FileBox(
     connection: Connection,
     onResult: (DisplayedData?) -> Unit,
     onRefresh: () -> Unit,
+    displayRelationshipInfo: Boolean = true
 ) {
     var showMenu by remember { mutableStateOf(false) }
     Box(Modifier.padding(bottom = 10.dp)) {
         Row {
             Pill(
-                texts = listOf(
-                    pillText(relationshipName = connection.name, value = connection.value),
-                    connection.to
-                ),
+                texts = buildList {
+                    if (displayRelationshipInfo) add(pillText(relationshipName = connection.name, value = connection.value))
+                    add(connection.to)
+                },
                 onClick = {
                     supervisorIoScope.launch {
                         FileFetcher.fetch(
