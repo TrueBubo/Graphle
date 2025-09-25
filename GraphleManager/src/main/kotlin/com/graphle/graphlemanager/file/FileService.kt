@@ -8,7 +8,7 @@ import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils
 
 @Service
 class FileService(
@@ -92,6 +92,10 @@ class FileService(
             Files.move(Path(from), Path(to))
         }
     ) {
-        moveFileAction(locationFrom, locationTo)
+        try {
+            moveFileAction(locationFrom, locationTo)
+        } catch (e: Exception) {
+            System.err.println("Cannot move file from $locationFrom to ${locationTo}: $e")
+        }
     }
 }

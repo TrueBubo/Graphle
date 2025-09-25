@@ -69,6 +69,14 @@ fun FileMenu(
     )
 
     DropdownMenuItem(
+        content = { Text("Move") },
+        onClick = {
+            MoveFileDialog.set(location = location, isShown = true)
+            setShowMenu(false)
+        }
+    )
+
+    DropdownMenuItem(
         content = { Text("Add tag") },
         onClick = {
             AddTagDialog.set(location = location, isShown = true)

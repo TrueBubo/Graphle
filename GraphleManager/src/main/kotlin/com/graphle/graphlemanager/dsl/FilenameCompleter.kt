@@ -1,9 +1,7 @@
 package com.graphle.graphlemanager.dsl
 
 import com.graphle.graphlemanager.file.AbsolutePathString
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
 import java.io.File
 import java.nio.file.Files
 import kotlin.collections.component1
@@ -32,7 +30,6 @@ private val ttl = 30.days // Keys not accessed for this long will be removed to 
  * and values stored in trie refer to these keys. Only bottom level and the full path are stored. The bottom level refers
  * to full path so it can be returned.
  * @param storage Structure where the trie is saved to
- * @param fileExistsPredicate Verification of file existence so the system does not return non existent files
  */
 class FilenameCompleter(
     private val storage: Storage,
@@ -124,7 +121,6 @@ class FilenameCompleter(
         limit: Int,
         collected: MutableSet<String> = mutableSetOf(),
         fileExistsPredicate: (AbsolutePathString) -> Boolean
-//        fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) },
     ): List<String> {
         if (collected.size >= limit) return collected.take(limit)
 
@@ -184,9 +180,6 @@ class FilenameCompleter(
      * @param filename Components of the filenames consists of parent directories and the bottom level filename itself
      */
     fun insert(filename: FilenameComponents) {
-        repeat(100) {
-            println(filename)
-        }
         val filenameString = filename.joinToString(prefix = File.separator, separator = File.separator)
         val fullFileKey = insertComponent(filenameString, null)
         insertComponent(filename.last(), fullFileKey)
@@ -209,8 +202,7 @@ class FilenameCompleter(
 
         filenamePrefix.forEach { character ->
             val char = character.toString()
-            val index = currNodeChildren[char]
-            if (index == null) return emptyList()
+            val index = currNodeChildren[char] ?: return emptyList()
 
             storage.expire(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds)
 
