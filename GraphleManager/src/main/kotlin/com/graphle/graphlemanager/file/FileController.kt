@@ -2,7 +2,6 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionController
-import com.graphle.graphlemanager.connection.NeighborConnection
 import com.graphle.graphlemanager.tag.TagController
 import graphql.GraphQLError
 import graphql.GraphqlErrorBuilder
@@ -37,7 +36,6 @@ class FileController(
      */
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString, @Argument showHiddenFiles: Boolean = true): File? {
-        println("fileByLocation called for $location")
         val descendants = fileService.descendantsOfFile(location)
             .map {
                 Connection(
@@ -75,8 +73,6 @@ class FileController(
         val connections = (hierarchyNeighbors + customConnections)
             .filter { Files.exists(Path(it.to)) && (showHiddenFiles || !Files.isHidden(Path(it.to))) }
 
-        println("Called $hierarchyNeighbors")
-
         return if (Files.exists(Path(location))) {
             File(
                 location = location,
@@ -108,6 +104,7 @@ class FileController(
      * @param exception Caught exception
      * @return error with the message
      */
+    @Suppress("unused")
     @GraphQlExceptionHandler
     private fun handleFileWriteException(exception: IOException): GraphQLError {
         return GraphqlErrorBuilder.newError()
@@ -121,6 +118,7 @@ class FileController(
      * @return error with the message
      */
     @GraphQlExceptionHandler
+    @Suppress("unused")
     private fun handleFileWriteException(exception: FileAlreadyExistsException): GraphQLError {
         return GraphqlErrorBuilder.newError()
             .message("Could not create a file, it already exists")
