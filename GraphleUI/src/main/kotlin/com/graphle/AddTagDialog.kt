@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -20,7 +21,6 @@ import kotlinx.coroutines.launch
 object AddTagDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
-    private var showError by mutableStateOf(false)
 
     fun set(
         location: String,
@@ -33,6 +33,11 @@ object AddTagDialog {
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit)
     {
+        var showNameMissingError by remember { mutableStateOf(false) }
+        var nameIsFocused by remember { mutableStateOf(false) }
+        var hasInteractedWithName by remember { mutableStateOf(false) }
+
+
         if (!isShown) return
         var name by remember { mutableStateOf("") }
         var value by remember { mutableStateOf("") }
@@ -41,7 +46,7 @@ object AddTagDialog {
             title = { Text("Enter information about the tag") },
             text = {
                 Column {
-                    if (showError) {
+                    if (hasInteractedWithName && showNameMissingError && !nameIsFocused) {
                         Text(
                             text = "Name field is required",
                             color = Color.Red,
@@ -51,9 +56,19 @@ object AddTagDialog {
                         value = name,
                         onValueChange = {
                             name = it
-                            showError = name.isBlank()
                         },
-                        isError = showError,
+                        isError = hasInteractedWithName && showNameMissingError && !nameIsFocused,
+                        modifier = Modifier.onFocusChanged {
+                            showNameMissingError = name.isBlank()
+                            if (it.isFocused) {
+                                hasInteractedWithName = true
+                                nameIsFocused = true
+                            }
+                            else {
+                                showNameMissingError = name.isBlank()
+                                nameIsFocused = false
+                            }
+                        },
                         label = { Text("Tag name*") },
                         singleLine = true
                     )
