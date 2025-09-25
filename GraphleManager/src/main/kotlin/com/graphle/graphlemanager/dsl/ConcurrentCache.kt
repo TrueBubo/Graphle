@@ -4,7 +4,6 @@ import com.graphle.graphlemanager.commons.CoroutineDelayer
 import com.graphle.graphlemanager.commons.IDelayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
@@ -58,7 +57,7 @@ class ConcurrentCache<K : Any, V : Any>(
             val now = Instant.now()
             cache.asSequence()
                 .filter { it.value.isExpired(now) }
-                .forEach { println("Removed"); cache.remove(it.key) }
+                .forEach { cache.remove(it.key) }
             onSweep()
         }
     }

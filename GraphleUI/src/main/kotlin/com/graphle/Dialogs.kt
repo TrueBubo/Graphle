@@ -39,6 +39,18 @@ fun Dialogs(
         }
     )
 
+    MoveFileDialog(
+        onMoved = {
+            FileFetcher.fetch(
+                location = location,
+                onResult = {
+                    setDisplayedData(it)
+                }
+            )
+        },
+
+    )
+
     ErrorMessage()
 
     InvalidFileDialog(
