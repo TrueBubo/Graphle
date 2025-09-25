@@ -14,7 +14,7 @@ fun Header(
     TopBar(
         location = location,
         onResult = {
-            InvalidFileDialog.showInvalidFileDialog = true
+            InvalidFileMessage.showInvalidFileMessage = true
             setDisplayedData(it)
         },
         setDarkMode = setDarkMode,

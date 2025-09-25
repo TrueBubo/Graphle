@@ -53,7 +53,7 @@ fun Dialogs(
 
     ErrorMessage()
 
-    InvalidFileDialog(
+    InvalidFileMessage(
         location = location,
         isInvalidFile = isInvalidFile,
     )
