@@ -8,12 +8,16 @@ import androidx.compose.runtime.Composable
 fun Header(
     location: String,
     setDisplayedData: (DisplayedData?) -> Unit,
+    setDarkMode: (Boolean) -> Unit,
+    getDarkMode: () -> Boolean
 ) {
     TopBar(
         location = location,
         onResult = {
             InvalidFileDialog.showInvalidFileDialog = true
             setDisplayedData(it)
-        }
+        },
+        setDarkMode = setDarkMode,
+        getDarkMode = getDarkMode
     )
 }

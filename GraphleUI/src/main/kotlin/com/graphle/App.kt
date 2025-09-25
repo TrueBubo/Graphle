@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
@@ -64,13 +63,11 @@ fun App(setTitle: (String) -> Unit = {}) {
                     Header(
                         location = location,
                         setDisplayedData = { displayedData = it },
+                        setDarkMode = { isDarkTheme = it },
+                        getDarkMode = { isDarkTheme }
                     )
                 }
                 item {
-                    Switch(
-                        checked = isDarkTheme,
-                        onCheckedChange = { isDarkTheme = it }
-                    )
                     TextField(
                         value = location,
                         onValueChange = { location = it },
@@ -120,25 +117,6 @@ fun App(setTitle: (String) -> Unit = {}) {
                                 },
                             )
                         }
-//                        item {
-//                            TagsView(
-//                                displayedData = displayedData,
-//                            )
-//                        }
-//
-//                        item {
-//                            FilesView(
-//                                displayedData = displayedData,
-//                                setLocation = {
-//                                    location = it
-//                                    setTitle("Graphle - $location")
-//                                },
-//                                setDisplayedData = {
-//                                    displayedData = it
-//                                    showInvalidFileDialog = true
-//                                },
-//                            )
-//                        }
                     }
                 }
             }
