@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -62,6 +61,8 @@ val fieldHeight = 56.dp
 fun TopBar(
     location: String,
     onResult: (DisplayedData?) -> Unit,
+    setDarkMode: (Boolean) -> Unit,
+    getDarkMode: () -> Boolean,
 ) {
     var dslValue by remember { mutableStateOf("") }
     var dslCommand by remember { mutableStateOf("") }
@@ -117,7 +118,7 @@ fun TopBar(
                     content = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Show Hidden Files")
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.weight(1f))
                             Checkbox(
                                 checked = FileFetcher.showHiddenFiles,
                                 onCheckedChange = null
@@ -126,6 +127,30 @@ fun TopBar(
                     },
                     onClick = {
                         FileFetcher.showHiddenFiles = !FileFetcher.showHiddenFiles
+
+                        showAppMenu = false
+                        supervisorIoScope.launch {
+                            FileFetcher.fetch(
+                                location = location,
+                                onResult = onResult
+                            )
+                        }
+                    }
+                )
+
+                DropdownMenuItem(
+                    content = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Dark mode")
+                            Spacer(Modifier.weight(1f))
+                            Checkbox(
+                                checked = getDarkMode(),
+                                onCheckedChange = null
+                            )
+                        }
+                    },
+                    onClick = {
+                        setDarkMode(!getDarkMode())
 
                         showAppMenu = false
                         supervisorIoScope.launch {
