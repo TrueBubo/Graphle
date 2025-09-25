@@ -10,9 +10,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import com.graphle.type.FileType
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 object MoveFileDialog {
     private var location by mutableStateOf("")
@@ -25,6 +26,9 @@ object MoveFileDialog {
 
     @Composable
     operator fun invoke(onMoved: suspend () -> Unit) {
+        var showToMissingError by mutableStateOf(false)
+        var hasInteractedWithTo by mutableStateOf(false)
+
         if (!isShown) return
         var to by remember { mutableStateOf("") }
         AlertDialog(
@@ -34,7 +38,19 @@ object MoveFileDialog {
                 Column {
                     OutlinedTextField(
                         value = to,
-                        onValueChange = { to = it },
+                        onValueChange = {
+                            to = it
+                            showToMissingError = to.isBlank()
+                        },
+                        isError = hasInteractedWithTo && showToMissingError,
+                        modifier = Modifier.onFocusChanged {
+                            showToMissingError = to.isBlank()
+                            if (it.isFocused) {
+                                hasInteractedWithTo = true
+                            } else {
+                                showToMissingError = to.isBlank()
+                            }
+                        },
                         label = { Text("Move to") },
                         singleLine = true
                     )
@@ -42,6 +58,7 @@ object MoveFileDialog {
             },
             confirmButton = {
                 Button(
+                    enabled = to.isNotBlank(),
                     onClick = {
                         isShown = false
                         supervisorIoScope.launch {

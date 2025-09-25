@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
-import com.graphle.InvalidFileDialog.showInvalidFileDialog
+import com.graphle.InvalidFileMessage.showInvalidFileMessage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.lang.System.currentTimeMillis
@@ -83,7 +83,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     FileFetcher.fetch(
                                         location = location,
                                         onResult = { info ->
-                                            showInvalidFileDialog = true
+                                            showInvalidFileMessage = true
                                             displayedData = info
                                         }
                                     )
@@ -113,7 +113,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                 setLocation = { location = it },
                                 setDisplayedData = {
                                     displayedData = it
-                                    showInvalidFileDialog = true
+                                    showInvalidFileMessage = true
                                 },
                             )
                         }

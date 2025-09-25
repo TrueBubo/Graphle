@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -32,6 +34,12 @@ object AddRelationshipDialog {
 
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit, onUpdatedData: () -> DisplayedData?) {
+        var showToMissingError by mutableStateOf(false)
+        var hasInteractedWithTo by mutableStateOf(false)
+
+        var showNameMissingError by mutableStateOf(false)
+        var hasInteractedWithName by mutableStateOf(false)
+
         if (!isShown) return
         var to by remember { mutableStateOf("") }
         var name by remember { mutableStateOf("") }
@@ -41,17 +49,56 @@ object AddRelationshipDialog {
             title = { Text("Enter information about the relationship") },
             text = {
                 Column {
+                    if (showToMissingError && hasInteractedWithTo) {
+                        Text(
+                            text = "Related to field is required",
+                            color = Color.Red,
+                        )
+                    }
                     OutlinedTextField(
                         value = to,
-                        onValueChange = { to = it },
-                        label = { Text("Related to") },
+                        onValueChange = {
+                            to = it
+                            showToMissingError = to.isBlank()
+                        },
+                        label = { Text("Related to*") },
+                        isError = hasInteractedWithTo && showToMissingError,
+                        modifier = Modifier.onFocusChanged {
+                            showToMissingError = to.isBlank()
+                            if (it.isFocused) {
+                                hasInteractedWithTo = true
+                            } else {
+                                showToMissingError = to.isBlank()
+                            }
+                        },
                         singleLine = true
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    if (showNameMissingError && hasInteractedWithName) {
+                        Text(
+                            text = "Name field is required",
+                            color = Color.Red,
+                        )
+                    }
                     OutlinedTextField(
                         value = name,
-                        onValueChange = { name = it },
-                        label = { Text("Relationship name") },
+                        onValueChange = {
+                            showNameMissingError = name.isBlank()
+                            name = it
+                        },
+                        label = { Text("Relationship name*") },
+                        isError = showNameMissingError && hasInteractedWithName,
+                        modifier = Modifier.onFocusChanged {
+                            showNameMissingError = name.isBlank()
+                            if (it.isFocused) {
+                                hasInteractedWithName = true
+                            }
+                            else {
+                                showNameMissingError = name.isBlank()
+                            }
+                        },
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -73,10 +120,10 @@ object AddRelationshipDialog {
             },
             confirmButton = {
                 Button(
+                    enabled = name.isNotEmpty() && to.isNotEmpty(),
                     onClick = {
                         isShown = false
                         supervisorIoScope.launch {
-                            if (location == "" || name == "") return@launch
                             Connection(
                                 from = location,
                                 to = to,
