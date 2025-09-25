@@ -33,9 +33,8 @@ object AddTagDialog {
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit)
     {
-        var showNameMissingError by remember { mutableStateOf(false) }
-        var nameIsFocused by remember { mutableStateOf(false) }
-        var hasInteractedWithName by remember { mutableStateOf(false) }
+        var showNameMissingError by mutableStateOf(false)
+        var hasInteractedWithName by mutableStateOf(false)
 
 
         if (!isShown) return
@@ -46,7 +45,7 @@ object AddTagDialog {
             title = { Text("Enter information about the tag") },
             text = {
                 Column {
-                    if (hasInteractedWithName && showNameMissingError && !nameIsFocused) {
+                    if (hasInteractedWithName && showNameMissingError) {
                         Text(
                             text = "Name field is required",
                             color = Color.Red,
@@ -56,17 +55,16 @@ object AddTagDialog {
                         value = name,
                         onValueChange = {
                             name = it
+                            showNameMissingError = name.isBlank()
                         },
-                        isError = hasInteractedWithName && showNameMissingError && !nameIsFocused,
+                        isError = hasInteractedWithName && showNameMissingError,
                         modifier = Modifier.onFocusChanged {
                             showNameMissingError = name.isBlank()
                             if (it.isFocused) {
                                 hasInteractedWithName = true
-                                nameIsFocused = true
                             }
                             else {
                                 showNameMissingError = name.isBlank()
-                                nameIsFocused = false
                             }
                         },
                         label = { Text("Tag name*") },
