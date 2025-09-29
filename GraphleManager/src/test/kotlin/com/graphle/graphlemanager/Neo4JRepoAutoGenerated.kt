@@ -1,6 +1,5 @@
 package com.graphle.graphlemanager
 
-import com.graphle.graphlemanager.file.File
 import org.springframework.data.domain.Example
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

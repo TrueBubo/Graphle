@@ -1,0 +1,9 @@
+query filesByTag($tagName: String!) {
+    filesByTag(tagName: $tagName) {
+        location
+        tag {
+            name,
+            value
+        }
+    }
+}

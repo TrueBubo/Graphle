@@ -89,3 +89,19 @@ private suspend fun ApolloClient.addFile(
 ): ApolloResponse<AddFileMutation.Data> = mutation(AddFileMutation(location)).execute()
 
 suspend fun addFile(location: String) = apolloClient.addFile(location)
+
+private suspend fun ApolloClient.filesByTag(
+    tagName: String
+): ApolloResponse<FilesByTagQuery.Data> = query(FilesByTagQuery(tagName)).execute()
+
+suspend fun filesByTag(
+    tagName: String
+): List<FileWithTag>? = apolloClient.filesByTag(tagName).data?.filesByTag?.map {
+    FileWithTag(
+        location = it.location,
+        tag = Tag(
+            name = it.tag.name,
+            value = it.tag.value
+        )
+    )
+}
