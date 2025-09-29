@@ -39,6 +39,6 @@ class TagController(private val tagService: TagService) {
      * @return Absolute paths of files with tag with the given name
      */
     @QueryMapping
-    fun filesByTag(@Argument tagName: String): List<String> =
+    fun filesByTag(@Argument tagName: String): List<TagForFile> =
         tagService.filesByTag(tagName)
 }

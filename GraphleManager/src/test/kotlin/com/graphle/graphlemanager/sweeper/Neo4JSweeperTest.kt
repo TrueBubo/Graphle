@@ -5,6 +5,7 @@ import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.file.File
 import com.graphle.graphlemanager.file.FileRepository
 import com.graphle.graphlemanager.tag.Tag
+import com.graphle.graphlemanager.tag.TagForFileFlattened
 import com.graphle.graphlemanager.tag.TagRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -134,14 +135,22 @@ class Neo4JSweeperTest {
                 else _tags[fileLocation] = mutableListOf(newTag)
             }
 
-            override fun filesByTag(tagName: String): List<AbsolutePathString> {
+            override fun filesByTag(tagName: String): List<TagForFileFlattened> {
                 return _tags
                     .filter { pair ->
                         pair.value
                             .map { tag -> tag.name }
                             .contains(tagName)
                     }
-                    .map { it.key }
+                    .flatMap {
+                        it.value.map { tag ->
+                            TagForFileFlattened(
+                                location = it.key,
+                                tagName = tag.name,
+                                tagValue = tag.value
+                            )
+                        }
+                    }
             }
 
             override fun removeOrphanTags() {

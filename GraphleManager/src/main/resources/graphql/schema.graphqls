@@ -2,7 +2,7 @@ type Query {
     fileByLocation(location: String!, showHiddenFiles: Boolean! = true): File # Searches for a file based on its location returns null if not found
     fileType(location: String!): FileType # Finds the type of a file returns null if not found
     tagsByFileLocation(location: String!): [Tag!]! # Searches for categories the file belongs to
-    filesByTag(tagName: String!): [String!]! # Finds locations of all the files with a tag
+    filesByTag(tagName: String!): [FilesByTagResponse!]! # Finds locations of all the files with a tag
     filesFromFileByRelationship(fromLocation: String!, relationshipName: String!): [Connection!]! # Finds file locations related to fromLocation file via the relationship
     optionsByDslPrefix(dslPrefix: String!, limit: Int = 5): [String!]! # Gives possible next term for the command, like full file locations
     entriesFromDSL(dslCommand: String!, limit: Int): Entries! # Returns entries based on the DSL command provided
@@ -25,7 +25,6 @@ type File {
 type Tag {
     name: String! # Category title
     value: String # category value
-    numericValue: Float # Category value stored in case the value can be considered a number
 }
 
 input TagInput {
@@ -44,6 +43,11 @@ type Connection {
 type MoveFileResponse {
     from: String!
     to: String!
+}
+
+type FilesByTagResponse {
+    location: String!
+    tag: Tag!
 }
 
 input ConnectionInput {

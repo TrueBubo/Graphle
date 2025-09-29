@@ -41,6 +41,7 @@ fun App(setTitle: (String) -> Unit = {}) {
         )
     }
 
+    val mode = remember {  mutableStateOf(DisplayMode.MainBody)  }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
 
@@ -87,6 +88,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                             displayedData = info
                                         }
                                     )
+                                    mode.value = DisplayMode.MainBody
                                 }
 
                                 true
@@ -108,7 +110,9 @@ fun App(setTitle: (String) -> Unit = {}) {
                         }
                     } else {
                         item {
-                            Body(
+                            DisplayedBody(
+                                mode = mode.value,
+                                setMode = { mode.value = it },
                                 displayedData = displayedData,
                                 setLocation = { location = it },
                                 setDisplayedData = {

@@ -16,7 +16,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param fileLocation Absolute path of the file in server filesystem
      * @return Tags corresponding to the [fileLocation]
      */
-    @Query("MATCH (f:File {location: \$fileLocation})-[:HasTag]->(t:Tag) RETURN t.name AS name, t.value AS value")
+    @Query("MATCH (f:File {location: \$fileLocation})-[:HasTag]->(t:Tag) RETURN t.name AS _name, t.value AS value")
     fun tagsByFileLocation(fileLocation: AbsolutePathString): List<Tag>
 
     /**
@@ -26,7 +26,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagValue Value of the [tagName] property
      * @return Inserted tag
      */
-    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName, value: \$tagValue}) MERGE (f)-[:HasTag]->(t) RETURN t")
+    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName, value: \$tagValue}) MERGE (f)-[:HasTag]->(t)")
     fun addTagToFile(fileLocation: AbsolutePathString, tagName: String, tagValue: String)
 
     /**
@@ -35,7 +35,7 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagName Tag the system associate will with the file
      * @return Inserted tag
      */
-    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName}) MERGE (f)-[:HasTag]->(t) RETURN t")
+    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName}) MERGE (f)-[:HasTag]->(t)")
     fun addTagToFile(fileLocation: AbsolutePathString, tagName: String)
 
     /**
@@ -43,8 +43,8 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagName name of tag to search for
      * @return Absolute paths of files with tag with the given name
      */
-    @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location")
-    fun filesByTag(tagName: String): List<AbsolutePathString>
+    @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location as location, tag.name as tagName, tag.value as tagValue")
+    fun filesByTag(tagName: String): List<TagForFileFlattened>
 
     /**
      * Removes tags which are no longer connected to any file
