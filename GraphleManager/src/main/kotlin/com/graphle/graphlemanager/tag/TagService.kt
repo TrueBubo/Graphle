@@ -24,9 +24,12 @@ class TagService(private val tagRepository: TagRepository) {
      */
     fun addTagToFile(location: AbsolutePathString, tag: TagInput) {
         if (tag.value != null) tagRepository.addTagToFile(location, tag.name, tag.value)
-        else tagRepository.addTagToFile(
-            location, tag.name
-        )
+        else {
+            println(tag)
+            tagRepository.addTagToFile(
+                location, tag.name
+            )
+        }
     }
 
     /**
@@ -34,5 +37,13 @@ class TagService(private val tagRepository: TagRepository) {
      * @param tagName name of tag to search for
      * @return Absolute paths of files with tag with the given [tagName]
      */
-    fun filesByTag(tagName: String): List<AbsolutePathString> = tagRepository.filesByTag(tagName)
+    fun filesByTag(tagName: String): List<TagForFile> = tagRepository.filesByTag(tagName).map {
+        TagForFile(
+            location = it.location,
+            tag = Tag(
+                name = it.tagName!!,
+                value = it.tagValue
+            )
+        )
+    }
 }
