@@ -3,10 +3,6 @@ package com.graphle
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.graphle.type.FileType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -21,7 +17,6 @@ fun FileMenu(
     setShowMenu: (Boolean) -> Unit,
     onRefresh: () -> Unit
 ) {
-    var isAddFileMenuShown by remember { mutableStateOf(false) }
     val fileType = supervisorIoScope.async { fileType(location) }
     if (config.server.localhost || runBlocking { fileType.await() == FileType.File }) {
         DropdownMenuItem(
@@ -107,10 +102,7 @@ fun FileMenu(
         content = { Text("Delete permanently") },
         onClick = {
             setShowMenu(false)
-            supervisorIoScope.launch {
-                apolloClient.removeFileByLocation(location)
-                onRefresh()
-            }
+            DeleteFileDialog.set(location = location, isShown = true)
         }
     )
 }

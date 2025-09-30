@@ -51,6 +51,17 @@ fun Dialogs(
 
     )
 
+    DeleteFileDialog(
+        onConfirmed = {
+            FileFetcher.fetch(
+                location = location,
+                onResult = {
+                    setDisplayedData(it)
+                }
+            )
+        }
+    )
+
     ErrorMessage()
 
     InvalidFileMessage(
