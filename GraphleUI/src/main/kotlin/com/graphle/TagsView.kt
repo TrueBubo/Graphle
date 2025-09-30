@@ -11,6 +11,8 @@ import java.net.URI
 @Composable
 fun TagsView(
     displayedData: DisplayedData?,
+    setMode: (DisplayMode) -> Unit,
+    setDisplayedData: (DisplayedData?) -> Unit
 ) {
     val tags = displayedData?.tags ?: return
 
@@ -28,14 +30,14 @@ fun TagsView(
     Text(text = "URLs", fontWeight = FontWeight.Bold)
     FlowRow {
         urls.forEach {
-            TagBox(tag = it)
+            TagBox(tag = it, setMode = setMode, setDisplayedData = setDisplayedData)
         }
     }
 
     Text(text = "Tags", fontWeight = FontWeight.Bold)
     FlowRow {
         nonUrls.forEach {
-            TagBox(tag = it)
+            TagBox(tag = it, setMode = setMode, setDisplayedData = setDisplayedData)
         }
     }
 }

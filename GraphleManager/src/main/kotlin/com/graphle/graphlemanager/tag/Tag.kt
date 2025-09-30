@@ -8,9 +8,10 @@ import java.util.*
 @Node
 data class Tag(
     @GeneratedValue @Id val id: UUID?,
-    val name: String,
+    private val _name: String?,
     val value: String?,
 ) {
+    val name: String get() = _name!!
     constructor(name: String, value: String?) : this(
         null,
         name,
