@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 object DisplayedBody {
     @Composable
     operator fun invoke(
+        location: String,
         mode: DisplayMode,
         setMode: (DisplayMode) -> Unit,
         displayedData: DisplayedData?,
@@ -12,6 +13,7 @@ object DisplayedBody {
         setDisplayedData: (DisplayedData?) -> Unit,
     ) = when (mode) {
         DisplayMode.MainBody -> MainBody(
+            location = location,
             displayedData = displayedData,
             setMode = setMode,
             setLocation = setLocation,

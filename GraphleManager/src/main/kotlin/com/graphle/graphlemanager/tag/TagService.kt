@@ -33,6 +33,19 @@ class TagService(private val tagRepository: TagRepository) {
     }
 
     /**
+     * Deletes the tag from the database
+     * @param tag Tag to be removed
+     * @return Whether the tag was deleted
+     */
+    fun removeTag(location: AbsolutePathString, tag: Tag) {
+        if (tag.value != null) {
+            System.err.println("Removing tag with value: $tag")
+            tagRepository.removeTag(location,tag.name, tag.value)
+        }
+        else tagRepository.removeTag(location, tag.name)
+    }
+
+    /**
      * Retrieves the absolute paths of all the files containing the given tag
      * @param tagName name of tag to search for
      * @return Absolute paths of files with tag with the given [tagName]

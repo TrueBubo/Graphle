@@ -2,7 +2,9 @@ package com.graphle
 
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
+import com.apollographql.apollo.api.Optional
 import com.graphle.type.FileType
+import com.graphle.type.TagInput
 
 suspend fun fetchFilesFromFileByRelationship(
     fromLocation: String,
@@ -105,3 +107,15 @@ suspend fun filesByTag(
         )
     )
 }
+
+private suspend fun ApolloClient.removeTag(
+    location: String,
+    tag: Tag
+): ApolloResponse<RemoveTagMutation.Data> = mutation(RemoveTagMutation(
+    location, TagInput(tag.name, Optional.presentIfNotNull(tag.value)))
+).execute()
+
+suspend fun removeTag(
+    location: String,
+    tag: Tag
+) = apolloClient.removeTag(location, tag)

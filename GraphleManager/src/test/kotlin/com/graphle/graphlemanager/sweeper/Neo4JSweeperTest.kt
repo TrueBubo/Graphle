@@ -135,6 +135,21 @@ class Neo4JSweeperTest {
                 else _tags[fileLocation] = mutableListOf(newTag)
             }
 
+            override fun removeTag(
+                location: AbsolutePathString,
+                tagName: String,
+                tagValue: String
+            ) {
+                _tags[location]?.removeIf { it.name == tagName && it.value == tagValue }
+            }
+
+            override fun removeTag(
+                location: AbsolutePathString,
+                tagName: String
+            ) {
+                _tags[location]?.removeIf { it.name == tagName && it.value == null }
+            }
+
             override fun filesByTag(tagName: String): List<TagForFileFlattened> {
                 return _tags
                     .filter { pair ->
