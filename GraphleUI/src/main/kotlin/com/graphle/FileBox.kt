@@ -57,6 +57,7 @@ fun FileBox(
             ) {
                 FileMenu(
                     location = connection.to,
+                    connection = connection,
                     setShowMenu = { showMenu = it },
                     onRefresh = onRefresh,
                 )
