@@ -1,9 +1,9 @@
 package com.graphle.graphlemanager.tag
 
-import Neo4JBaseIntegrationTest
+import BaseIntegrationTest
 import kotlin.test.Test
 
-class TagIntegrationTests : Neo4JBaseIntegrationTest() {
+class TagIntegrationTests : BaseIntegrationTest() {
     @Test
     fun `insert tag`() {
         post { insertTagQuery }
