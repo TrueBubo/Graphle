@@ -32,21 +32,36 @@ fun FilesView(
                     FileBox(
                         connection = connection,
                         onResult = {
-                            setLocation(connection.to)
-                            setDisplayedData(it)
+                            if (it == null) {
+                                ErrorMessage.set(
+                                    showErrorMessage = true,
+                                    errorMessage = "Failed to load ${connection.to}, " +
+                                            "check the file exists and you have permission to read it.",
+                                )
+                            } else {
+                                setLocation(connection.to)
+                                setDisplayedData(it)
+                            }
                         },
                         onRefresh = {
                             supervisorIoScope.launch {
                                 FileFetcher.fetch(
                                     location = connection.from,
                                     onResult = { displayedInfo ->
-                                        setDisplayedData(
-                                            DisplayedData(
-                                                tags = displayedInfo?.tags ?: emptyList(),
-                                                connections = displayedInfo?.connections ?: emptyList(
+                                        if (displayedInfo == null) {
+                                            ErrorMessage.set(
+                                                showErrorMessage = true,
+                                                errorMessage = "Failed to load ${connection.from}, " +
+                                                        "check the file exists and you have permission to read it.",
+                                            )
+                                        } else {
+                                            setDisplayedData(
+                                                DisplayedData(
+                                                    tags = displayedInfo.tags,
+                                                    connections = displayedInfo.connections
                                                 )
                                             )
-                                        )
+                                        }
                                     }
                                 )
                             }
