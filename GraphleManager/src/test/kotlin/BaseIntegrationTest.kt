@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest(classes = [GraphleManagerApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-open class Neo4JBaseIntegrationTest {
+open class BaseIntegrationTest {
     @Autowired
     private lateinit var _mockMvc: MockMvc
 
