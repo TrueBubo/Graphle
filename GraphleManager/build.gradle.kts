@@ -4,6 +4,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 	id("com.netflix.dgs.codegen") version "8.0.4"
 	kotlin("jvm")
+    kotlin("plugin.serialization") version "2.2.20"
 }
 
 group = "com.graphle"
