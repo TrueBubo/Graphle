@@ -41,7 +41,7 @@ fun App(setTitle: (String) -> Unit = {}) {
         )
     }
 
-    val mode = remember {  mutableStateOf(DisplayMode.MainBody)  }
+    val mode = remember { mutableStateOf(DisplayMode.MainBody) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
 
@@ -54,7 +54,13 @@ fun App(setTitle: (String) -> Unit = {}) {
         ) {
             Dialogs(
                 location = location,
-                setDisplayedData = { displayedData = it },
+                setDisplayedData = {
+                    if (displayedData != null) displayedData = it
+                    else ErrorMessage.set(
+                        showErrorMessage = true,
+                        errorMessage = "Could not get data, check whether it exists and you have necessary permissions.",
+                    )
+                },
                 getDisplayedData = { displayedData },
                 isInvalidFile = displayedData == null,
             )
@@ -117,8 +123,15 @@ fun App(setTitle: (String) -> Unit = {}) {
                                 displayedData = displayedData,
                                 setLocation = { location = it },
                                 setDisplayedData = {
-                                    displayedData = it
-                                    showInvalidFileMessage = true
+                                    if (it == null) ErrorMessage.set(
+                                        showErrorMessage = true,
+                                        errorMessage = "Could not load the file, check whether it exists and " +
+                                                "you have necessary permissions."
+                                    )
+                                    else {
+                                        displayedData = it
+                                        showInvalidFileMessage = true
+                                    }
                                 },
                             )
                         }
