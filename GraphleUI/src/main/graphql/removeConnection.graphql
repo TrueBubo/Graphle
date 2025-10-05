@@ -1,0 +1,8 @@
+mutation removeConnection($connection: ConnectionInput!) {
+    removeConnection(connection: $connection) {
+        from,
+        to,
+        name,
+        value
+    }
+}

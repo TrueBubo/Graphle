@@ -19,7 +19,6 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
     }
 
     fun addConnection(connection: ConnectionInput) = with(connection) {
-        val bidirectional = connection.bidirectional
         when {
             (value == null) && bidirectional -> {
                 connectionRepository.addConnection(name, locationFrom, locationTo)
@@ -34,7 +33,22 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
             (value == null) && !bidirectional ->
                 connectionRepository.addConnection(name, locationFrom, locationTo)
 
-            (value != null) && !bidirectional -> connectionRepository.addConnection(name, value, locationFrom, locationTo)
+            (value != null) && !bidirectional -> connectionRepository.addConnection(
+                name,
+                value,
+                locationFrom,
+                locationTo
+            )
+        }
+    }
+
+    fun removeConnection(connection: ConnectionInput) = with(connection) {
+        if (value == null) {
+            connectionRepository.removeConnection(locationFrom, locationTo, name)
+            if (bidirectional) connectionRepository.removeConnection(locationFrom, locationTo, name)
+        } else {
+            connectionRepository.removeConnection(locationFrom, locationTo, name, value)
+            if (bidirectional) connectionRepository.removeConnection(locationTo, locationFrom, name, value)
         }
     }
 }

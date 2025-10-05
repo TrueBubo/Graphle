@@ -32,4 +32,18 @@ class ConnectionController(val connectionService: ConnectionService) {
             )
         }
     }
+
+    @MutationMapping
+    fun removeConnection(@Argument connection: ConnectionInput): Connection {
+        connectionService.removeConnection(connection)
+        return connection.run {
+            Connection(
+                name = name,
+                value = value,
+                from = locationFrom,
+                to = locationTo,
+                bidirectional = bidirectional
+            )
+        }
+    }
 }

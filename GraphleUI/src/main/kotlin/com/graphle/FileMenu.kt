@@ -14,6 +14,7 @@ import kotlin.io.path.Path
 @Composable
 fun FileMenu(
     location: String,
+    connection: Connection?,
     setShowMenu: (Boolean) -> Unit,
     onRefresh: () -> Unit
 ) {
@@ -86,6 +87,19 @@ fun FileMenu(
             setShowMenu(false)
         }
     )
+
+    if (connection != null && connection.name !in listOf("descendant", "parent")) {
+        DropdownMenuItem(
+            content = { Text("Remove relationship") },
+            onClick = {
+                supervisorIoScope.launch {
+                    removeRelationship(connection)
+                    onRefresh()
+                }
+                setShowMenu(false)
+            }
+        )
+    }
 
     DropdownMenuItem(
         content = { Text("Move to trash") },
