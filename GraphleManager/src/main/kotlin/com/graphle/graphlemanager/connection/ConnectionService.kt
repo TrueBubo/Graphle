@@ -21,34 +21,34 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
     fun addConnection(connection: ConnectionInput) = with(connection) {
         when {
             (value == null) && bidirectional -> {
-                connectionRepository.addConnection(name, locationFrom, locationTo)
-                connectionRepository.addConnection(name, locationTo, locationFrom)
+                connectionRepository.addConnection(name, from, to)
+                connectionRepository.addConnection(name, to, from)
             }
 
             (value != null) && bidirectional -> {
-                connectionRepository.addConnection(name, value, locationFrom, locationTo)
-                connectionRepository.addConnection(name, value, locationTo, locationFrom)
+                connectionRepository.addConnection(name, value, from, to)
+                connectionRepository.addConnection(name, value, to, from)
             }
 
             (value == null) && !bidirectional ->
-                connectionRepository.addConnection(name, locationFrom, locationTo)
+                connectionRepository.addConnection(name, from, to)
 
             (value != null) && !bidirectional -> connectionRepository.addConnection(
                 name,
                 value,
-                locationFrom,
-                locationTo
+                from,
+                to
             )
         }
     }
 
     fun removeConnection(connection: ConnectionInput) = with(connection) {
         if (value == null) {
-            connectionRepository.removeConnection(locationFrom, locationTo, name)
-            if (bidirectional) connectionRepository.removeConnection(locationFrom, locationTo, name)
+            connectionRepository.removeConnection(from, to, name)
+            if (bidirectional) connectionRepository.removeConnection(from, to, name)
         } else {
-            connectionRepository.removeConnection(locationFrom, locationTo, name, value)
-            if (bidirectional) connectionRepository.removeConnection(locationTo, locationFrom, name, value)
+            connectionRepository.removeConnection(from, to, name, value)
+            if (bidirectional) connectionRepository.removeConnection(to, from, name, value)
         }
     }
 }

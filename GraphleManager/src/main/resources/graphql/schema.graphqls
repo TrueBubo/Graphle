@@ -55,8 +55,8 @@ type FilesByTagResponse {
 input ConnectionInput {
     name: String! # How are the files related
     value: String
-    locationFrom: String! # The file location the relationship goes from
-    locationTo: String! # The file location the relationship goes to
+    from: String! # The file location the relationship goes from
+    to: String! # The file location the relationship goes to
     bidirectional: Boolean! # Whether the relationship is two-way (True) or one-way (False)
 }
 

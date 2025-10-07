@@ -5,7 +5,7 @@ import com.graphle.graphlemanager.file.AbsolutePathString
 data class ConnectionInput(
     val name: String,
     val value: String?,
-    val locationFrom: AbsolutePathString,
-    val locationTo: AbsolutePathString,
+    val from: AbsolutePathString,
+    val to: AbsolutePathString,
     val bidirectional: Boolean
 )
