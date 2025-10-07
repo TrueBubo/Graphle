@@ -1,9 +1,12 @@
 import com.graphle.graphlemanager.GraphleManagerApplication
+import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.serializer
+import org.junit.jupiter.api.AfterAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -13,7 +16,10 @@ import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@SpringBootTest(classes = [GraphleManagerApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [GraphleManagerApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @AutoConfigureMockMvc
 open class BaseIntegrationTest {
     @Autowired
@@ -44,18 +50,19 @@ open class BaseIntegrationTest {
     }
 
     @Suppress("UNCHECKED_CAST")
-    internal inline fun <reified T : Any> postListResponse(
+    internal inline fun <reified T : Any> fetchListPost(
         status: ResultMatcher = status().isOk,
         noinline content: () -> String
     ): List<T> {
         val responseObj = postObject(status, content)
+            .let { obj -> obj as? JsonArray ?: obj.jsonObject.values.firstOrNull { it is JsonArray } }
+            ?: error("Expected a JSON array inside the response object")
+
         val serializer = serializer(T::class.java)
         return Json.decodeFromJsonElement(
             ListSerializer(serializer), responseObj
         ) as List<T>
     }
-
-
 
     internal fun post(status: ResultMatcher = status().isOk, content: () -> String) =
         mockMvc.perform(

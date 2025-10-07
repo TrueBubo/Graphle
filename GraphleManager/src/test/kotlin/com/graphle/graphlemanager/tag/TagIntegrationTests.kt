@@ -1,9 +1,19 @@
 package com.graphle.graphlemanager.tag
 
 import BaseIntegrationTest
+import com.graphle.graphlemanager.sweeper.Neo4JSweeper
+import org.springframework.beans.factory.annotation.Autowired
+import kotlin.test.AfterTest
 import kotlin.test.Test
 
-class TagIntegrationTests : BaseIntegrationTest() {
+class TagIntegrationTests(
+    @Autowired private val neo4JSweeper: Neo4JSweeper
+) : BaseIntegrationTest() {
+    @AfterTest
+    fun tearDown() {
+        neo4JSweeper.sweep()
+    }
+
     @Test
     fun `insert tag`() {
         post { insertTagQuery }
@@ -12,7 +22,7 @@ class TagIntegrationTests : BaseIntegrationTest() {
     @Test
     fun `tag was inserted and fetched`() {
         post { insertTagQuery }
-        postListResponse<Tag> { fetchTagQuery }
+        fetchListPost<Tag> { fetchTagQuery }
     }
 
     private val insertTagQuery = mutation {
