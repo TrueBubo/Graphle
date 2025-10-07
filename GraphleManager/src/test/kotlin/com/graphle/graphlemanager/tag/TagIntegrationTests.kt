@@ -1,36 +1,52 @@
 package com.graphle.graphlemanager.tag
 
 import BaseIntegrationTest
+import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.beans.factory.annotation.Autowired
-import kotlin.test.AfterTest
+import strikt.api.expectThat
+import strikt.assertions.first
+import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
 import kotlin.test.Test
 
 class TagIntegrationTests(
+    @Autowired private val tagService: TagService,
+    @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
 ) : BaseIntegrationTest() {
-    @AfterTest
-    fun tearDown() {
-        neo4JSweeper.sweep()
+    @Test
+    fun `insert tag`() = fileTestUtils.withTempFiles { files ->
+        try {
+            post { insertTagQuery(location = files[0].absolutePath) }
+        } finally {
+            tagService.removeTag(files[0].absolutePath, Tag(name = "exampleTag", value = "exampleValue"))
+        }
     }
 
     @Test
-    fun `insert tag`() {
-        post { insertTagQuery }
+    fun `tag was inserted and fetched`() = fileTestUtils.withTempFiles { files ->
+        try {
+            post { insertTagQuery(location = files[0].absolutePath) }
+            expectThat(fetchListPost<Tag> { fetchTagQuery(location = files[0].absolutePath) })
+                .hasSize(1)
+                .first()
+                .and {
+                    get { name }.isEqualTo("tmp_exampleTag")
+                    get { value }.isEqualTo("tmp_exampleValue")
+                }
+        } finally {
+            tagService.removeTag(files[0].absolutePath, Tag(name = "tmp_exampleTag", value = "tmp_exampleValue"))
+        }
     }
 
-    @Test
-    fun `tag was inserted and fetched`() {
-        post { insertTagQuery }
-        fetchListPost<Tag> { fetchTagQuery }
+
+    private fun insertTagQuery(location: String) = mutation {
+        addTagToFile(location, Tag("tmp_exampleTag", "tmp_exampleValue"))
     }
 
-    private val insertTagQuery = mutation {
-        addTagToFile("/test", Tag("exampleTag", "exampleValue"))
-    }
-
-    private val fetchTagQuery = query {
-        tagsByFileLocation("/test")
+    private fun fetchTagQuery(location: String) = query {
+        tagsByFileLocation(location)
     }
 
     companion object {

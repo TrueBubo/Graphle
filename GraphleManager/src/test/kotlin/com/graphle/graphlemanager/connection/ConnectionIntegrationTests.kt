@@ -4,7 +4,6 @@ import BaseIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
-import org.junit.jupiter.api.AfterAll
 import org.springframework.beans.factory.annotation.Autowired
 import strikt.api.expectThat
 import strikt.assertions.first
@@ -14,8 +13,8 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 
 class ConnectionIntegrationTests(
-    @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val connectionService: ConnectionService,
+    @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
 ) : BaseIntegrationTest() {
     private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
