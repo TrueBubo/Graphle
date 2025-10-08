@@ -16,4 +16,7 @@ interface FileRepository : Neo4jRepository<File, UUID> {
 
     @Query("MATCH (:File {location: \$fromLocation})-[:Relationship {name: \$relationshipName}]-(toFile:File) RETURN toFile.location")
     fun getFileLocationsByConnections(fromLocation: AbsolutePathString, relationshipName: String): List<AbsolutePathString>
+
+    @Query("MATCH (f:File {location: \$locationFrom}) SET f.location = \$locationTo")
+    fun moveFile(locationFrom: AbsolutePathString, locationTo: AbsolutePathString)
 }

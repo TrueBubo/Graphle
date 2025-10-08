@@ -25,23 +25,21 @@ class ConnectionIntegrationTests(
     }
 
     @Test
-    fun `insert connection`() = fileTestUtils.withTempFiles(count = 2) {
+    fun `insert connection`() = fileTestUtils.withTempFiles(count = 2) { (from, to) ->
         try {
-            post { insertConnectionQuery(from = it[0].absolutePath, to = it[1].absolutePath) }
+            post { insertConnectionQuery(from = from.absolutePath, to = to.absolutePath) }
         } finally {
-            removeConnectionDb(from = it[0].absolutePath, to = it[1].absolutePath)
+            removeConnectionDb(from = from.absolutePath, to = to.absolutePath)
         }
     }
 
 
     @Test
-    fun `connection was inserted and fetched`() = fileTestUtils.withTempFiles(count = 2) { files ->
-        val from = files[0].absolutePath
-        val to = files[1].absolutePath
+    fun `connection was inserted and fetched`() = fileTestUtils.withTempFiles(count = 2) { (from, to) ->
         try {
-            post { insertConnectionQuery(from = from, to = to) }
+            post { insertConnectionQuery(from = from.absolutePath, to = to.absolutePath) }
             expectThat(
-                fetchListPost<Connection> { fetchConnectionsQuery(files[0].absolutePath) }
+                fetchListPost<Connection> { fetchConnectionsQuery(from.absolutePath) }
                     .filter { it.name == "tmp_connection_$randomString" }
             )
                 .hasSize(1)
@@ -51,7 +49,7 @@ class ConnectionIntegrationTests(
                     get { to }.isEqualTo(to)
                 }
         } finally {
-            removeConnectionDb(from = from, to = to)
+            removeConnectionDb(from = from.absolutePath, to = to.absolutePath)
         }
 
     }
