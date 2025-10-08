@@ -95,6 +95,13 @@ class Neo4JSweeperTest {
                 relationshipName: String
             ) = TODO("Not necessary for tests")
 
+            override fun moveFile(
+                locationFrom: AbsolutePathString,
+                locationTo: AbsolutePathString
+            ) {
+                TODO("Not necessary for tests")
+            }
+
             override fun findAll(): List<File> = files.toList().map { File(it, listOf(), listOf()) }
         }
 

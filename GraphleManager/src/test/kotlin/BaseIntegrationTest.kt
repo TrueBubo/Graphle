@@ -1,12 +1,11 @@
 import com.graphle.graphlemanager.GraphleManagerApplication
-import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.serializer
-import org.junit.jupiter.api.AfterAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -40,11 +39,12 @@ open class BaseIntegrationTest {
         return responseObj
     }
 
-    internal inline fun <reified T : Any> post(
+    internal inline fun <reified T> post(
         status: ResultMatcher = status().isOk,
         noinline content: () -> String
-    ): T {
+    ): T? {
         val responseObj = postObject(status, content)
+        if (responseObj is JsonNull) return null
         val serializer = serializer(T::class.java)
         return Json.decodeFromJsonElement(serializer, responseObj) as T
     }
