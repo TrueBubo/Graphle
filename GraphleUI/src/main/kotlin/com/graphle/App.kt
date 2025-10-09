@@ -111,6 +111,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                     } else {
                         item {
                             DisplayedBody(
+                                location = location,
                                 mode = mode.value,
                                 setMode = { mode.value = it },
                                 displayedData = displayedData,
