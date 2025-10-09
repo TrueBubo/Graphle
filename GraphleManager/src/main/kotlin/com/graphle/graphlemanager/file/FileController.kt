@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.file
 
+import com.graphle.graphlemanager.commons.normalize
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionController
 import com.graphle.graphlemanager.tag.TagController
@@ -36,6 +37,7 @@ class FileController(
      */
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString, @Argument showHiddenFiles: Boolean = true): File? {
+        val location = location.normalize()
         val descendants = fileService.descendantsOfFile(location)
             .map {
                 Connection(
@@ -84,7 +86,7 @@ class FileController(
     }
 
     @QueryMapping
-    fun fileType(@Argument location: AbsolutePathString): FileType? = fileService.fileType(location)
+    fun fileType(@Argument location: AbsolutePathString): FileType? = fileService.fileType(location.normalize())
 
     /**
      * Finds file locations related to [fromLocation] file via the relationship named [relationshipName]
@@ -97,7 +99,7 @@ class FileController(
         @Argument fromLocation: AbsolutePathString,
         @Argument relationshipName: String
     ): List<Connection> =
-        fileService.filesFromFileByRelationship(fromLocation, relationshipName)
+        fileService.filesFromFileByRelationship(fromLocation.normalize(), relationshipName)
             .also { connections -> fileService.insertFilesToCompleter(connections.map { it.to }) }
 
     /**
@@ -135,8 +137,8 @@ class FileController(
      */
     @MutationMapping
     fun addFile(@Argument location: AbsolutePathString): File {
-        fileService.addFile(location)
-        return File(location, listOf(), listOf())
+        fileService.addFile(location.normalize())
+        return File(location.normalize(), listOf(), listOf())
     }
 
     /**
@@ -147,7 +149,7 @@ class FileController(
      */
     @MutationMapping
     fun removeFile(@Argument location: AbsolutePathString): AbsolutePathString {
-        fileService.removeFile(location)
+        fileService.removeFile(location.normalize())
         return location
     }
 
@@ -162,7 +164,7 @@ class FileController(
         @Argument locationFrom: AbsolutePathString,
         @Argument locationTo: AbsolutePathString
     ): MoveFileResponse {
-        fileService.moveFile(locationFrom, locationTo)
-        return MoveFileResponse(locationFrom, locationTo)
+        fileService.moveFile(locationFrom.normalize(), locationTo.normalize())
+        return MoveFileResponse(locationFrom.normalize(), locationTo.normalize())
     }
 }
