@@ -166,7 +166,12 @@ fun TopBar(
         }
         TextField(
             value = dslCommand,
-            onValueChange = { dslCommand = it },
+            onValueChange = {
+                dslCommand = it
+                supervisorIoScope.launch {
+                    DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
+                }
+            },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()

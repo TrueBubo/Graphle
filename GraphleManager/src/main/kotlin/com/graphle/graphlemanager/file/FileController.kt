@@ -78,7 +78,7 @@ class FileController(
                 location = location,
                 tags = tagController.tagsByFileLocation(location),
                 connections = connections
-
+                    .also { fileService.insertFilesToCompleter(connections.map { it.to }) }
             )
         } else null
     }
@@ -98,6 +98,7 @@ class FileController(
         @Argument relationshipName: String
     ): List<Connection> =
         fileService.filesFromFileByRelationship(fromLocation, relationshipName)
+            .also { connections -> fileService.insertFilesToCompleter(connections.map { it.to }) }
 
     /**
      * GraphQL client will return this error if there was an error with writing the file
@@ -161,7 +162,6 @@ class FileController(
         @Argument locationFrom: AbsolutePathString,
         @Argument locationTo: AbsolutePathString
     ): MoveFileResponse {
-        println("Got to move")
         fileService.moveFile(locationFrom, locationTo)
         return MoveFileResponse(locationFrom, locationTo)
     }

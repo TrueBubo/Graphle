@@ -56,6 +56,7 @@ object DSLWebSocketManager {
         for (frame in incoming) {
             if (frame is Frame.Text) {
                 val text = frame.readText()
+                println(text)
                 try {
                     val parsed = Json.decodeFromString<List<String>>(text)
                     _messages.emit(parsed)
