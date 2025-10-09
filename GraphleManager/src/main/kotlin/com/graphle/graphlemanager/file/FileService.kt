@@ -2,6 +2,11 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.dsl.FilenameCompleterService
+import io.micrometer.common.util.StringUtils.isNotEmpty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.io.File
@@ -15,6 +20,8 @@ class FileService(
     private val fileRepository: FileRepository,
     private val filenameCompleterService: FilenameCompleterService
 ) {
+    private val supervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     fun filesFromFileByRelationship(
         fromLocation: AbsolutePathString,
         relationshipName: String
@@ -28,6 +35,7 @@ class FileService(
                     to = it,
                 )
             }
+
             "parent" -> (parentOfFile(fromLocation)?.let { listOf(it) } ?: emptyList()).map {
                 Connection(
                     name = "parent",
@@ -36,6 +44,7 @@ class FileService(
                     to = it,
                 )
             }
+
             else -> fileRepository.getFileLocationsByConnections(fromLocation, relationshipName).map {
                 Connection(
                     name = relationshipName,
@@ -69,7 +78,7 @@ class FileService(
         location: AbsolutePathString,
         createFileAction: (AbsolutePathString) -> Unit = { Files.createFile(Path(it)) }
     ) {
-        filenameCompleterService.completer.insert(location.split(File.separator))
+        insertFilesToCompleter(listOf(location))
         createFileAction(location)
     }
 
@@ -99,6 +108,16 @@ class FileService(
             fileRepository.moveFile(fromLocation, toLocation)
         } catch (e: Exception) {
             System.err.println("Cannot move file from $fromLocation to ${toLocation}: $e")
+        }
+    }
+
+    fun insertFilesToCompleter(locations: List<AbsolutePathString>) {
+        supervisorScope.launch {
+            locations.forEach { location ->
+                filenameCompleterService.completer.insert(
+                    location.split(File.separator).filter(::isNotEmpty)
+                )
+            }
         }
     }
 }
