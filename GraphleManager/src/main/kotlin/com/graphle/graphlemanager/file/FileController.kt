@@ -161,6 +161,7 @@ class FileController(
         @Argument locationFrom: AbsolutePathString,
         @Argument locationTo: AbsolutePathString
     ): MoveFileResponse {
+        println("Got to move")
         fileService.moveFile(locationFrom, locationTo)
         return MoveFileResponse(locationFrom, locationTo)
     }
