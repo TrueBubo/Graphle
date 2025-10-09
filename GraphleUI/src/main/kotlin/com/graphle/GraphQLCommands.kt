@@ -3,6 +3,7 @@ package com.graphle
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
 import com.apollographql.apollo.api.Optional
+import com.graphle.type.ConnectionInput
 import com.graphle.type.FileType
 import com.graphle.type.TagInput
 
@@ -119,3 +120,21 @@ suspend fun removeTag(
     location: String,
     tag: Tag
 ) = apolloClient.removeTag(location, tag)
+
+private suspend fun ApolloClient.removeRelationship(
+    relationship: Connection
+) {
+    mutation(RemoveConnectionMutation(
+        connection = relationship.run { ConnectionInput(
+            name = name,
+            value = Optional.presentIfNotNull(value),
+            locationFrom = from,
+            locationTo = to,
+            bidirectional = false
+        ) }
+    )).execute()
+}
+
+suspend fun removeRelationship(
+    relationship: Connection
+) = apolloClient.removeRelationship(relationship)
