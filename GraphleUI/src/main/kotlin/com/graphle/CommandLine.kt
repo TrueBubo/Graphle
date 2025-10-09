@@ -93,6 +93,7 @@ fun TopBar(
             DropdownMenu(expanded = showAppMenu, onDismissRequest = { showAppMenu = false }) {
                 FileMenu(
                     location = location,
+                    connection = null,
                     setShowMenu = { showAppMenu = it },
                     onRefresh = {
                         supervisorIoScope.launch {

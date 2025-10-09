@@ -28,4 +28,20 @@ interface ConnectionRepository : Neo4jRepository<NeighborConnection, UUID> {
         locationFrom: AbsolutePathString,
         locationTo: AbsolutePathString,
     )
+
+    @Query("MATCH (:File {location: \$locationFrom})-[r:Relationship {name: \$name, value: \$value}]->(:File {location: \$locationTo}) DELETE r")
+    fun removeConnection(
+        locationFrom: AbsolutePathString,
+        locationTo: AbsolutePathString,
+        name: String,
+        value: String
+    )
+
+    @Query("MATCH (:File {location: \$locationFrom})-[r:Relationship]" +
+            "->(:File {location: \$locationTo}) WHERE r.name = \$name AND r.value IS NULL DELETE r")
+    fun removeConnection(
+        locationFrom: AbsolutePathString,
+        locationTo: AbsolutePathString,
+        name: String,
+    )
 }
