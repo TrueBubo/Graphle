@@ -10,9 +10,11 @@ import java.net.URI
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsView(
+    location: String,
     displayedData: DisplayedData?,
     setMode: (DisplayMode) -> Unit,
-    setDisplayedData: (DisplayedData?) -> Unit
+    setDisplayedData: (DisplayedData?) -> Unit,
+    onRefresh: suspend () -> Unit,
 ) {
     val tags = displayedData?.tags ?: return
 
@@ -30,14 +32,14 @@ fun TagsView(
     Text(text = "URLs", fontWeight = FontWeight.Bold)
     FlowRow {
         urls.forEach {
-            TagBox(tag = it, setMode = setMode, setDisplayedData = setDisplayedData)
+            TagBox(tag = it, setMode = setMode, location = location, onRefresh = onRefresh, setDisplayedData = setDisplayedData)
         }
     }
 
     Text(text = "Tags", fontWeight = FontWeight.Bold)
     FlowRow {
         nonUrls.forEach {
-            TagBox(tag = it, setMode = setMode, setDisplayedData = setDisplayedData)
+            TagBox(tag = it, setMode = setMode, location = location, onRefresh = onRefresh, setDisplayedData = setDisplayedData)
         }
     }
 }

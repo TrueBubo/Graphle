@@ -26,7 +26,8 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagValue Value of the [tagName] property
      * @return Inserted tag
      */
-    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName, value: \$tagValue}) MERGE (f)-[:HasTag]->(t)")
+    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName, value: \$tagValue}) " +
+            "MERGE (f)-[:HasTag]->(t)")
     fun addTagToFile(fileLocation: AbsolutePathString, tagName: String, tagValue: String)
 
     /**
@@ -35,15 +36,35 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagName Tag the system associate will with the file
      * @return Inserted tag
      */
-    @Query("MERGE (f:File {location: \$fileLocation}) MERGE (t:Tag {name: \$tagName}) MERGE (f)-[:HasTag]->(t)")
+    @Query("MATCH (f:File {location: \$fileLocation}) OPTIONAL MATCH (t:Tag {name: \$tagName}) " +
+            "WITH f, t WHERE t IS NOT NULL AND t.value IS NULL MERGE (f)-[:HasTag]->(t)")
     fun addTagToFile(fileLocation: AbsolutePathString, tagName: String)
+
+    /**
+     * Deletes the tag from the database
+     * @param location Location the tag is connected with
+     * @param tagName Tag the system associate will with the file
+     * @param tagValue Value of the [tagName] property
+     */
+    @Query("MATCH (:File {location: \$location})-[r:HasTag]->(t:Tag {name: \$tagName, value: \$tagValue}) " +
+            "DELETE r WITH t WHERE NOT (t)--() DELETE t")
+    fun removeTag(location: AbsolutePathString, tagName: String, tagValue: String)
+
+    /**
+     * Deletes the tag from the database
+     * @param tagName Tag the system associate will with the file
+     */
+    @Query("MATCH (:File {location: \$location})-[r:HasTag]->(t:Tag) WHERE t.name = \$tagName AND t.value " +
+            "IS NULL DELETE r WITH t WHERE NOT (t)--() DELETE t")
+    fun removeTag(location: AbsolutePathString, tagName: String)
 
     /**
      * Retrieves the absolute paths of all the files containing the given tag
      * @param tagName name of tag to search for
      * @return Absolute paths of files with tag with the given name
      */
-    @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location as location, tag.name as tagName, tag.value as tagValue")
+    @Query("MATCH (file:File)-[:HasTag]-(tag:Tag {name: \$tagName}) return file.location as location, " +
+            "tag.name as tagName, tag.value as tagValue")
     fun filesByTag(tagName: String): List<TagForFileFlattened>
 
     /**

@@ -25,10 +25,12 @@ private fun textsForTag(tag: Tag): List<String> = buildList {
 
 @Composable
 fun TagBox(
+    location: String,
     tag: Tag,
     setMode: (DisplayMode) -> Unit,
     setDisplayedData: (DisplayedData) -> Unit,
     uriHandler: UriHandler = LocalUriHandler.current,
+    onRefresh: suspend () -> Unit,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     Box(Modifier.padding(bottom = 10.dp)) {
@@ -90,6 +92,10 @@ fun TagBox(
             DropdownMenuItem(
                 content = { Text("Delete") },
                 onClick = {
+                    supervisorIoScope.launch {
+                        removeTag(location = location, tag = tag)
+                        onRefresh()
+                    }
                     showMenu = false
                 }
             )

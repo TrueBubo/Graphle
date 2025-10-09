@@ -1,0 +1,6 @@
+mutation removeTag($location: String!, $tag: TagInput!) {
+    removeTag(location: $location, tag: $tag) {
+        name
+        value
+    }
+}

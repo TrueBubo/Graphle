@@ -33,6 +33,13 @@ class TagController(private val tagService: TagService) {
         return Tag(tag.name, tag.value)
     }
 
+    @MutationMapping
+    fun removeTag(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
+        val tag = tag.let { Tag(it.name, it.value) }
+        tagService.removeTag(location, tag)
+        return tag
+    }
+
     /**
      * Retrieves the absolute paths of all the files containing the given tag
      * @param tagName name of tag to search for
