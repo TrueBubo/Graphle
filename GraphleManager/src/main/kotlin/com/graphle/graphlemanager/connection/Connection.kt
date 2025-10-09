@@ -2,6 +2,7 @@ package com.graphle.graphlemanager.connection
 
 import com.graphle.graphlemanager.file.AbsolutePathString
 
+@kotlinx.serialization.Serializable
 data class Connection(
     val name: String,
     val value: String? = null,

@@ -26,8 +26,8 @@ class ConnectionController(val connectionService: ConnectionService) {
             Connection(
                 name = name,
                 value = value,
-                from = locationFrom,
-                to = locationTo,
+                from = from,
+                to = to,
                 bidirectional = bidirectional
             )
         }
@@ -40,8 +40,8 @@ class ConnectionController(val connectionService: ConnectionService) {
             Connection(
                 name = name,
                 value = value,
-                from = locationFrom,
-                to = locationTo,
+                from = from,
+                to = to,
                 bidirectional = bidirectional
             )
         }

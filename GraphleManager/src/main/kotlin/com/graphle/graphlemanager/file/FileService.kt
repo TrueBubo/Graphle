@@ -86,16 +86,19 @@ class FileService(
     }
 
     fun moveFile(
-        locationFrom: AbsolutePathString,
-        locationTo: AbsolutePathString,
+        fromLocation: AbsolutePathString,
+        toLocation: AbsolutePathString,
         moveFileAction: (AbsolutePathString, AbsolutePathString) -> Unit = { from, to ->
             Files.move(Path(from), Path(to))
         }
     ) {
         try {
-            moveFileAction(locationFrom, locationTo)
+            println("Before moving file from $fromLocation to $toLocation")
+            moveFileAction(fromLocation, toLocation)
+            println("After moving file from $fromLocation to $toLocation")
+            fileRepository.moveFile(fromLocation, toLocation)
         } catch (e: Exception) {
-            System.err.println("Cannot move file from $locationFrom to ${locationTo}: $e")
+            System.err.println("Cannot move file from $fromLocation to ${toLocation}: $e")
         }
     }
 }
