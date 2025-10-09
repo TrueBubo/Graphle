@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.tag
 
+import com.graphle.graphlemanager.commons.normalize
 import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -19,7 +20,7 @@ class TagController(private val tagService: TagService) {
      */
     @QueryMapping
     fun tagsByFileLocation(@Argument location: AbsolutePathString): List<Tag> =
-        tagService.tagsByFileLocation(location)
+        tagService.tagsByFileLocation(location.normalize())
 
     /**
      * Marks the given file with a tag via a connection to a tag node
@@ -29,14 +30,14 @@ class TagController(private val tagService: TagService) {
      */
     @MutationMapping
     fun addTagToFile(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
-        tagService.addTagToFile(location, tag)
+        tagService.addTagToFile(location.normalize(), tag)
         return Tag(tag.name, tag.value)
     }
 
     @MutationMapping
     fun removeTag(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
         val tag = tag.let { Tag(it.name, it.value) }
-        tagService.removeTag(location, tag)
+        tagService.removeTag(location.normalize(), tag)
         return tag
     }
 

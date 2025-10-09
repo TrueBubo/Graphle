@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.connection
 
+import com.graphle.graphlemanager.commons.normalize
 import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -17,17 +18,21 @@ class ConnectionController(val connectionService: ConnectionService) {
      * @return List of neighbors
      */
     fun neighborsByFileLocation(locationFrom: AbsolutePathString): List<NeighborConnection> =
-        connectionService.neighborsByFileLocation(locationFrom)
+        connectionService.neighborsByFileLocation(locationFrom.normalize())
 
     @MutationMapping
     fun addConnection(@Argument connection: ConnectionInput): Connection {
-        connectionService.addConnection(connection)
+        connectionService.addConnection(
+            connection.copy(
+                from = connection.from.normalize(),
+                to = connection.to.normalize())
+        )
         return connection.run {
             Connection(
                 name = name,
                 value = value,
-                from = from,
-                to = to,
+                from = from.normalize(),
+                to = to.normalize(),
                 bidirectional = bidirectional
             )
         }
@@ -35,13 +40,18 @@ class ConnectionController(val connectionService: ConnectionService) {
 
     @MutationMapping
     fun removeConnection(@Argument connection: ConnectionInput): Connection {
-        connectionService.removeConnection(connection)
+        connectionService.removeConnection(
+            connection.copy(
+                from = connection.from.normalize(),
+                to = connection.to.normalize()
+            )
+        )
         return connection.run {
             Connection(
                 name = name,
                 value = value,
-                from = from,
-                to = to,
+                from = from.normalize(),
+                to = to.normalize(),
                 bidirectional = bidirectional
             )
         }
