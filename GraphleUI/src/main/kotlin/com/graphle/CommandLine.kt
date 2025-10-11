@@ -60,6 +60,7 @@ val fieldHeight = 56.dp
 @Composable
 fun TopBar(
     location: String,
+    setLocation: (String) -> Unit,
     onResult: (DisplayedData?) -> Unit,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean,
@@ -91,6 +92,24 @@ fun TopBar(
             }
 
             DropdownMenu(expanded = showAppMenu, onDismissRequest = { showAppMenu = false }) {
+                DropdownMenuItem(
+                    content = { Text("Open Home") },
+                    onClick = {
+                        showAppMenu = false
+                        supervisorIoScope.launch {
+                            FileFetcher.fetch(
+                                location = userHome,
+                                onResult = {
+                                    onResult(it)
+                                    setLocation(userHome)
+                                }
+                            )
+                        }
+                    }
+                )
+
+                Divider()
+
                 FileMenu(
                     location = location,
                     connection = null,
@@ -114,6 +133,16 @@ fun TopBar(
                 )
 
                 Divider()
+
+                DropdownMenuItem(
+                    content = { Text("Open Trash") },
+                    onClick = {
+                        showAppMenu = false
+                        supervisorIoScope.launch {
+                            Trash.openTrash(setDisplayedData = onResult, setLocation = setLocation)
+                        }
+                    }
+                )
 
                 DropdownMenuItem(
                     content = {

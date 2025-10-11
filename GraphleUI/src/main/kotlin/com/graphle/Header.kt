@@ -7,12 +7,14 @@ import androidx.compose.runtime.Composable
 @Composable
 fun Header(
     location: String,
+    setLocation: (String) -> Unit,
     setDisplayedData: (DisplayedData?) -> Unit,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean
 ) {
     TopBar(
         location = location,
+        setLocation = setLocation,
         onResult = {
             InvalidFileMessage.showInvalidFileMessage = true
             setDisplayedData(it)
