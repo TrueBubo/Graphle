@@ -1,16 +1,14 @@
 package com.graphle
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Divider
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -24,8 +22,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -55,6 +60,49 @@ private fun WebSocketFailedPopUp() {
     )
 }
 
+private fun processSelectSuggestion(
+    event: KeyEvent,
+    selectedIndex: Int,
+    setSelectedIndex: (Int) -> Unit,
+    autocompleteList: List<String>,
+    setDslCommand: (String) -> Unit,
+    setAreSuggestionsShown: (Boolean) -> Unit
+): Boolean = when {
+    event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown -> {
+        setSelectedIndex((selectedIndex + 1).coerceAtMost(autocompleteList.lastIndex))
+        true
+    }
+
+    event.type == KeyEventType.KeyDown && !event.isShiftPressed && event.key == Key.Tab -> {
+        setSelectedIndex((selectedIndex + 1).coerceAtMost(autocompleteList.lastIndex))
+        true
+    }
+
+    event.type == KeyEventType.KeyDown && event.key == Key.DirectionUp -> {
+        setSelectedIndex((selectedIndex - 1).coerceAtLeast(0))
+        true
+    }
+
+    event.type == KeyEventType.KeyDown && event.isShiftPressed && event.key == Key.Tab -> {
+        setSelectedIndex((selectedIndex - 1).coerceAtMost(autocompleteList.lastIndex))
+        true
+    }
+
+    event.type == KeyEventType.KeyDown && event.key == Key.Enter -> {
+        if (selectedIndex in autocompleteList.indices) {
+            setDslCommand(autocompleteList[selectedIndex])
+            setAreSuggestionsShown(false)
+            setSelectedIndex(-1)
+            true
+        } else {
+            false
+        }
+    }
+
+    else -> false
+}
+
+
 val fieldHeight = 56.dp
 
 @Composable
@@ -65,159 +113,96 @@ fun TopBar(
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean,
 ) {
-    var dslValue by remember { mutableStateOf("") }
+    var autocompleteList by remember { mutableStateOf<List<String>>(emptyList()) }
+    var areSuggestionsShown by remember { mutableStateOf(false) }
     var dslCommand by remember { mutableStateOf("") }
     var showAppMenu by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableStateOf(-1) }
 
     LaunchedEffect(Unit) {
         DSLWebSocketManager.connect()
 
         // Listen for autocomplete messages
         DSLWebSocketManager.messages.collect { list ->
-            dslValue = list.joinToString("\n")
+            autocompleteList = list
+            areSuggestionsShown = autocompleteList.isNotEmpty() && dslCommand.isNotEmpty()
         }
     }
 
-    Text(dslValue)
     Row {
+        AppMenu(
+            showAppMenu = showAppMenu,
+            setShowAppMenu = { showAppMenu = it },
+            onResult = onResult,
+            location = location,
+            setLocation = setLocation,
+            setDarkMode = setDarkMode,
+            getDarkMode = getDarkMode,
+        )
         Box {
-            Button(
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.surface),
-                onClick = {
-                    showAppMenu = true
-                },
-                modifier = Modifier.height(fieldHeight)
-            ) {
-                Text("☰")
-            }
-
-            DropdownMenu(expanded = showAppMenu, onDismissRequest = { showAppMenu = false }) {
-                DropdownMenuItem(
-                    content = { Text("Open Home") },
-                    onClick = {
-                        showAppMenu = false
+            Column {
+                TextField(
+                    value = dslCommand,
+                    onValueChange = {
+                        dslCommand = it
                         supervisorIoScope.launch {
-                            FileFetcher.fetch(
-                                location = userHome,
-                                onResult = {
-                                    onResult(it)
-                                    setLocation(userHome)
-                                }
-                            )
-                        }
-                    }
-                )
-
-                Divider()
-
-                FileMenu(
-                    location = location,
-                    connection = null,
-                    setShowMenu = { showAppMenu = it },
-                    onRefresh = {
-                        supervisorIoScope.launch {
-                            FileFetcher.fetch(
-                                location = location,
-                                onResult = { displayedInfo ->
-                                    onResult(
-                                        DisplayedData(
-                                            tags = displayedInfo?.tags ?: emptyList(),
-                                            connections = displayedInfo?.connections ?: emptyList(
-                                            )
-                                        )
-                                    )
-                                }
-                            )
-                        }
-                    }
-                )
-
-                Divider()
-
-                DropdownMenuItem(
-                    content = { Text("Open Trash") },
-                    onClick = {
-                        showAppMenu = false
-                        supervisorIoScope.launch {
-                            Trash.openTrash(setDisplayedData = onResult, setLocation = setLocation)
-                        }
-                    }
-                )
-
-                DropdownMenuItem(
-                    content = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Show Hidden Files")
-                            Spacer(Modifier.weight(1f))
-                            Checkbox(
-                                checked = FileFetcher.showHiddenFiles,
-                                onCheckedChange = null
-                            )
+                            DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
                         }
                     },
-                    onClick = {
-                        FileFetcher.showHiddenFiles = !FileFetcher.showHiddenFiles
-
-                        showAppMenu = false
-                        supervisorIoScope.launch {
-                            FileFetcher.fetch(
-                                location = location,
-                                onResult = onResult
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(fieldHeight)
+                        .onPreviewKeyEvent { event ->
+                            processSelectSuggestion(
+                                event = event,
+                                selectedIndex = selectedIndex,
+                                setSelectedIndex = { selectedIndex = it },
+                                autocompleteList = autocompleteList,
+                                setDslCommand = { dslCommand = it },
+                                setAreSuggestionsShown = { areSuggestionsShown = it }
                             )
-                        }
-                    }
+                        },
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = MaterialTheme.colors.primaryVariant,
+                    )
                 )
 
-                DropdownMenuItem(
-                    content = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Dark mode")
-                            Spacer(Modifier.weight(1f))
-                            Checkbox(
-                                checked = getDarkMode(),
-                                onCheckedChange = null
-                            )
-                        }
-                    },
-                    onClick = {
-                        setDarkMode(!getDarkMode())
-
-                        showAppMenu = false
-                        supervisorIoScope.launch {
-                            FileFetcher.fetch(
-                                location = location,
-                                onResult = onResult
-                            )
-                        }
-                    }
-                )
             }
         }
-        TextField(
-            value = dslCommand,
-            onValueChange = {
-                dslCommand = it
-                supervisorIoScope.launch {
-                    DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
-                }
-            },
-            singleLine = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(fieldHeight),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.primaryVariant,
-            )
-        )
     }
 
-    Button(
-        onClick = {
-            supervisorIoScope.launch {
-                DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
+    if (areSuggestionsShown) {
+        Box {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colors.surface)
+                    .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.2f))
+            ) {
+                autocompleteList.forEachIndexed { index, suggestion ->
+                    val isSelected = index == selectedIndex
+                    DropdownMenuItem(
+                        onClick = {
+                            dslCommand = suggestion
+                            areSuggestionsShown = false
+                            selectedIndex = -1
+                        }
+                    ) {
+                        Text(
+                            text = suggestion,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (isSelected) MaterialTheme.colors.primaryVariant else Color.Transparent
+                                )
+                                .padding(8.dp),
+                        )
+                    }
+                }
             }
         }
-    ) { Text("DSL") }
+    }
 
     WebSocketFailedPopUp()
 }
