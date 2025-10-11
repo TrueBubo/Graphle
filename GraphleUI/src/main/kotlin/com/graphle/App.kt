@@ -69,6 +69,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                 stickyHeader {
                     Header(
                         location = location,
+                        setLocation = { location = it },
                         setDisplayedData = { displayedData = it },
                         setDarkMode = { isDarkTheme = it },
                         getDarkMode = { isDarkTheme }
