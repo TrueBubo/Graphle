@@ -40,7 +40,7 @@ meaning it is easy to find developers who can work on this project.
 ## DSL: [Kotlin](https://kotlinlang.org/)
 The application provides autocompletion for the filenames, which requires character-by-character parsing of the commands.
 The autocomplete needs to know about possible options. They are stored in the database, which is handled by the server.
-Henceforth, the la****nguage used is the language of the API, which provides the GUI via the API.
+Henceforth, the language used is the language of the API, which provides the GUI via the API.
 
 ## [Relationships](vocabulary.md/#relationship) between files: [Neo4J](https://neo4j.com/)
 The software enables users to create their own web of relationships. To enable this to be done efficiently, the program uses
