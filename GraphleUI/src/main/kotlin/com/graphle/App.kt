@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,13 +15,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import com.graphle.InvalidFileMessage.showInvalidFileMessage
-import kotlinx.coroutines.launch
+import com.graphle.file.util.FileFetcher
+import com.graphle.common.model.DisplayMode
+import com.graphle.dialogs.InvalidFileMessage.showInvalidFileMessage
+import com.graphle.common.ui.DarkColorPalette
+import com.graphle.common.ui.LightColorPalette
+import com.graphle.common.userHome
+import com.graphle.dialogs.Dialogs
+import com.graphle.dialogs.ErrorMessage
+import com.graphle.header.components.Header
 import kotlinx.coroutines.runBlocking
-import java.lang.System.currentTimeMillis
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -69,38 +71,10 @@ fun App(setTitle: (String) -> Unit = {}) {
                 stickyHeader {
                     Header(
                         location = location,
+                        setLocation = { location = it },
                         setDisplayedData = { displayedData = it },
                         setDarkMode = { isDarkTheme = it },
                         getDarkMode = { isDarkTheme }
-                    )
-                }
-                item {
-                    TextField(
-                        value = location,
-                        onValueChange = { location = it },
-                        singleLine = true,
-                        modifier = Modifier.onPreviewKeyEvent { event ->
-                            val canRefresh = (location != oldLocation)
-                                    || (currentTimeMillis() - lastUpdated > minUpdateDelay.inWholeMilliseconds)
-                            if (event.key == Key.Enter && canRefresh) {
-                                oldLocation = location
-                                lastUpdated = currentTimeMillis()
-
-                                supervisorIoScope.launch {
-                                    FileFetcher.fetch(
-                                        location = location,
-                                        onResult = { info ->
-                                            showInvalidFileMessage = true
-                                            displayedData = info
-                                        }
-                                    )
-                                    mode.value = DisplayMode.MainBody
-                                }
-
-                                true
-
-                            } else false
-                        }
                     )
                 }
 
@@ -134,6 +108,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                                     }
                                 },
                             )
+
                         }
                     }
                 }
