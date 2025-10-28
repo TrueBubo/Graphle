@@ -102,9 +102,7 @@ class FileService(
         }
     ) {
         try {
-            println("Before moving file from $fromLocation to $toLocation")
             moveFileAction(fromLocation, toLocation)
-            println("After moving file from $fromLocation to $toLocation")
             fileRepository.moveFile(fromLocation, toLocation)
         } catch (e: Exception) {
             System.err.println("Cannot move file from $fromLocation to ${toLocation}: $e")
