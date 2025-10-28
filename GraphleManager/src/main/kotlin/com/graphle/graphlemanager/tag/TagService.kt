@@ -25,7 +25,6 @@ class TagService(private val tagRepository: TagRepository) {
     fun addTagToFile(location: AbsolutePathString, tag: TagInput) {
         if (tag.value != null) tagRepository.addTagToFile(location, tag.name, tag.value)
         else {
-            println(tag)
             tagRepository.addTagToFile(
                 location, tag.name
             )
