@@ -1,10 +1,13 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.file.FileService
 import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 
 data class Scope(val entityType: EntityType, val text: String)
 
@@ -21,6 +24,12 @@ sealed interface ScopeOutput
 @JvmInline
 value class Filename(val path: AbsolutePathString) : ScopeOutput
 
+enum class ResponseType {
+    FILENAMES,
+    CONNECTIONS
+}
+
+data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
 @Service
 class DSLInterpreter(private val neo4jClient: Neo4jClient) {
@@ -29,34 +38,23 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
     fun executeScope(
         scope: Scope,
         prevSelectedFilenames: List<AbsolutePathString>? = this.prevSelectedFilenames
-    ): List<Filename> {
-        val additionalFilenames: MutableList<AbsolutePathString> = mutableListOf()
+    ): DSLResponse {
+        this.prevSelectedFilenames = prevSelectedFilenames
+        val additionalConnections: MutableList<Connection> = mutableListOf()
 
         val ranScope = when (scope.entityType) {
             EntityType.Relationship -> {
                 var tokens = splitIntoTokens(scope.text)
                 val firstTokens = listOfNotNull(tokens.getOrNull(0), tokens.getOrNull(1))
                 val additionalFilenameGetter = listOf("DESC", "PRED")
-                val addAdditionalFilenames = { getter: String ->
-                    if (prevSelectedFilenames != null) {
-                        when (getter.uppercase()) {
-                            "DESC" -> additionalFilenames.addAll(
-                                prevSelectedFilenames
-                                    .flatMap { FileService.descendantsOfFile(it) })
 
-                            "PRED" -> additionalFilenames.addAll(
-                                prevSelectedFilenames
-                                    .mapNotNull { FileService.parentOfFile(it) })
-                        }
-                    }
-                }
                 if (firstTokens.isNotEmpty() && firstTokens.first().uppercase() in additionalFilenameGetter) {
                     tokens = tokens.drop(1)
-                    addAdditionalFilenames(firstTokens.first())
+                    addAdditionalFilenames(firstTokens.first(), additionalConnections)
                 }
                 if (firstTokens.size > 1 && firstTokens[1].uppercase() in additionalFilenameGetter) {
                     tokens = tokens.drop(1)
-                    addAdditionalFilenames(firstTokens[1])
+                    addAdditionalFilenames(firstTokens[1], additionalConnections)
                 }
                 Scope(
                     entityType = scope.entityType,
@@ -67,14 +65,74 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
             EntityType.File -> scope
         }
 
-        val query = convertScopeToCommand(ranScope) ?: throw IllegalArgumentException("Scope $scope not found")
-        return neo4jClient.query(query)
-            .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-            .also { this.prevSelectedFilenames = null }
-            .fetchAs(Filename::class.java)
-            .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
-            .all()
-            .toList()
+        val query = convertScopeToCommand(ranScope, prevSelectedFilenames)
+            ?: throw IllegalArgumentException("Scope $scope not found")
+        return when (scope.entityType) {
+            EntityType.File -> DSLResponse(
+                type = ResponseType.FILENAMES,
+                responseObject = neo4jClient.query(query)
+                    .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
+                    .also { this.prevSelectedFilenames = null }
+                    .fetchAs(Filename::class.java)
+                    .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
+                    .all()
+                    .map { it.path }
+            )
+
+            EntityType.Relationship -> DSLResponse(
+                type = ResponseType.CONNECTIONS,
+                responseObject = neo4jClient.query(query)
+                    .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
+                    .also { this.prevSelectedFilenames = null }
+                    .fetchAs(Connection::class.java)
+                    .mappedBy { _, record ->
+                        Connection(
+                            from = record["f1"].asNode().get("location").asString(),
+                            to = record["f2"].asNode().get("location").asString(),
+                            name = record["r"].asRelationship().get("name").asString(),
+                            value = record["r"].asRelationship().get("value").asString()
+                        )
+                    }.all()
+                    .plus(additionalConnections)
+                    .map { Json.encodeToString<Connection>(it) }
+            )
+        }
+    }
+
+    private fun addAdditionalFilenames(
+        getter: String,
+        additionalConnections: MutableList<Connection>,
+        prevSelectedFilenames: List<AbsolutePathString>? = this.prevSelectedFilenames
+    ) {
+        if (prevSelectedFilenames != null) {
+            when (getter.uppercase()) {
+                "DESC" -> additionalConnections.addAll(
+                    prevSelectedFilenames
+                        .flatMap { from ->
+                            FileService.descendantsOfFile(from).map { to ->
+                                Connection(
+                                    from = from,
+                                    to = to,
+                                    name = "descendant",
+                                )
+                            }
+                        }
+                )
+
+                "PRED" -> additionalConnections.addAll(
+                    prevSelectedFilenames
+                        .mapNotNull { child ->
+                            FileService.parentOfFile(child)?.let { parent ->
+                                Connection(
+                                    from = child,
+                                    to = parent,
+                                    name = "parent",
+                                )
+                            }
+                        }
+                )
+            }
+        }
     }
 
     fun splitSearchIntoScopes(command: String): List<Scope> {
@@ -197,11 +255,14 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
             }
         }
 
-        val whereCondition = processedTokens.joinToString(" ")
-        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc") +
+        val whereCondition = (if (prevSelectedFilenames == null) "" else "f.location in locs ") +
+                (if (processedTokens.isNotEmpty() && prevSelectedFilenames != null) "AND " else "") +
+                processedTokens.joinToString(" ")
+
+        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc ") +
                 "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) WITH f, t" +
-                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs") +
-                " WHERE ${if (prevSelectedFilenames == null) "" else "f.location in locs AND "}$whereCondition RETURN f".trimMargin()
+                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
+                " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f".trimMargin()
 
     }
 
@@ -238,11 +299,13 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
             }
         }
 
-        val whereCondition = processedTokens.joinToString(" ")
-        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc") +
-                "MATCH (f1:File)-[r:HasTag]-(f2:File) WITH r, f1, f2" +
-                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs") +
-                " WHERE ${if (prevSelectedFilenames == null) "" else "f1.location in locs AND "}$whereCondition RETURN f2".trimMargin()
+        val whereCondition = (if (prevSelectedFilenames == null) "" else "f1.location in locs ") +
+                (if (processedTokens.isNotEmpty()) "AND " else "") +
+                processedTokens.joinToString(" ")
+        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc ") +
+                "MATCH (f1:File)-[r:Relationship]->(f2:File) WITH r, f1, f2" +
+                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
+                " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f1, r, f2".trimMargin()
 
     }
 
