@@ -1,5 +1,6 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import org.springframework.stereotype.Service
 import java.io.File
 
@@ -12,66 +13,11 @@ const val COMPLETIONS_LIMIT = 5
 class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
     private val filenameCompleter = filenameCompleterService.completer
 
-    companion object {
-        private enum class TokenType {
-            VARIABLE_NAME,
-            OPERATOR,
-            VALUE,
-            CONJUNCTION
-        }
-
-        private enum class EntityType {
-            File,
-            Relationship
-        }
-
-
-        fun splitIntoTokens(text: String): List<String>  = buildList {
-            var inQuotes = false
-            var isEscaped = false
-            val word = StringBuilder()
-            println(text)
-            for (char in text) {
-                if (char == '"' && !isEscaped) {
-                    inQuotes = !inQuotes
-                    if (!inQuotes) {
-                        add(word.toString())
-                        word.clear()
-                    } else {
-                        word.append(char)
-                    }
-                    continue
-
-                }
-                val wasEscaped = isEscaped
-                isEscaped = false
-                if (char == '\\' && wasEscaped) {
-                    word.append('\\')
-                    continue
-                } else if (char == '\\'){
-                    isEscaped = true
-                    continue
-                }
-
-                if (!inQuotes && char == ' ' && word.isEmpty()) {
-                    continue
-                } else if (!inQuotes && char == ' ') {
-                    add(word.toString())
-                    word.clear()
-                    continue
-                }
-
-                word.append(char)
-            }
-            if (word.isNotEmpty()) add(word.toString())
-        }
-
-
-    }
-
     fun processFileQuery(tokens: List<String>, limit: Int): List<String> {
         return if (tokens.size > 2 && tokens[tokens.size - 3] == "location") {
-            completeFilename(tokens.last(), limit)
+            if (tokens.last().startsWith('"')) {
+                completeFilename(tokens.last().drop(1), limit)
+            } else emptyList()
         } else emptyList()
     }
 
@@ -81,6 +27,7 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         var previousScope: EntityType? = null
         var inQuotes = false
         var isEscaped = false
+        var parenthesisLevel = 0
 
         for (char in commandPrefix) {
             if (char == '"' && !isEscaped) {
@@ -91,13 +38,16 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                     '(' -> {
                         if (scope == null && previousScope != EntityType.File) {
                             scope = EntityType.File
-                        } else return emptyList()
+                        } else parenthesisLevel++
                     }
 
                     ')' -> {
                         if (scope == EntityType.File) {
                             previousScope = EntityType.File
                             scope = null;
+                        } else {
+                            if (parenthesisLevel > 0) parenthesisLevel--
+                            else return emptyList()
                         }
                     }
 
@@ -134,7 +84,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         val lastScope = commandPrefix.substring(lastOpeningIndex + 1, commandPrefix.length)
         val tokens = splitIntoTokens(lastScope)
 
-        if (commandPrefix[lastOpeningIndex] == '(') return processFileQuery(tokens, limit)
+        if (commandPrefix[lastOpeningIndex] == '(') {
+            val filenames = processFileQuery(tokens, limit)
+            if (filenames.isEmpty()) return emptyList()
+            if (tokens.isEmpty()) return filenames
+            return filenames.map { it.drop(tokens.last().length - 1) }.map { commandPrefix + it + '"'}
+        }
 
         return emptyList()
     }
