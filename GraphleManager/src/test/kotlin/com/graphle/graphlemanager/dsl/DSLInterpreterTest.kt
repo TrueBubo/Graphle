@@ -1,16 +1,19 @@
 package com.graphle.graphlemanager.dsl
 
 import com.graphle.graphlemanager.FileTestUtils
+import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.neo4j.core.Neo4jClient
 import strikt.api.expectThat
 import strikt.assertions.containsExactly
+import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
 import kotlin.test.AfterTest
@@ -41,47 +44,112 @@ class DSLInterpreterTest {
     }
 
     @Test
-    fun `should return file matching the file scope command`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient)
-        connectionService.addConnection(
-            ConnectionInput(
-                name = "",
-                value = null,
-                from = file1.absolutePath,
-                to = file2.absolutePath,
-                bidirectional = false
+    fun `should return file matching the file scope command`() =
+        fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+            val interpreter = DSLInterpreter(neo4jClient)
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = "",
+                    value = null,
+                    from = file1.absolutePath,
+                    to = file2.absolutePath,
+                    bidirectional = false
+                )
             )
+            tagService.addTagToFile(
+                location = file2.absolutePath,
+                tag = TagInput(name = randomString, value = randomString)
+            )
+            val response = interpreter.executeScope(
+                Scope(
+                    entityType = EntityType.File,
+                    text = "location = \"${file1.absolutePath}\" or tagName = \"${randomString}\"",
+                )
+            )
+
+            expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+            expectThat(response.responseObject).hasSize(2)
+                .and { containsExactly(file1.absolutePath, file2.absolutePath) }
+        }
+
+
+    @Test
+    fun `should return file with tag matching the range`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient)
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "8")
         )
         tagService.addTagToFile(
             location = file2.absolutePath,
-            tag = TagInput(name = randomString, value = randomString)
+            tag = TagInput(name = randomString, value = "11.2")
         )
-        val results = interpreter.executeScope(
+        val response = interpreter.executeScope(
             Scope(
                 entityType = EntityType.File,
-                text = "location = \"${file1.absolutePath}\" or tagName = \"${randomString}\"",
+                text = "location = \"${file1.absolutePath}\" or location = \"${file2.absolutePath}\" AND " +
+                        "tagName = \"${randomString}\" AND (tagValue < 9 OR tagValue > 12)",
             )
         )
-        expectThat(results).hasSize(2).and { containsExactly(Filename(file1.absolutePath), Filename(file2.absolutePath)) }
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1)
+            .and { containsExactly(file1.absolutePath) }
     }
 
+
     @Test
-    fun `should return file connected via the relationship command`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient)
-        connectionService.addConnection(
-            ConnectionInput(
-                name = "",
-                value = null,
-                from = file1.absolutePath,
-                to = file2.absolutePath,
-                bidirectional = false
+    fun `should return file connected via the relationship command`() =
+        fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+            val interpreter = DSLInterpreter(neo4jClient)
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = randomString,
+                    value = null,
+                    from = file1.absolutePath,
+                    to = file2.absolutePath,
+                    bidirectional = false
+                )
             )
+
+            val response = interpreter.executeScope(
+                scope = Scope(
+                    entityType = EntityType.Relationship,
+                    text = "name = \"${randomString}\""
+                ),
+                prevSelectedFilenames = listOf(file1.absolutePath),
+            )
+
+            expectThat(response.type).isEqualTo(ResponseType.CONNECTIONS)
+            expectThat(response.responseObject.map { Json.decodeFromString<Connection>(it) })
+                .hasSize(1).first().and {
+                    get { name }.isEqualTo(randomString)
+                    get { from }.isEqualTo(file1.absolutePath)
+                    get { to }.isEqualTo(file2.absolutePath)
+                }
+        }
+
+    @Test
+    fun `should return tree edges`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient)
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.Relationship,
+                text = "PRED",
+            ),
+            prevSelectedFilenames = listOf(file.absolutePath),
         )
-
-        interpreter.executeScope(scope = Scope(entityType = EntityType.Relationship, text = "name"))
-
-
-
+        expectThat(response.type).isEqualTo(ResponseType.CONNECTIONS)
+        expectThat(response.responseObject.map { Json.decodeFromString<Connection>(it) })
+            .hasSize(1)
+            .first()
+            .isEqualTo(
+                Connection(
+                    name = "parent",
+                    from = file.absolutePath,
+                    to = file.parent,
+                )
+            )
     }
 
     @Test
