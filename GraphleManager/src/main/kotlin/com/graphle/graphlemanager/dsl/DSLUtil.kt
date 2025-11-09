@@ -44,4 +44,6 @@ object DSLUtil {
         }
         if (word.isNotEmpty()) add(word.toString())
     }
+
+    fun String.removeQuotes() = if (this.first() == '"' && this.last() == '"') this.substring(1, this.length - 1) else this
 }

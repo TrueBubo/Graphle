@@ -1,6 +1,6 @@
 package com.graphle.graphlemanager.connection
 
-import BaseIntegrationTest
+import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
@@ -16,7 +16,7 @@ class ConnectionIntegrationTests(
     @Autowired private val connectionService: ConnectionService,
     @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
-) : BaseIntegrationTest() {
+) : BaseGraphQlIntegrationTest() {
     private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
 
     @AfterTest

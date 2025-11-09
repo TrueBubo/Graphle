@@ -64,6 +64,12 @@ class FileService(
         createFileAction(location)
     }
 
+    fun addFileNode(location: AbsolutePathString) {
+        if (Files.exists(Path(location))) {
+            fileRepository.addFileNode(location)
+        }
+    }
+
     fun removeFile(
         location: AbsolutePathString,
         removeFileByLocationAction: (AbsolutePathString) -> Unit = {
