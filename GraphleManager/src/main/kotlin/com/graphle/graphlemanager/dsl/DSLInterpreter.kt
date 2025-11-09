@@ -1,9 +1,11 @@
 package com.graphle.graphlemanager.dsl
 
 import com.graphle.graphlemanager.connection.Connection
+import com.graphle.graphlemanager.dsl.DSLUtil.removeQuotes
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.file.FileService
+import kotlinx.serialization.Serializable
 import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 import kotlinx.serialization.json.Json
@@ -25,15 +27,45 @@ sealed interface ScopeOutput
 value class Filename(val path: AbsolutePathString) : ScopeOutput
 
 enum class ResponseType {
+    ERROR,
     FILENAMES,
     CONNECTIONS
 }
 
+@Serializable
 data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
 @Service
-class DSLInterpreter(private val neo4jClient: Neo4jClient) {
+class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileService: FileService) {
     var prevSelectedFilenames: List<AbsolutePathString>? = null
+
+    fun interpret(command: String): DSLResponse? {
+        val scopes = splitSearchIntoScopes(command)
+        if (scopes.isEmpty()) {
+            return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+        }
+        var response: DSLResponse? = null
+        for (scope in scopes) {
+            response = executeScope(scope, prevSelectedFilenames)
+            prevSelectedFilenames = when (response.type) {
+                ResponseType.FILENAMES -> {
+                    response.responseObject
+                }
+
+                ResponseType.CONNECTIONS -> {
+                    response.responseObject.map {
+                        val connection = Json.decodeFromString<Connection>(it)
+                        connection.to
+                    }
+                }
+
+                ResponseType.ERROR -> {
+                    return DSLResponse(ResponseType.ERROR, response.responseObject)
+                }
+            }
+        }
+        return response
+    }
 
     fun executeScope(
         scope: Scope,
@@ -66,17 +98,22 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
         }
 
         val query = convertScopeToCommand(ranScope, prevSelectedFilenames)
-            ?: throw IllegalArgumentException("Scope $scope not found")
+            ?: return DSLResponse(
+                type = ResponseType.ERROR,
+                responseObject = listOf("Unable to parse $scope")
+            )
         return when (scope.entityType) {
             EntityType.File -> DSLResponse(
                 type = ResponseType.FILENAMES,
-                responseObject = neo4jClient.query(query)
-                    .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-                    .also { this.prevSelectedFilenames = null }
-                    .fetchAs(Filename::class.java)
-                    .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
-                    .all()
-                    .map { it.path }
+                responseObject =
+                    if (query == "" && prevSelectedFilenames != null) prevSelectedFilenames.map { it }
+                    else neo4jClient.query(query)
+                        .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
+                        .also { this.prevSelectedFilenames = null }
+                        .fetchAs(Filename::class.java)
+                        .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
+                        .all()
+                        .map { it.path }
             )
 
             EntityType.Relationship -> DSLResponse(
@@ -227,30 +264,33 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
         prevSelectedFilenames: List<AbsolutePathString>?
     ): String? {
         var tokenType = TokenType.first()
-        val processedTokens: List<String> = tokens.map { token ->
+        val processedTokens: List<String> = tokens.mapIndexed { index, token ->
             if (token == HIGHER_PRIORITY_OPENING_TOKEN || token == HIGHER_PRIORITY_CLOSING_TOKEN) {
                 tokenType = TokenType.first()
-                return@map token
+                return@mapIndexed token
             }
             when (tokenType) {
                 TokenType.VARIABLE_NAME -> {
                     tokenType = tokenType.next()
-                    return@map processFileVariableName(token) ?: return null
+                    if (token == "location" && index + 2 < tokens.size) ensureFileNodeExists(
+                        location = tokens[index + 2].removeQuotes()
+                    )
+                    return@mapIndexed processFileVariableName(token) ?: return null
                 }
 
                 TokenType.OPERATOR -> {
                     tokenType = tokenType.next()
-                    return@map processOperatorTypes(token) ?: return null
+                    return@mapIndexed processOperatorTypes(token) ?: return null
                 }
 
                 TokenType.VALUE -> {
                     tokenType = tokenType.next()
-                    return@map token
+                    return@mapIndexed token
                 }
 
                 TokenType.CONJUNCTION -> {
                     tokenType = tokenType.next()
-                    return@map processConjunctionOperators(token) ?: return null
+                    return@mapIndexed processConjunctionOperators(token) ?: return null
                 }
             }
         }
@@ -307,6 +347,10 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient) {
                 (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
                 " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f1, r, f2".trimMargin()
 
+    }
+
+    private fun ensureFileNodeExists(location: AbsolutePathString) {
+        fileService.addFileNode(location)
     }
 
     private fun processFileVariableName(variableName: String): String? = when (variableName) {

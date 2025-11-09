@@ -1,6 +1,6 @@
 package com.graphle.graphlemanager.file
 
-import BaseIntegrationTest
+import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.apache.commons.io.FileUtils
@@ -21,7 +21,7 @@ import kotlin.test.Test
 class FileIntegrationTest(
     @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
-) : BaseIntegrationTest() {
+) : BaseGraphQlIntegrationTest() {
     private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
 
     @AfterTest
@@ -151,6 +151,4 @@ class FileIntegrationTest(
             }
             """.trimIndent()
     }
-
-
 }

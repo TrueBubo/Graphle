@@ -4,6 +4,7 @@ import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
+import com.graphle.graphlemanager.file.FileService
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
@@ -12,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.neo4j.core.Neo4jClient
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.containsExactly
+import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNotNull
 import kotlin.test.AfterTest
 import kotlin.test.Test
 
@@ -25,6 +29,9 @@ class DSLInterpreterTest {
 
     @Autowired
     private lateinit var neo4jClient: Neo4jClient
+
+    @Autowired
+    private lateinit var fileService: FileService
 
     @Autowired
     private lateinit var neo4JSweeper: Neo4JSweeper
@@ -44,9 +51,113 @@ class DSLInterpreterTest {
     }
 
     @Test
+    fun `should execute using the whole command for hierarchical connection`() =
+        fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+            val interpreter = DSLInterpreter(neo4jClient, fileService)
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = randomString,
+                    value = null,
+                    from = file1.absolutePath,
+                    to = file2.absolutePath,
+                    bidirectional = false
+                )
+            )
+
+            val response = interpreter.interpret("(location = \"${file1.parent}\")[desc]")
+            expectThat(response).isNotNull().and {
+                get { type }.isEqualTo(ResponseType.CONNECTIONS)
+                get {
+                    responseObject
+                        .map { Json.decodeFromString<Connection>(it) }
+                        .map { it.to }
+                }.contains(file1.absolutePath, file2.absolutePath)
+            }
+        }
+
+    @Test
+    fun `should execute using the whole command for custom connection`() =
+        fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+            val interpreter = DSLInterpreter(neo4jClient, fileService)
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = randomString,
+                    value = null,
+                    from = file1.absolutePath,
+                    to = file2.absolutePath,
+                    bidirectional = false
+                )
+            )
+
+            val response = interpreter.interpret("(location = \"$file1\")[name = \"$randomString\"]")
+            expectThat(response).isNotNull().and {
+                get { type }.isEqualTo(ResponseType.CONNECTIONS)
+                get {
+                    responseObject
+                        .map { Json.decodeFromString<Connection>(it) }
+                        .map { it.to }
+                }.hasSize(1).first().isEqualTo(file2.absolutePath)
+            }
+        }
+
+    @Test
+    fun `should handle longer chain`() {
+        fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+            val interpreter = DSLInterpreter(neo4jClient, fileService)
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = randomString,
+                    value = null,
+                    from = file1.absolutePath,
+                    to = file2.absolutePath,
+                    bidirectional = false
+                )
+            )
+
+            connectionService.addConnection(
+                ConnectionInput(
+                    name = randomString + "2",
+                    value = null,
+                    from = file2.absolutePath,
+                    to = file3.absolutePath,
+                    bidirectional = false
+                )
+            )
+
+            val response =
+                interpreter.interpret("(location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()")
+            expectThat(response).isNotNull().and {
+                get { type }.isEqualTo(ResponseType.FILENAMES)
+                get { responseObject }.hasSize(1).first().isEqualTo((file3.parent))
+            }
+        }
+    }
+
+    @Test
+    fun `invalid file syntax returns error response`() {
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
+        val response = interpreter.interpret("(location = \" or tagName = \"${randomString}\")")
+
+        expectThat(response).isNotNull().and {
+            get { type }.isEqualTo(ResponseType.ERROR)
+            get { responseObject }.hasSize(1).first().contains("Unable to parse")
+        }
+    }
+
+    @Test
+    fun `invalid connection syntax returns error response`() {
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
+        val response = interpreter.interpret("()[nonExistent = 2]")
+        expectThat(response).isNotNull().and {
+            get { type }.isEqualTo(ResponseType.ERROR)
+            get { responseObject }.hasSize(1).first().contains("Unable to parse")
+        }
+    }
+
+    @Test
     fun `should return file matching the file scope command`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient)
+            val interpreter = DSLInterpreter(neo4jClient, fileService)
             connectionService.addConnection(
                 ConnectionInput(
                     name = "",
@@ -69,13 +180,13 @@ class DSLInterpreterTest {
 
             expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
             expectThat(response.responseObject).hasSize(2)
-                .and { containsExactly(file1.absolutePath, file2.absolutePath) }
+                .and { containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath) }
         }
 
 
     @Test
     fun `should return file with tag matching the range`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient)
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "8")
@@ -101,7 +212,7 @@ class DSLInterpreterTest {
     @Test
     fun `should return file connected via the relationship command`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient)
+            val interpreter = DSLInterpreter(neo4jClient, fileService)
             connectionService.addConnection(
                 ConnectionInput(
                     name = randomString,
@@ -131,7 +242,7 @@ class DSLInterpreterTest {
 
     @Test
     fun `should return tree edges`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient)
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
         val response = interpreter.executeScope(
             scope = Scope(
                 entityType = EntityType.Relationship,
@@ -177,7 +288,7 @@ class DSLInterpreterTest {
 
     @Test
     fun `interpreter splits search command to scopes`() {
-        val interpreter = DSLInterpreter(neo4jClient)
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
         val command = """(tagName = "name")[name = "friend"](location = "/home/(Person)")"""
         val scopes = interpreter.splitSearchIntoScopes(command)
         expectThat(scopes).hasSize(3).containsExactly(
@@ -189,7 +300,7 @@ class DSLInterpreterTest {
 
     @Test
     fun `interpreter splits search command with priorities`() {
-        val interpreter = DSLInterpreter(neo4jClient)
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
         val command = """(tagName = "name" AND (location = "/home"))[name = "friend"](location = "/home/(Person)")"""
         val scopes = interpreter.splitSearchIntoScopes(command)
         expectThat(scopes).hasSize(3).containsExactly(
@@ -201,7 +312,7 @@ class DSLInterpreterTest {
 
     @Test
     fun `interpreter correctly translates file scope into neo4j`() {
-        val interpreter = DSLInterpreter(neo4jClient)
+        val interpreter = DSLInterpreter(neo4jClient, fileService)
         val scope = Scope(
             entityType = EntityType.File,
             text = """tagName = "year" AND tagValue > 2015 AND (location != "/home/(Person)")"""

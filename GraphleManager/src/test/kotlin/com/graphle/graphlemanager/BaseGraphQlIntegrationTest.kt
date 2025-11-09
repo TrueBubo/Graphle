@@ -1,4 +1,5 @@
-import com.graphle.graphlemanager.GraphleManagerApplication
+package com.graphle.graphlemanager
+
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -13,21 +14,21 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultMatcher
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @SpringBootTest(
     classes = [GraphleManagerApplication::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @AutoConfigureMockMvc
-open class BaseIntegrationTest {
+open class BaseGraphQlIntegrationTest {
     @Autowired
     private lateinit var _mockMvc: MockMvc
 
     internal val mockMvc: MockMvc get() = _mockMvc
 
     private fun postObject(
-        status: ResultMatcher = status().isOk,
+        status: ResultMatcher = MockMvcResultMatchers.status().isOk,
         content: () -> String
     ): JsonElement {
         val response = post(status, content)
@@ -40,7 +41,7 @@ open class BaseIntegrationTest {
     }
 
     internal inline fun <reified T> post(
-        status: ResultMatcher = status().isOk,
+        status: ResultMatcher = MockMvcResultMatchers.status().isOk,
         noinline content: () -> String
     ): T? {
         val responseObj = postObject(status, content)
@@ -51,7 +52,7 @@ open class BaseIntegrationTest {
 
     @Suppress("UNCHECKED_CAST")
     internal inline fun <reified T : Any> fetchListPost(
-        status: ResultMatcher = status().isOk,
+        status: ResultMatcher = MockMvcResultMatchers.status().isOk,
         noinline content: () -> String
     ): List<T> {
         val responseObj = postObject(status, content)
@@ -64,7 +65,7 @@ open class BaseIntegrationTest {
         ) as List<T>
     }
 
-    internal fun post(status: ResultMatcher = status().isOk, content: () -> String) =
+    internal fun post(status: ResultMatcher = MockMvcResultMatchers.status().isOk, content: () -> String) =
         mockMvc.perform(
             MockMvcRequestBuilders.post("/graphql")
                 .contentType(MediaType.APPLICATION_JSON)
