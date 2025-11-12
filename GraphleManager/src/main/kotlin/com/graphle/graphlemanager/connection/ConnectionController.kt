@@ -40,6 +40,7 @@ class ConnectionController(val connectionService: ConnectionService) {
 
     @MutationMapping
     fun removeConnection(@Argument connection: ConnectionInput): Connection {
+        System.err.println(connection)
         connectionService.removeConnection(
             connection.copy(
                 from = connection.from.normalize(),

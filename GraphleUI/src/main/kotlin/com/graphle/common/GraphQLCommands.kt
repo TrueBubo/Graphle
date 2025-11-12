@@ -14,7 +14,7 @@ import com.graphle.fileWithTag.components.FileWithTag
 import com.graphle.FilesByTagQuery
 import com.graphle.FilesFromFileByRelationshipQuery
 import com.graphle.MoveFileMutation
-import com.graphle.RemoveConnectionMutation
+import com.graphle.RemoveRelationshipMutation
 import com.graphle.RemoveFileMutation
 import com.graphle.RemoveTagMutation
 import com.graphle.tag.model.Tag
@@ -51,7 +51,6 @@ private suspend fun ApolloClient.getFilesFromFileByRelationship(
     relationshipName: String
 ): ApolloResponse<FilesFromFileByRelationshipQuery.Data> =
     query(FilesFromFileByRelationshipQuery(fromLocation, relationshipName)).execute()
-
 
 
 suspend fun ApolloClient.addTagToFile(
@@ -142,17 +141,17 @@ private suspend fun ApolloClient.removeRelationship(
     relationship: Connection
 ) {
     mutation(
-        RemoveConnectionMutation(
-        connection = relationship.run {
-            ConnectionInput(
-                name = name,
-                value = Optional.presentIfNotNull(value),
-                locationFrom = from,
-                locationTo = to,
-                bidirectional = false
-            )
-        }
-    )).execute()
+        RemoveRelationshipMutation(
+            connection = relationship.run {
+                ConnectionInput(
+                    name = name,
+                    value = Optional.presentIfNotNull(value),
+                    from = from,
+                    to = to,
+                    bidirectional = false
+                )
+            }
+        )).execute()
 }
 
 suspend fun removeRelationship(

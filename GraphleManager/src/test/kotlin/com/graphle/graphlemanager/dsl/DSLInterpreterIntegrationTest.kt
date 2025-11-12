@@ -43,7 +43,7 @@ class DSLInterpreterIntegrationTest : BaseRestIntegrationTest() {
 
         expectThat(post<DSLResponse>(url = URL) {
             """
-                { "command": "(location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()" }
+                { "command": "find (location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()" }
             """.trimIndent()
         }).isNotNull().and {
             get { type }.isEqualTo(ResponseType.FILENAMES)

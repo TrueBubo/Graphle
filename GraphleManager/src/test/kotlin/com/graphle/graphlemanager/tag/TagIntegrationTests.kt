@@ -20,7 +20,7 @@ class TagIntegrationTests(
         try {
             post { insertTagQuery(location = files[0].absolutePath) }
         } finally {
-            tagService.removeTag(files[0].absolutePath, Tag(name = "exampleTag", value = "exampleValue"))
+            tagService.removeTag(files[0].absolutePath, TagInput(name = "exampleTag", value = "exampleValue"))
         }
     }
 
@@ -36,7 +36,7 @@ class TagIntegrationTests(
                     get { value }.isEqualTo("tmp_exampleValue")
                 }
         } finally {
-            tagService.removeTag(files[0].absolutePath, Tag(name = "tmp_exampleTag", value = "tmp_exampleValue"))
+            tagService.removeTag(files[0].absolutePath, TagInput(name = "tmp_exampleTag", value = "tmp_exampleValue"))
         }
     }
 

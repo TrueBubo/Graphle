@@ -109,6 +109,7 @@ internal fun FileMenu(
         DropdownMenuItem(
             content = { Text("Remove relationship") },
             onClick = {
+                println("Remove relationship ${connection}")
                 supervisorIoScope.launch {
                     removeRelationship(connection)
                     onRefresh()

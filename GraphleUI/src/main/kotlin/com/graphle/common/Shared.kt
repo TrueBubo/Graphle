@@ -20,6 +20,7 @@ val supervisorIoScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 private val serverURL = "http://localhost:${config.server.port}"
 private val graphQlServerURL = "${serverURL}/graphql"
 val downloadURL = "${serverURL}/download"
+val dslURL = "${serverURL}/dsl"
 val apolloClient = ApolloClient.Builder()
     .serverUrl(graphQlServerURL)
     .build()
