@@ -1,15 +1,22 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.commons.normalize
 import com.graphle.graphlemanager.connection.Connection
+import com.graphle.graphlemanager.connection.ConnectionInput
+import com.graphle.graphlemanager.connection.ConnectionService
 import com.graphle.graphlemanager.dsl.DSLUtil.removeQuotes
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
+import com.graphle.graphlemanager.file.FileController
 import com.graphle.graphlemanager.file.FileService
+import com.graphle.graphlemanager.tag.TagInput
+import com.graphle.graphlemanager.tag.TagService
 import kotlinx.serialization.Serializable
 import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import org.neo4j.driver.exceptions.Neo4jException
 
 data class Scope(val entityType: EntityType, val text: String)
 
@@ -28,25 +35,109 @@ value class Filename(val path: AbsolutePathString) : ScopeOutput
 
 enum class ResponseType {
     ERROR,
+    SUCCESS,
     FILENAMES,
-    CONNECTIONS
+    CONNECTIONS,
+    FILE
 }
 
 @Serializable
 data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
+data class TagModificationInput(val location: AbsolutePathString, val tag: TagInput)
+
+enum class Commands(val command: String) {
+    FIND("find"),
+    ADD_REL("addRel"),
+    REMOVE_REL("removeRel"),
+    ADD_TAG("addTag"),
+    REMOVE_TAG("removeTag"),
+    DETAIL("detail"),
+}
+
 @Service
-class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileService: FileService) {
-    var prevSelectedFilenames: List<AbsolutePathString>? = null
+class DSLInterpreter(
+    private val neo4jClient: Neo4jClient,
+    private val fileService: FileService,
+    private val connectionService: ConnectionService,
+    private val tagService: TagService,
+    private val fileController: FileController
+) {
 
     fun interpret(command: String): DSLResponse? {
+        val tokens = splitIntoTokens(command)
+        if (tokens.isEmpty()) return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+        return try {
+            when (tokens.first()) {
+                Commands.FIND.command -> {
+                    interpretFind(command.drop(tokens.first().length + 1))
+                }
+
+                Commands.ADD_REL.command -> {
+                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("Unable to parse $command")
+                    )
+                    connectionService.addConnection(connectionInput)
+                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Commands.REMOVE_REL.command -> {
+                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("Unable to parse $command")
+                    )
+                    connectionService.removeConnection(connectionInput)
+                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Commands.ADD_TAG.command -> {
+                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("Unable to parse $command")
+                    )
+                    tagService.addTagToFile(tagInput.location, tagInput.tag)
+                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Commands.REMOVE_TAG.command -> {
+                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("Unable to parse $command")
+                    )
+                    tagService.removeTag(tagInput.location, tagInput.tag)
+                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Commands.DETAIL.command -> {
+                    val filename = interpretDetailTokens(tokens.drop(1)) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("Unable to parse $command")
+                    )
+                    val detail = fileController.fileByLocation(filename) ?: return DSLResponse(
+                        ResponseType.ERROR,
+                        listOf("File $filename not found")
+                    )
+                    return DSLResponse(ResponseType.SUCCESS, listOf(Json.encodeToString(detail)))
+                }
+
+                else -> DSLResponse(ResponseType.ERROR, listOf("Unknown command ${tokens.first()}"))
+
+            }
+        } catch (_: Neo4jException) {
+            return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+        }
+    }
+
+    fun interpretFind(command: String): DSLResponse? {
+        var prevSelectedFilenames: List<AbsolutePathString>? = null
         val scopes = splitSearchIntoScopes(command)
         if (scopes.isEmpty()) {
             return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
         }
         var response: DSLResponse? = null
         for (scope in scopes) {
-            response = executeScope(scope, prevSelectedFilenames)
+            response = executeScope(scope, prevSelectedFilenames).run { DSLResponse(type, responseObject.distinct()) }
             prevSelectedFilenames = when (response.type) {
                 ResponseType.FILENAMES -> {
                     response.responseObject
@@ -59,35 +150,49 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
                     }
                 }
 
-                ResponseType.ERROR -> {
-                    return DSLResponse(ResponseType.ERROR, response.responseObject)
-                }
+                ResponseType.ERROR, ResponseType.SUCCESS, ResponseType.FILE -> return response
             }
         }
         return response
     }
 
+    fun interpretConnectionTokens(tokens: List<String>): ConnectionInput? {
+        if (tokens.size !in 3..4) return null
+        return ConnectionInput(
+            from = tokens[0].removeQuotes().normalize(),
+            to = tokens[1].removeQuotes().normalize(),
+            name = tokens[2].removeQuotes(),
+            value = tokens.getOrNull(3)?.removeQuotes(),
+            bidirectional = false
+        )
+    }
+
+    fun interpretTagTokens(tokens: List<String>): TagModificationInput? {
+        if (tokens.size !in 2..3) return null
+        return TagModificationInput(
+            location = tokens[0].removeQuotes().normalize(),
+            tag = TagInput(
+                name = tokens[1].removeQuotes(),
+                value = tokens.getOrNull(2)?.removeQuotes(),
+            )
+        )
+    }
+
+    fun interpretDetailTokens(tokens: List<String>): AbsolutePathString? {
+        if (tokens.size != 1) return null
+        return tokens.first().removeQuotes()
+    }
+
+
     fun executeScope(
         scope: Scope,
-        prevSelectedFilenames: List<AbsolutePathString>? = this.prevSelectedFilenames
+        prevSelectedFilenames: List<AbsolutePathString>?
     ): DSLResponse {
-        this.prevSelectedFilenames = prevSelectedFilenames
         val additionalConnections: MutableList<Connection> = mutableListOf()
 
         val ranScope = when (scope.entityType) {
             EntityType.Relationship -> {
-                var tokens = splitIntoTokens(scope.text)
-                val firstTokens = listOfNotNull(tokens.getOrNull(0), tokens.getOrNull(1))
-                val additionalFilenameGetter = listOf("DESC", "PRED")
-
-                if (firstTokens.isNotEmpty() && firstTokens.first().uppercase() in additionalFilenameGetter) {
-                    tokens = tokens.drop(1)
-                    addAdditionalFilenames(firstTokens.first(), additionalConnections)
-                }
-                if (firstTokens.size > 1 && firstTokens[1].uppercase() in additionalFilenameGetter) {
-                    tokens = tokens.drop(1)
-                    addAdditionalFilenames(firstTokens[1], additionalConnections)
-                }
+                val tokens = processRelationshipTokens(scope.text, additionalConnections, prevSelectedFilenames)
                 Scope(
                     entityType = scope.entityType,
                     text = tokens.joinToString(separator = " ")
@@ -106,10 +211,9 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
             EntityType.File -> DSLResponse(
                 type = ResponseType.FILENAMES,
                 responseObject =
-                    if (query == "" && prevSelectedFilenames != null) prevSelectedFilenames.map { it }
+                    if (ranScope.text == "" && prevSelectedFilenames != null) prevSelectedFilenames.map { it }
                     else neo4jClient.query(query)
                         .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-                        .also { this.prevSelectedFilenames = null }
                         .fetchAs(Filename::class.java)
                         .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
                         .all()
@@ -120,7 +224,6 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
                 type = ResponseType.CONNECTIONS,
                 responseObject = neo4jClient.query(query)
                     .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-                    .also { this.prevSelectedFilenames = null }
                     .fetchAs(Connection::class.java)
                     .mappedBy { _, record ->
                         Connection(
@@ -136,10 +239,30 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
         }
     }
 
+    private fun processRelationshipTokens(
+        scopeText: String,
+        additionalConnections: MutableList<Connection>,
+        prevSelectedFilenames: List<AbsolutePathString>?
+    ): List<String> {
+        var tokens = splitIntoTokens(scopeText)
+        val firstTokens = listOfNotNull(tokens.getOrNull(0), tokens.getOrNull(1))
+        val additionalFilenameGetter = listOf("DESC", "PRED")
+
+        if (firstTokens.isNotEmpty() && firstTokens.first().uppercase() in additionalFilenameGetter) {
+            tokens = tokens.drop(1)
+            addAdditionalFilenames(firstTokens.first(), additionalConnections, prevSelectedFilenames)
+        }
+        if (firstTokens.size > 1 && firstTokens[1].uppercase() in additionalFilenameGetter) {
+            tokens = tokens.drop(1)
+            addAdditionalFilenames(firstTokens[1], additionalConnections, prevSelectedFilenames)
+        }
+        return tokens
+    }
+
     private fun addAdditionalFilenames(
         getter: String,
         additionalConnections: MutableList<Connection>,
-        prevSelectedFilenames: List<AbsolutePathString>? = this.prevSelectedFilenames
+        prevSelectedFilenames: List<AbsolutePathString>?
     ) {
         if (prevSelectedFilenames != null) {
             when (getter.uppercase()) {
@@ -250,7 +373,7 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
 
     fun convertScopeToCommand(
         scope: Scope,
-        prevSelectedFilename: List<AbsolutePathString>? = prevSelectedFilenames
+        prevSelectedFilename: List<AbsolutePathString>?
     ): String? {
         val tokens = splitIntoTokens(scope.text)
         return when (scope.entityType) {
@@ -273,7 +396,7 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
                 TokenType.VARIABLE_NAME -> {
                     tokenType = tokenType.next()
                     if (token == "location" && index + 2 < tokens.size) ensureFileNodeExists(
-                        location = tokens[index + 2].removeQuotes()
+                        location = tokens[index + 2].removeQuotes().normalize()
                     )
                     return@mapIndexed processFileVariableName(token) ?: return null
                 }
@@ -299,7 +422,7 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
                 (if (processedTokens.isNotEmpty() && prevSelectedFilenames != null) "AND " else "") +
                 processedTokens.joinToString(" ")
 
-        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc ") +
+        return (if (prevSelectedFilenames == null) "" else $$"UNWIND $locations as loc ") +
                 "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) WITH f, t" +
                 (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
                 " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f".trimMargin()
@@ -342,7 +465,7 @@ class DSLInterpreter(private val neo4jClient: Neo4jClient, private val fileServi
         val whereCondition = (if (prevSelectedFilenames == null) "" else "f1.location in locs ") +
                 (if (processedTokens.isNotEmpty()) "AND " else "") +
                 processedTokens.joinToString(" ")
-        return (if (prevSelectedFilenames == null) "" else "UNWIND \$locations as loc ") +
+        return (if (prevSelectedFilenames == null) "" else $$"UNWIND $locations as loc ") +
                 "MATCH (f1:File)-[r:Relationship]->(f2:File) WITH r, f1, f2" +
                 (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
                 " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f1, r, f2".trimMargin()

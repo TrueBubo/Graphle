@@ -1,4 +1,4 @@
-mutation removeConnection($connection: ConnectionInput!) {
+mutation removeRelationship($connection: ConnectionInput!) {
     removeConnection(connection: $connection) {
         from,
         to,

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.graphle.header.util.DSLWebSocketManager
 import com.graphle.common.model.DisplayedData
 import com.graphle.common.supervisorIoScope
+import com.graphle.header.util.DSLRestManager
 import kotlinx.coroutines.launch
 
 
@@ -96,6 +97,7 @@ internal fun TopBar(
                                 selectedIndex = selectedIndex,
                                 setSelectedIndex = { selectedIndex = it },
                                 autocompleteList = autocompleteList,
+                                dslCommand = dslCommand.text,
                                 setDslCommand = { dslCommand = it },
                                 setAreSuggestionsShown = { areSuggestionsShown = it }
                             )
@@ -104,7 +106,6 @@ internal fun TopBar(
                         backgroundColor = MaterialTheme.colors.primaryVariant,
                     )
                 )
-
             }
         }
     }
@@ -175,9 +176,17 @@ private fun processSelectSuggestion(
     selectedIndex: Int,
     setSelectedIndex: (Int) -> Unit,
     autocompleteList: List<String>,
+    dslCommand: String,
     setDslCommand: (TextFieldValue) -> Unit,
     setAreSuggestionsShown: (Boolean) -> Unit
 ): Boolean = when {
+    event.type == KeyEventType.KeyDown && event.key == Key.Enter && event.isShiftPressed -> {
+        supervisorIoScope.launch {
+            DSLRestManager.interpretCommand(dslCommand).let { println(it) }
+        }
+        true
+    }
+
     event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown -> {
         setSelectedIndex((selectedIndex + 1).coerceAtMost(autocompleteList.lastIndex))
         true

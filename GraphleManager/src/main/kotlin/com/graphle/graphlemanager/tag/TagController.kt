@@ -36,8 +36,8 @@ class TagController(private val tagService: TagService) {
 
     @MutationMapping
     fun removeTag(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
-        val tag = tag.let { Tag(it.name, it.value) }
         tagService.removeTag(location.normalize(), tag)
+        val tag = tag.let { Tag(it.name, it.value) }
         return tag
     }
 
