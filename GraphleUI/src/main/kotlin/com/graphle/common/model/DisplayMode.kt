@@ -1,6 +1,8 @@
 package com.graphle.common.model
 
 enum class DisplayMode {
-    MainBody,
-    FilesWithTag
+    File,
+    FilesWithTag,
+    Filenames,
+    Connections,
 }

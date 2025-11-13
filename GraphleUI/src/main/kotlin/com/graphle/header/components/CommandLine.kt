@@ -34,9 +34,12 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.graphle.common.model.DisplayMode
 import com.graphle.header.util.DSLWebSocketManager
 import com.graphle.common.model.DisplayedData
 import com.graphle.common.supervisorIoScope
+import com.graphle.dsl.handleDslCommand
+import com.graphle.file.model.Connection
 import com.graphle.header.util.DSLRestManager
 import kotlinx.coroutines.launch
 
@@ -48,6 +51,7 @@ internal fun TopBar(
     location: String,
     setLocation: (String) -> Unit,
     onResult: (DisplayedData?) -> Unit,
+    onModeResult: (DisplayMode) -> Unit,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean,
 ) {
@@ -99,7 +103,9 @@ internal fun TopBar(
                                 autocompleteList = autocompleteList,
                                 dslCommand = dslCommand.text,
                                 setDslCommand = { dslCommand = it },
-                                setAreSuggestionsShown = { areSuggestionsShown = it }
+                                setAreSuggestionsShown = { areSuggestionsShown = it },
+                                onDataUpdated = onResult,
+                                onModeUpdated = onModeResult,
                             )
                         },
                     colors = TextFieldDefaults.textFieldColors(
@@ -178,11 +184,16 @@ private fun processSelectSuggestion(
     autocompleteList: List<String>,
     dslCommand: String,
     setDslCommand: (TextFieldValue) -> Unit,
-    setAreSuggestionsShown: (Boolean) -> Unit
+    setAreSuggestionsShown: (Boolean) -> Unit,
+    onDataUpdated: (DisplayedData?) -> Unit,
+    onModeUpdated: (DisplayMode) -> Unit
 ): Boolean = when {
     event.type == KeyEventType.KeyDown && event.key == Key.Enter && event.isShiftPressed -> {
         supervisorIoScope.launch {
-            DSLRestManager.interpretCommand(dslCommand).let { println(it) }
+            handleDslCommand(
+                dslCommand = dslCommand,
+                onEvaluation = onDataUpdated,
+                onModeUpdated = onModeUpdated,
         }
         true
     }

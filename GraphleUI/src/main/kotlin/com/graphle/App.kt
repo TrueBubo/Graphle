@@ -43,11 +43,11 @@ fun App(setTitle: (String) -> Unit = {}) {
         )
     }
 
-    val mode = remember { mutableStateOf(DisplayMode.MainBody) }
+    val mode = remember { mutableStateOf(DisplayMode.File) }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
 
-    setTitle("Graphle - $location")
+    setTitle("Graphle${if (location != null) "- $location" else ""}")
 
     MaterialTheme(colors = if (isDarkTheme) DarkColorPalette else LightColorPalette) {
         Surface(
@@ -73,8 +73,9 @@ fun App(setTitle: (String) -> Unit = {}) {
                         location = location,
                         setLocation = { location = it },
                         setDisplayedData = { displayedData = it },
+                        setDisplayMode = { mode.value = it },
                         setDarkMode = { isDarkTheme = it },
-                        getDarkMode = { isDarkTheme }
+                        getDarkMode = { isDarkTheme },
                     )
                 }
 

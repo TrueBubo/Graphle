@@ -13,11 +13,19 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+enum class ResponseType {
+    ERROR,
+    SUCCESS,
+    FILENAMES,
+    CONNECTIONS,
+    FILE
+}
+
 @Serializable
 data class DSLRequest(val command: String)
 
 @Serializable
-data class DSLResponse(val type: String, val responseObject: List<String>? = null)
+data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
 object DSLRestManager {
     private val client = HttpClient(CIO) {
