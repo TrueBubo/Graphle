@@ -36,7 +36,7 @@ fun FilesWithTagBody(
                         supervisorIoScope.launch {
                             FileFetcher.fetch(location = it.location, onResult = setDisplayedData)
                             setLocation(it.location)
-                            setMode(DisplayMode.MainBody)
+                            setMode(DisplayMode.File)
                         }
                     }
                 )
