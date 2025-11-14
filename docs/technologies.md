@@ -17,14 +17,14 @@ the project core domain. Kotlin's type system is also more expressive.
 This is especially useful since it can make many illegal states unrepresentable. 
 Therefore, the client server communication will be less error-prone due to adhering to a more robust contract.
 
-## GUI: [Kotlin Multiplatform](https://www.jetbrains.com/kotlin-multiplatform/)
+## GUI: [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform.html)
 Modern GUI library in Kotlin. It is the most popular GUI library for Kotlin. Hence, it will be the easiest library to find 
 other developers to help with this project. 
 
 Another benefit of this library is sharing of code between multiple device types.
 This makes it much easier for a contributor to port the front-end to web or mobile.
 
-## API: [Spring](https://spring.io/)
+## API: [Spring boot](https://spring.io/projects/spring-boot)
 To decouple the GUI from the logic as much as possible, the application would be separated into a GraphQL endpoint and
 a GUI. This enables the application to query remote filesystems and enables 3rd party developers to develop their 
 application on this application protocol.
