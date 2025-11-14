@@ -43,6 +43,7 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
     }
 
     fun removeConnection(connection: ConnectionInput) = with(connection) {
+        System.err.println(connection)
         if (value == null) {
             connectionRepository.removeConnection(from, to, name)
             if (bidirectional) connectionRepository.removeConnection(from, to, name)

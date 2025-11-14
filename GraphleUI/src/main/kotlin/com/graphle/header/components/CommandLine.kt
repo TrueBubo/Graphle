@@ -31,10 +31,16 @@ import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.graphle.common.model.DisplayMode
 import com.graphle.header.util.DSLWebSocketManager
 import com.graphle.common.model.DisplayedData
 import com.graphle.common.supervisorIoScope
+import com.graphle.dsl.handleDslCommand
+import com.graphle.file.model.Connection
+import com.graphle.header.util.DSLRestManager
 import kotlinx.coroutines.launch
 
 
@@ -45,12 +51,13 @@ internal fun TopBar(
     location: String,
     setLocation: (String) -> Unit,
     onResult: (DisplayedData?) -> Unit,
+    onModeResult: (DisplayMode) -> Unit,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean,
 ) {
     var autocompleteList by remember { mutableStateOf<List<String>>(emptyList()) }
     var areSuggestionsShown by remember { mutableStateOf(false) }
-    var dslCommand by remember { mutableStateOf("") }
+    var dslCommand by remember { mutableStateOf(TextFieldValue("")) }
     var showAppMenu by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -60,7 +67,7 @@ internal fun TopBar(
         // Listen for autocomplete messages
         DSLWebSocketManager.messages.collect { list ->
             autocompleteList = list
-            areSuggestionsShown = autocompleteList.isNotEmpty() && dslCommand.isNotEmpty()
+            areSuggestionsShown = autocompleteList.isNotEmpty() && dslCommand.text.isNotEmpty()
         }
     }
 
@@ -81,7 +88,7 @@ internal fun TopBar(
                     onValueChange = {
                         dslCommand = it
                         supervisorIoScope.launch {
-                            DSLWebSocketManager.sendAutocompleteRequest(dslCommand)
+                            DSLWebSocketManager.sendAutocompleteRequest(dslCommand.text)
                         }
                     },
                     singleLine = true,
@@ -94,15 +101,17 @@ internal fun TopBar(
                                 selectedIndex = selectedIndex,
                                 setSelectedIndex = { selectedIndex = it },
                                 autocompleteList = autocompleteList,
+                                dslCommand = dslCommand.text,
                                 setDslCommand = { dslCommand = it },
-                                setAreSuggestionsShown = { areSuggestionsShown = it }
+                                setAreSuggestionsShown = { areSuggestionsShown = it },
+                                onDataUpdated = onResult,
+                                onModeUpdated = onModeResult,
                             )
                         },
                     colors = TextFieldDefaults.textFieldColors(
                         backgroundColor = MaterialTheme.colors.primaryVariant,
                     )
                 )
-
             }
         }
     }
@@ -119,7 +128,7 @@ internal fun TopBar(
                     val isSelected = index == selectedIndex
                     DropdownMenuItem(
                         onClick = {
-                            dslCommand = suggestion
+                            dslCommand = TextFieldValue(suggestion, TextRange(suggestion.length))
                             areSuggestionsShown = false
                             selectedIndex = -1
                         }
@@ -173,9 +182,22 @@ private fun processSelectSuggestion(
     selectedIndex: Int,
     setSelectedIndex: (Int) -> Unit,
     autocompleteList: List<String>,
-    setDslCommand: (String) -> Unit,
-    setAreSuggestionsShown: (Boolean) -> Unit
+    dslCommand: String,
+    setDslCommand: (TextFieldValue) -> Unit,
+    setAreSuggestionsShown: (Boolean) -> Unit,
+    onDataUpdated: (DisplayedData?) -> Unit,
+    onModeUpdated: (DisplayMode) -> Unit
 ): Boolean = when {
+    event.type == KeyEventType.KeyDown && event.key == Key.Enter && event.isShiftPressed -> {
+        supervisorIoScope.launch {
+            handleDslCommand(
+                dslCommand = dslCommand,
+                onEvaluation = onDataUpdated,
+                onModeUpdated = onModeUpdated,
+        }
+        true
+    }
+
     event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown -> {
         setSelectedIndex((selectedIndex + 1).coerceAtMost(autocompleteList.lastIndex))
         true
@@ -198,7 +220,8 @@ private fun processSelectSuggestion(
 
     event.type == KeyEventType.KeyDown && event.key == Key.Enter -> {
         if (selectedIndex in autocompleteList.indices) {
-            setDslCommand(autocompleteList[selectedIndex])
+            val suggestion = autocompleteList[selectedIndex]
+            setDslCommand(TextFieldValue(suggestion, TextRange(suggestion.length)))
             setAreSuggestionsShown(false)
             setSelectedIndex(-1)
             true

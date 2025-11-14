@@ -1,7 +1,9 @@
 package com.graphle.graphlemanager.dsl
 
+import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import org.springframework.stereotype.Service
 import java.io.File
+import kotlin.text.iterator
 
 const val COMPLETIONS_LIMIT = 5
 
@@ -12,75 +14,59 @@ const val COMPLETIONS_LIMIT = 5
 class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
     private val filenameCompleter = filenameCompleterService.completer
 
-    companion object {
-        private enum class TokenType {
-            VARIABLE_NAME,
-            OPERATOR,
-            VALUE,
-            CONJUNCTION
-        }
-
-        private enum class EntityType {
-            File,
-            Relationship
-        }
-
-
-        fun splitIntoTokens(text: String): List<String>  = buildList {
-            var inQuotes = false
-            var isEscaped = false
-            val word = StringBuilder()
-            println(text)
-            for (char in text) {
-                if (char == '"' && !isEscaped) {
-                    inQuotes = !inQuotes
-                    if (!inQuotes) {
-                        add(word.toString())
-                        word.clear()
-                    } else {
-                        word.append(char)
-                    }
-                    continue
-
-                }
-                val wasEscaped = isEscaped
-                isEscaped = false
-                if (char == '\\' && wasEscaped) {
-                    word.append('\\')
-                    continue
-                } else if (char == '\\'){
-                    isEscaped = true
-                    continue
-                }
-
-                if (!inQuotes && char == ' ' && word.isEmpty()) {
-                    continue
-                } else if (!inQuotes && char == ' ') {
-                    add(word.toString())
-                    word.clear()
-                    continue
-                }
-
-                word.append(char)
-            }
-            if (word.isNotEmpty()) add(word.toString())
-        }
-
-
-    }
-
-    fun processFileQuery(tokens: List<String>, limit: Int): List<String> {
-        return if (tokens.size > 2 && tokens[tokens.size - 3] == "location") {
-            completeFilename(tokens.last(), limit)
-        } else emptyList()
-    }
-
+    /**
+     * Predicts the DSL command with the next word
+     * @param commandPrefix Prefix to find the current word continuation for
+     * @param limit return at most this many entries
+     * @return At most [limit] words matching the given prefix
+     */
+    fun complete(commandPrefix: String, limit: Int = COMPLETIONS_LIMIT): List<String> =
+        completeCommandPrefix(commandPrefix, limit)
 
     fun completeCommandPrefix(commandPrefix: String, limit: Int): List<String> {
+        val tokens = splitIntoTokens(commandPrefix)
+        if (tokens.isEmpty()) return emptyList()
+        println(tokens)
+        return when (tokens.first()) {
+            Commands.FIND.command -> completeFindCommand(
+                commandPrefix = commandPrefix.drop(Commands.FIND.command.length + 1),
+                limit = limit
+            )
+
+            Commands.ADD_REL.command -> completeConnectionCommand(
+                commandType = Commands.ADD_REL.command,
+                commandPrefix = commandPrefix.drop(Commands.ADD_REL.command.length),
+                limit = limit
+            )
+
+            Commands.ADD_TAG.command -> completeTagCommand(
+                commandType = Commands.ADD_TAG.command,
+                commandPrefix = commandPrefix.drop(Commands.ADD_TAG.command.length + 1),
+                limit = limit
+            )
+
+            Commands.REMOVE_TAG.command -> completeTagCommand(
+                commandType = Commands.REMOVE_TAG.command,
+                commandPrefix = commandPrefix.drop(Commands.REMOVE_TAG.command.length + 1),
+                limit = limit
+            )
+
+            Commands.DETAIL.command -> completeDetailCommand(
+                commandPrefix.drop(Commands.DETAIL.command.length + 1),
+                limit
+            )
+
+            else -> emptyList()
+        }
+    }
+
+    private fun completeFindCommand(commandPrefix: String, limit: Int): List<String> {
+        println(commandPrefix)
         var scope: EntityType? = null
         var previousScope: EntityType? = null
         var inQuotes = false
         var isEscaped = false
+        var parenthesisLevel = 0
 
         for (char in commandPrefix) {
             if (char == '"' && !isEscaped) {
@@ -91,13 +77,16 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                     '(' -> {
                         if (scope == null && previousScope != EntityType.File) {
                             scope = EntityType.File
-                        } else return emptyList()
+                        } else parenthesisLevel++
                     }
 
                     ')' -> {
                         if (scope == EntityType.File) {
                             previousScope = EntityType.File
                             scope = null;
+                        } else {
+                            if (parenthesisLevel > 0) parenthesisLevel--
+                            else return emptyList()
                         }
                     }
 
@@ -134,9 +123,87 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         val lastScope = commandPrefix.substring(lastOpeningIndex + 1, commandPrefix.length)
         val tokens = splitIntoTokens(lastScope)
 
-        if (commandPrefix[lastOpeningIndex] == '(') return processFileQuery(tokens, limit)
+        if (commandPrefix[lastOpeningIndex] == '(') {
+            val filenames = processFileQuery(tokens, limit)
+            if (filenames.isEmpty()) return emptyList()
+            if (tokens.isEmpty()) return filenames.map { "${Commands.FIND.command} $it" }
+            return filenames
+                .map {
+                    addFilenameToCommand(
+                        commandType = Commands.FIND.command,
+                        filename = it,
+                        commandPrefix = commandPrefix,
+                        filenamePrefixToken = tokens.last(),
+                    )
+                }
+        }
 
         return emptyList()
+    }
+
+    private fun completeConnectionCommand(commandType: String, commandPrefix: String, limit: Int): List<String> {
+        val tokens = splitIntoTokens(commandPrefix)
+        if (tokens.size !in 1..2) return emptyList()
+        return completeFilenamesForToken(tokens.last(), limit)
+            .map {
+                addFilenameToCommand(
+                    commandType = commandType,
+                    filename = it,
+                    commandPrefix = commandPrefix,
+                    filenamePrefixToken = tokens.last(),
+                )
+            }
+    }
+
+    private fun completeTagCommand(commandType: String, commandPrefix: String, limit: Int): List<String> {
+        val tokens = splitIntoTokens(commandPrefix)
+        if (tokens.size != 1) return emptyList()
+        return completeFilenamesForToken(tokens.last(), limit)
+            .map {
+                addFilenameToCommand(
+                    commandType = commandType,
+                    filename = it,
+                    commandPrefix = commandPrefix,
+                    filenamePrefixToken = tokens.last(),
+                )
+            }
+    }
+
+    private fun completeDetailCommand(commandPrefix: String, limit: Int): List<String> {
+        val tokens = splitIntoTokens(commandPrefix)
+        if (tokens.size != 1) return emptyList()
+        return completeFilenamesForToken(tokens.last(), limit)
+            .map {
+                addFilenameToCommand(
+                    commandType = Commands.DETAIL.command,
+                    filename = it,
+                    commandPrefix = commandPrefix,
+                    filenamePrefixToken = tokens.last(),
+                )
+            }
+    }
+
+    private fun completeFilenamesForToken(token: String, limit: Int): List<String> =
+        if (token.startsWith('"')) {
+            completeFilenames(token.drop(1), limit)
+        } else emptyList()
+
+
+    private fun processFileQuery(tokens: List<String>, limit: Int): List<String> {
+        return if (tokens.size > 2 && tokens[tokens.size - 3] == "location") {
+            completeFilenamesForToken(tokens.last(), limit)
+        } else emptyList()
+    }
+
+    private fun addFilenameToCommand(
+        commandType: String,
+        filename: String,
+        filenamePrefixToken: String,
+        commandPrefix: String
+    ) = if (filename.startsWith(filenamePrefixToken.drop(1)))
+        "$commandType ${commandPrefix}${filename.drop(filenamePrefixToken.length - 1)}"
+    else {
+        "$commandType ${commandPrefix.dropLast(filenamePrefixToken.length - 1)}$filename"
     }
 
 
@@ -146,18 +213,8 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
      * @param limit return at most this many entries
      * @return At most [limit] files matching the given prefix
      */
-    private fun completeFilename(filenamePrefix: String, limit: Int): List<String> =
+    private fun completeFilenames(filenamePrefix: String, limit: Int): List<String> =
         filenameCompleter.lookup(filenamePrefix, limit)
             .map { it.joinToString(prefix = File.separator, separator = File.separator) }
 
-    /**
-     * Predicts the DSL command with the next word
-     * @param commandPrefix Prefix to find the current word continuation for
-     * @param limit return at most this many entries
-     * @return At most [limit] words matching the given prefix
-     */
-    fun complete(commandPrefix: String, limit: Int = COMPLETIONS_LIMIT): List<String> {
-        val completionList = completeCommandPrefix(commandPrefix, limit)
-        return completionList
-    }
 }

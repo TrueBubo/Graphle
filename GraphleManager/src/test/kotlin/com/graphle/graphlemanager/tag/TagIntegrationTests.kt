@@ -1,6 +1,6 @@
 package com.graphle.graphlemanager.tag
 
-import BaseIntegrationTest
+import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,13 +14,13 @@ class TagIntegrationTests(
     @Autowired private val tagService: TagService,
     @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
-) : BaseIntegrationTest() {
+) : BaseGraphQlIntegrationTest() {
     @Test
     fun `insert tag`() = fileTestUtils.withTempFiles { files ->
         try {
             post { insertTagQuery(location = files[0].absolutePath) }
         } finally {
-            tagService.removeTag(files[0].absolutePath, Tag(name = "exampleTag", value = "exampleValue"))
+            tagService.removeTag(files[0].absolutePath, TagInput(name = "exampleTag", value = "exampleValue"))
         }
     }
 
@@ -36,7 +36,7 @@ class TagIntegrationTests(
                     get { value }.isEqualTo("tmp_exampleValue")
                 }
         } finally {
-            tagService.removeTag(files[0].absolutePath, Tag(name = "tmp_exampleTag", value = "tmp_exampleValue"))
+            tagService.removeTag(files[0].absolutePath, TagInput(name = "tmp_exampleTag", value = "tmp_exampleValue"))
         }
     }
 

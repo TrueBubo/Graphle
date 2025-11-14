@@ -55,24 +55,6 @@ class FileService(
             }
         }
 
-    fun fileType(location: String): FileType? {
-        val file = File(location)
-        if (!file.exists()) return null
-        return if (file.isDirectory) FileType.Directory else FileType.File
-    }
-
-    fun descendantsOfFile(
-        fromLocation: AbsolutePathString,
-        getDescendantsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
-            val path = Path(filename)
-            if (path.isDirectory()) Files.list(path).toList().map { it.absolutePathString() } else emptyList()
-        }
-    ): List<AbsolutePathString> = getDescendantsAction(fromLocation)
-
-    fun parentOfFile(
-        fromLocation: AbsolutePathString,
-        getParentAction: (AbsolutePathString) -> AbsolutePathString? = { Path(fromLocation).toFile().parent }
-    ): AbsolutePathString? = getParentAction(fromLocation)
 
     fun addFile(
         location: AbsolutePathString,
@@ -80,6 +62,12 @@ class FileService(
     ) {
         insertFilesToCompleter(listOf(location))
         createFileAction(location)
+    }
+
+    fun addFileNode(location: AbsolutePathString) {
+        if (Files.exists(Path(location))) {
+            fileRepository.addFileNode(location)
+        }
     }
 
     fun removeFile(
@@ -117,5 +105,26 @@ class FileService(
                 )
             }
         }
+    }
+
+    companion object {
+        fun fileType(location: String): FileType? {
+            val file = File(location)
+            if (!file.exists()) return null
+            return if (file.isDirectory) FileType.Directory else FileType.File
+        }
+
+        fun descendantsOfFile(
+            fromLocation: AbsolutePathString,
+            getDescendantsAction: (AbsolutePathString) -> List<AbsolutePathString> = { filename ->
+                val path = Path(filename)
+                if (path.isDirectory()) Files.list(path).toList().map { it.absolutePathString() } else emptyList()
+            }
+        ): List<AbsolutePathString> = getDescendantsAction(fromLocation)
+
+        fun parentOfFile(
+            fromLocation: AbsolutePathString,
+            getParentAction: (AbsolutePathString) -> AbsolutePathString? = { Path(fromLocation).toFile().parent }
+        ): AbsolutePathString? = getParentAction(fromLocation)
     }
 }
