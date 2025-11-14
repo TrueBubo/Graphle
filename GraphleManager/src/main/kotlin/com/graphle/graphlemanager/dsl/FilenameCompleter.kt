@@ -180,6 +180,7 @@ class FilenameCompleter(
      * @param filename Components of the filenames consists of parent directories and the bottom level filename itself
      */
     fun insert(filename: FilenameComponents) {
+        if (filename == emptyList<AbsolutePathString>()) return
         val filenameString = filename.joinToString(prefix = File.separator, separator = File.separator)
         val fullFileKey = insertComponent(filenameString, null)
         insertComponent(filename.last(), fullFileKey)

@@ -38,7 +38,7 @@ class FileController(
     @QueryMapping
     fun fileByLocation(@Argument location: AbsolutePathString, @Argument showHiddenFiles: Boolean = true): File? {
         val location = location.normalize()
-        val descendants = fileService.descendantsOfFile(location)
+        val descendants = FileService.descendantsOfFile(location)
             .map {
                 Connection(
                     name = "descendant",
@@ -47,7 +47,7 @@ class FileController(
                     to = it,
                 )
             }
-        val parentConnection = fileService.parentOfFile(location)
+        val parentConnection = FileService.parentOfFile(location)
             ?.let {
                 Connection(
                     name = "parent",
@@ -86,7 +86,7 @@ class FileController(
     }
 
     @QueryMapping
-    fun fileType(@Argument location: AbsolutePathString): FileType? = fileService.fileType(location.normalize())
+    fun fileType(@Argument location: AbsolutePathString): FileType? = FileService.fileType(location.normalize())
 
     /**
      * Finds file locations related to [fromLocation] file via the relationship named [relationshipName]

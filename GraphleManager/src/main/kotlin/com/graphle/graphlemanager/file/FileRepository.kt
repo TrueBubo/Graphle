@@ -19,4 +19,8 @@ interface FileRepository : Neo4jRepository<File, UUID> {
 
     @Query("MATCH (f:File {location: \$locationFrom}) SET f.location = \$locationTo")
     fun moveFile(locationFrom: AbsolutePathString, locationTo: AbsolutePathString)
+
+    @Query("MERGE (:File {location: \$location})")
+    fun addFileNode(location: AbsolutePathString)
+
 }

@@ -1,7 +1,7 @@
 mutation addRelationshipToFileWithName($from: String!, $to: String!, $name: String!, $bidirectional: Boolean!) {
     addConnection(connection: {
-        locationFrom: $from
-        locationTo: $to
+        from: $from
+        to: $to
         name: $name
         bidirectional: $bidirectional
     }) {
@@ -13,8 +13,8 @@ mutation addRelationshipToFileWithName($from: String!, $to: String!, $name: Stri
 
 mutation addRelationshipToFileWithNameAndValue($from: String!, $to: String!, $name: String!, $value: String!, $bidirectional: Boolean!) {
     addConnection(connection: {
-        locationFrom: $from
-        locationTo: $to
+        from: $from
+        to: $to
         name: $name
         value: $value
         bidirectional: $bidirectional

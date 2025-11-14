@@ -16,18 +16,22 @@ object DisplayedBody {
         setLocation: (String) -> Unit,
         setDisplayedData: (DisplayedData?) -> Unit,
     ) = when (mode) {
-        DisplayMode.MainBody -> FileBody(
+        DisplayMode.File -> FileBody(
             location = location,
             displayedData = displayedData,
             setMode = setMode,
             setLocation = setLocation,
             setDisplayedData = setDisplayedData,
         )
+
         DisplayMode.FilesWithTag -> FilesWithTagBody(
             displayedData = displayedData,
             setMode = setMode,
             setLocation = setLocation,
             setDisplayedData = setDisplayedData,
         )
+
+        DisplayMode.Filenames -> TODO()
+        DisplayMode.Connections -> TODO()
     }
 }

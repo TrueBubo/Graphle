@@ -102,6 +102,10 @@ class Neo4JSweeperTest {
                 TODO("Not necessary for tests")
             }
 
+            override fun addFileNode(location: AbsolutePathString) {
+                TODO("Not necessary for tests")
+            }
+
             override fun findAll(): List<File> = files.toList().map { File(it, listOf(), listOf()) }
         }
 
