@@ -46,4 +46,6 @@ object DSLUtil {
     }
 
     fun String.removeQuotes() = if (this.first() == '"' && this.last() == '"') this.drop(1).dropLast(1) else this
+
+    fun String.ensureQuoted() = this.removeQuotes().let { "\"$it\"" }
 }
