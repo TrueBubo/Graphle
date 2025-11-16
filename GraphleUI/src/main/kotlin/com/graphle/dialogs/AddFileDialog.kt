@@ -42,7 +42,7 @@ object AddFileDialog {
                     if (hasInteractedWithFileName && showFileNameMissingError) {
                         Text(
                             text = "Name field is required",
-                            color = Color.Companion.Red,
+                            color = Color.Red,
                         )
                     }
                     OutlinedTextField(
@@ -52,7 +52,7 @@ object AddFileDialog {
                             showFileNameMissingError = filename.isBlank()
                         },
                         isError = hasInteractedWithFileName && showFileNameMissingError,
-                        modifier = Modifier.Companion.onFocusChanged {
+                        modifier = Modifier.onFocusChanged {
                             showFileNameMissingError = filename.isBlank()
                             if (it.isFocused) {
                                 hasInteractedWithFileName = true

@@ -15,17 +15,21 @@ import java.lang.System.lineSeparator
 
 suspend fun handleDslCommand(
     dslCommand: String,
-    onEvaluation: (DisplayedData?) -> Unit,
-    onModeUpdated: (DisplayMode) -> Unit,
+    onEvaluation: (DisplayedSettings) -> Unit,
 ) {
+    System.err.println("[dslCommand] $dslCommand")
+    val response = DSLRestManager.interpretCommand(dslCommand)
     val displayedSettings = parseDslResponse(
-        response = DSLRestManager.interpretCommand(dslCommand)
+        response = response
     )
-    if (displayedSettings == null) return
-    onEvaluation(displayedSettings.displayedData)
-    onModeUpdated(displayedSettings.displayedModel)
-}
 
+    if (displayedSettings == null) {
+        DSLHistory.repeatLastDisplayedCommand(onEvaluation)
+        return
+    }
+    DSLHistory.lastDisplayedCommand.value = dslCommand
+    onEvaluation(displayedSettings)
+}
 
 private fun parseDslResponse(
     response: DSLResponse
@@ -40,10 +44,10 @@ private fun parseDslResponse(
 
     SUCCESS -> null
     FILENAMES -> DisplayedSettings(
-        displayedData = DisplayedData(
+        data = DisplayedData(
             filenames = response.responseObject,
         ),
-        displayedModel = DisplayMode.Filenames
+        mode = DisplayMode.Filenames
     )
 
     CONNECTIONS -> {
@@ -57,8 +61,8 @@ private fun parseDslResponse(
             )
             null
         } else DisplayedSettings(
-            displayedData = DisplayedData(connections = responses.filterNotNull()),
-            displayedModel = DisplayMode.Connections
+            data = DisplayedData(connections = responses.filterNotNull()),
+            mode = DisplayMode.Connections
         )
     }
 
@@ -66,8 +70,12 @@ private fun parseDslResponse(
         Json.decodeFromStringOrNull<File>(it)
     }?.let {
         DisplayedSettings(
-            displayedData = DisplayedData(file = it),
-            displayedModel = DisplayMode.File
+            data = DisplayedData(
+                location = it.location,
+                tags = it.tags,
+                connections = it.connections,
+            ),
+            mode = DisplayMode.File
         )
     }
 }
