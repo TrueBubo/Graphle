@@ -1,0 +1,63 @@
+name: Run Tests
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-graphle-manager:
+    name: Test GraphleManager
+    runs-on: ubuntu-latest
+
+    services:
+      neo4j:
+        image: neo4j:5.25.1
+        env:
+          NEO4J_AUTH: neo4j/notverysecret
+        ports:
+          - 7687:7687
+          - 7474:7474
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p notverysecret 'RETURN 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      valkey:
+        image: valkey/valkey:8.0.1
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Make gradlew executable
+      run: chmod +x GraphleManager/gradlew
+
+    - name: Run GraphleManager tests
+      working-directory: ./GraphleManager
+      run: ./gradlew test --info
+
+    - name: Upload test reports on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: graphle-manager-test-reports
+        path: GraphleManager/build/reports/tests/
+        retention-days: 7
