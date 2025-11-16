@@ -10,7 +10,7 @@ import com.graphle.AddTagToFileWithNameAndValueMutation
 import com.graphle.AddTagToFileWithNameMutation
 import com.graphle.file.model.Connection
 import com.graphle.FileTypeQuery
-import com.graphle.fileWithTag.components.FileWithTag
+import com.graphle.fileWithTag.model.FileWithTag
 import com.graphle.FilesByTagQuery
 import com.graphle.FilesFromFileByRelationshipQuery
 import com.graphle.MoveFileMutation

@@ -7,8 +7,10 @@ import com.graphle.graphlemanager.connection.ConnectionService
 import com.graphle.graphlemanager.dsl.DSLUtil.removeQuotes
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
+import com.graphle.graphlemanager.file.File
 import com.graphle.graphlemanager.file.FileController
 import com.graphle.graphlemanager.file.FileService
+import com.graphle.graphlemanager.tag.TagForFile
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
 import kotlinx.serialization.Serializable
@@ -37,7 +39,8 @@ enum class ResponseType {
     SUCCESS,
     FILENAMES,
     CONNECTIONS,
-    FILE
+    FILE,
+    TAG
 }
 
 @Serializable
@@ -52,6 +55,7 @@ enum class Commands(val command: String) {
     ADD_TAG("addTag"),
     REMOVE_TAG("removeTag"),
     DETAIL("detail"),
+    TAG("tag")
 }
 
 @Service
@@ -85,25 +89,33 @@ class DSLInterpreter(
                 }
 
                 Commands.ADD_TAG.command -> {
-                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return parseError(command)
+                    val tagInput = interpretModifyTagTokens(tokens.drop(1)) ?: return parseError(command)
                     tagService.addTagToFile(tagInput.location, tagInput.tag)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.REMOVE_TAG.command -> {
-                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return parseError(command)
-                    System.err.println("Removing tag with value: $tagInput")
+                    val tagInput = interpretModifyTagTokens(tokens.drop(1)) ?: return parseError(command)
                     tagService.removeTag(tagInput.location, tagInput.tag)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.DETAIL.command -> {
                     val filename = interpretDetailTokens(tokens.drop(1)) ?: return parseError(command)
-                    val detail = fileController.fileByLocation(filename) ?: return DSLResponse(
+                    val detail: File = fileController.fileByLocation(filename) ?: return DSLResponse(
                         ResponseType.ERROR,
                         listOf("File $filename not found")
                     )
                     return DSLResponse(ResponseType.FILE, listOf(Json.encodeToString(detail)))
+                }
+
+                Commands.TAG.command -> {
+                    val tag = interpretGetTokens(tokens.drop(1)) ?: return parseError(command)
+                    val tagLocations = tagService.filesByTag(tag)
+                    return DSLResponse(
+                        type = ResponseType.TAG,
+                        responseObject = tagLocations.map { Json.encodeToString<TagForFile>(it) }
+                    )
                 }
 
                 else -> DSLResponse(ResponseType.ERROR, listOf("Unknown command ${tokens.first()}"))
@@ -137,7 +149,7 @@ class DSLInterpreter(
                     }
                 }
 
-                ResponseType.ERROR, ResponseType.SUCCESS, ResponseType.FILE -> return response
+                ResponseType.ERROR, ResponseType.SUCCESS, ResponseType.FILE, ResponseType.TAG -> return response
             }
         }
         return response
@@ -154,7 +166,7 @@ class DSLInterpreter(
         )
     }
 
-    fun interpretTagTokens(tokens: List<String>): TagModificationInput? {
+    fun interpretModifyTagTokens(tokens: List<String>): TagModificationInput? {
         if (tokens.size !in 2..3) return null
         return TagModificationInput(
             location = tokens[0].removeQuotes().normalize(),
@@ -163,6 +175,11 @@ class DSLInterpreter(
                 value = tokens.getOrNull(2)?.removeQuotes(),
             )
         )
+    }
+
+    fun interpretGetTokens(tokens: List<String>): String? {
+        if (tokens.size != 1) return null
+        return tokens.first().removeQuotes()
     }
 
     fun interpretDetailTokens(tokens: List<String>): AbsolutePathString? {
