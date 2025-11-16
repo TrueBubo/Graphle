@@ -2,28 +2,23 @@ package com.graphle.header.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
-import com.graphle.common.model.DisplayMode
-import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.dialogs.InvalidFileMessage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Header(
-    location: String,
-    setLocation: (String) -> Unit,
-    setDisplayedData: (DisplayedData?) -> Unit,
-    setDisplayMode: (DisplayMode) -> Unit,
+    setDisplayedSettings: (DisplayedSettings) -> Unit,
+    getDisplayedSettings: () -> DisplayedSettings,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean
 ) {
     TopBar(
-        location = location,
-        setLocation = setLocation,
         onResult = {
             InvalidFileMessage.showInvalidFileMessage = true
-            setDisplayedData(it)
+            setDisplayedSettings(it)
         },
-        onModeResult = setDisplayMode,
+        getDisplayedSettings = getDisplayedSettings,
         setDarkMode = setDarkMode,
         getDarkMode = getDarkMode
     )

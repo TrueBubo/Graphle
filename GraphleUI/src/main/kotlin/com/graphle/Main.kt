@@ -13,6 +13,6 @@ fun main() = application {
     var title by remember { mutableStateOf("Graphle") }
     Window(onCloseRequest = ::exitApplication, title = title) {
         window.minimumSize = java.awt.Dimension(minWidthPx, minHeightPx)
-        App(setTitle = { title = it })
+        App()
     }
 }

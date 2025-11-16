@@ -1,64 +1,60 @@
 package com.graphle.dialogs
 
 import androidx.compose.runtime.Composable
+import com.graphle.common.model.DisplayMode
 import com.graphle.file.util.FileFetcher
-import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
+import com.graphle.dsl.DSLHistory
 
 @Composable
 fun Dialogs(
-    location: String,
-    setDisplayedData: (DisplayedData?) -> Unit,
-    getDisplayedData: () -> DisplayedData?,
+    setDisplayedSettings: (DisplayedSettings) -> Unit,
+    getDisplayedSettings: () -> DisplayedSettings,
     isInvalidFile: Boolean,
 ) {
+    val location = getDisplayedSettings().data?.location ?: ""
     AddTagDialog(
         onSubmitted = {
             FileFetcher.fetch(
                 location = location,
-                onResult = setDisplayedData
+                onResult = setDisplayedSettings
             )
         }
     )
 
     AddRelationshipDialog(
         onSubmitted = {
+            if (getDisplayedSettings().mode != DisplayMode.File) return@AddRelationshipDialog
             FileFetcher.fetch(
                 location = location,
-                onResult = setDisplayedData
+                onResult = setDisplayedSettings
             )
         },
-        onUpdatedData = getDisplayedData
+        onUpdatedData = { getDisplayedSettings().data }
     )
 
     AddFileDialog(
         onConfirmed = {
+            if (getDisplayedSettings().mode != DisplayMode.File) return@AddFileDialog
             FileFetcher.fetch(
                 location = location,
-                onResult = {
-                    setDisplayedData(it)
-                }
+                onResult = setDisplayedSettings
             )
         }
     )
 
     MoveFileDialog(
         onMoved = {
-            FileFetcher.fetch(
-                location = location,
-                onResult = {
-                    setDisplayedData(it)
-                }
-            )
+            DSLHistory.repeatLastDisplayedCommand(setDisplayedSettings)
         },
-
-        )
+    )
 
     DeleteFileDialog(
         onConfirmed = {
             FileFetcher.fetch(
                 location = location,
                 onResult = {
-                    setDisplayedData(it)
+                    setDisplayedSettings(it)
                 }
             )
         }

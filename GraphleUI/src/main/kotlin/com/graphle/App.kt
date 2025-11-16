@@ -17,6 +17,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import com.graphle.file.util.FileFetcher
 import com.graphle.common.model.DisplayMode
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.dialogs.InvalidFileMessage.showInvalidFileMessage
 import com.graphle.common.ui.DarkColorPalette
 import com.graphle.common.ui.LightColorPalette
@@ -29,25 +30,25 @@ import kotlinx.coroutines.runBlocking
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 @Preview
-fun App(setTitle: (String) -> Unit = {}) {
-    var location by remember { mutableStateOf(userHome) }
+fun App() {
     var oldLocation by remember { mutableStateOf("") }
     var lastUpdated by remember { mutableStateOf(0L) }
-    var displayedData by remember {
-        mutableStateOf(runBlocking {
-            FileFetcher.fetch(
-                location = location,
-                onResult = { }
-            )
-        }
-        )
-    }
 
-    val mode = remember { mutableStateOf(DisplayMode.File) }
+    var displayedSettings by remember {
+        mutableStateOf(
+            DisplayedSettings(
+                data = runBlocking {
+                    FileFetcher.fetch(
+                        location = userHome,
+                        onResult = { }
+                    )
+                }.data,
+                mode = DisplayMode.File
+            )
+            )
+    }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }
-
-    setTitle("Graphle${if (location != null) "- $location" else ""}")
 
     MaterialTheme(colors = if (isDarkTheme) DarkColorPalette else LightColorPalette) {
         Surface(
@@ -55,25 +56,25 @@ fun App(setTitle: (String) -> Unit = {}) {
             color = MaterialTheme.colors.background
         ) {
             Dialogs(
-                location = location,
-                setDisplayedData = {
-                    if (displayedData != null) displayedData = it
-                    else ErrorMessage.set(
-                        showErrorMessage = true,
-                        errorMessage = "Could not get data, check whether it exists and you have necessary permissions.",
-                    )
+                setDisplayedSettings = { newSettings ->
+                    if (newSettings.data != null) {
+                        displayedSettings = newSettings
+                    } else {
+                        ErrorMessage.set(
+                            showErrorMessage = true,
+                            errorMessage = "Could not get data, check whether it exists and you have necessary permissions.",
+                        )
+                    }
                 },
-                getDisplayedData = { displayedData },
-                isInvalidFile = displayedData == null,
+                getDisplayedSettings = { displayedSettings },
+                isInvalidFile = displayedSettings.data == null,
             )
 
             LazyColumn {
                 stickyHeader {
                     Header(
-                        location = location,
-                        setLocation = { location = it },
-                        setDisplayedData = { displayedData = it },
-                        setDisplayMode = { mode.value = it },
+                        setDisplayedSettings = { displayedSettings = it },
+                        getDisplayedSettings = { displayedSettings },
                         setDarkMode = { isDarkTheme = it },
                         getDarkMode = { isDarkTheme },
                     )
@@ -84,7 +85,7 @@ fun App(setTitle: (String) -> Unit = {}) {
                         Text("Loading...")
                     }
                 } else {
-                    if (displayedData == null) {
+                    if (displayedSettings.data == null) {
                         item {
                             Text("Could not find the file")
 
@@ -92,19 +93,15 @@ fun App(setTitle: (String) -> Unit = {}) {
                     } else {
                         item {
                             DisplayedBody(
-                                location = location,
-                                mode = mode.value,
-                                setMode = { mode.value = it },
-                                displayedData = displayedData,
-                                setLocation = { location = it },
-                                setDisplayedData = {
-                                    if (it == null) ErrorMessage.set(
+                                displayedSettings = displayedSettings,
+                                setDisplayedSettings = {
+                                    if (it.data == null) ErrorMessage.set(
                                         showErrorMessage = true,
                                         errorMessage = "Could not load the file, check whether it exists and " +
                                                 "you have necessary permissions."
                                     )
                                     else {
-                                        displayedData = it
+                                        displayedSettings = it
                                         showInvalidFileMessage = true
                                     }
                                 },

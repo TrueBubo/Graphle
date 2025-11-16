@@ -16,7 +16,6 @@ import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
-import org.neo4j.driver.exceptions.Neo4jException
 
 data class Scope(val entityType: EntityType, val text: String)
 
@@ -64,9 +63,9 @@ class DSLInterpreter(
     private val fileController: FileController
 ) {
 
-    fun interpret(command: String): DSLResponse? {
+    fun interpret(command: String): DSLResponse {
         val tokens = splitIntoTokens(command)
-        if (tokens.isEmpty()) return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+        if (tokens.isEmpty()) parseError(command)
         return try {
             when (tokens.first()) {
                 Commands.FIND.command -> {
@@ -74,68 +73,56 @@ class DSLInterpreter(
                 }
 
                 Commands.ADD_REL.command -> {
-                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return DSLResponse(
-                        ResponseType.ERROR,
-                        listOf("Unable to parse $command")
-                    )
+                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return parseError(command)
                     connectionService.addConnection(connectionInput)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.REMOVE_REL.command -> {
-                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return DSLResponse(
-                        ResponseType.ERROR,
-                        listOf("Unable to parse $command")
-                    )
+                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return parseError(command)
                     connectionService.removeConnection(connectionInput)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.ADD_TAG.command -> {
-                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return DSLResponse(
-                        ResponseType.ERROR,
-                        listOf("Unable to parse $command")
-                    )
+                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return parseError(command)
                     tagService.addTagToFile(tagInput.location, tagInput.tag)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.REMOVE_TAG.command -> {
-                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return DSLResponse(
-                        ResponseType.ERROR,
-                        listOf("Unable to parse $command")
-                    )
+                    val tagInput = interpretTagTokens(tokens.drop(1)) ?: return parseError(command)
+                    System.err.println("Removing tag with value: $tagInput")
                     tagService.removeTag(tagInput.location, tagInput.tag)
                     return DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.DETAIL.command -> {
-                    val filename = interpretDetailTokens(tokens.drop(1)) ?: return DSLResponse(
-                        ResponseType.ERROR,
-                        listOf("Unable to parse $command")
-                    )
+                    val filename = interpretDetailTokens(tokens.drop(1)) ?: return parseError(command)
                     val detail = fileController.fileByLocation(filename) ?: return DSLResponse(
                         ResponseType.ERROR,
                         listOf("File $filename not found")
                     )
-                    return DSLResponse(ResponseType.SUCCESS, listOf(Json.encodeToString(detail)))
+                    return DSLResponse(ResponseType.FILE, listOf(Json.encodeToString(detail)))
                 }
 
                 else -> DSLResponse(ResponseType.ERROR, listOf("Unknown command ${tokens.first()}"))
 
             }
-        } catch (_: Neo4jException) {
-            return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+        } catch (_: Exception) {
+            return parseError(command)
         }
     }
 
-    fun interpretFind(command: String): DSLResponse? {
+    private fun parseError(command: String) =
+        DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
+
+    fun interpretFind(command: String): DSLResponse {
         var prevSelectedFilenames: List<AbsolutePathString>? = null
         val scopes = splitSearchIntoScopes(command)
-        if (scopes.isEmpty()) {
-            return DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
-        }
-        var response: DSLResponse? = null
+        if (scopes.isEmpty()) return parseError(command)
+
+        var response: DSLResponse = parseError(command)
         for (scope in scopes) {
             response = executeScope(scope, prevSelectedFilenames).run { DSLResponse(type, responseObject.distinct()) }
             prevSelectedFilenames = when (response.type) {
@@ -202,11 +189,7 @@ class DSLInterpreter(
             EntityType.File -> scope
         }
 
-        val query = convertScopeToCommand(ranScope, prevSelectedFilenames)
-            ?: return DSLResponse(
-                type = ResponseType.ERROR,
-                responseObject = listOf("Unable to parse $scope")
-            )
+        val query = convertScopeToCommand(ranScope, prevSelectedFilenames) ?: return parseError(scope.text)
         return when (scope.entityType) {
             EntityType.File -> DSLResponse(
                 type = ResponseType.FILENAMES,
@@ -331,7 +314,7 @@ class DSLInterpreter(
                                 )
                             )
                             scopeStartIndex = null
-                            scope = null;
+                            scope = null
                         } else return emptyList()
                     }
 
@@ -387,7 +370,8 @@ class DSLInterpreter(
         prevSelectedFilenames: List<AbsolutePathString>?
     ): String? {
         var tokenType = TokenType.first()
-        val processedTokens: List<String> = tokens.mapIndexed { index, token ->
+        val mutableTokens = tokens.toMutableList()
+        val processedTokens: List<String> = mutableTokens.mapIndexed { index, token ->
             if (token == HIGHER_PRIORITY_OPENING_TOKEN || token == HIGHER_PRIORITY_CLOSING_TOKEN) {
                 tokenType = TokenType.first()
                 return@mapIndexed token
@@ -395,9 +379,13 @@ class DSLInterpreter(
             when (tokenType) {
                 TokenType.VARIABLE_NAME -> {
                     tokenType = tokenType.next()
-                    if (token == "location" && index + 2 < tokens.size) ensureFileNodeExists(
-                        location = tokens[index + 2].removeQuotes().normalize()
-                    )
+                    System.err.println("Ensured exist")
+                    if (token == "location" && index + 2 < tokens.size) {
+                        val normalizedLocation = tokens[index + 2].removeQuotes().normalize()
+                        ensureFileNodeExists(location = normalizedLocation)
+                        mutableTokens[index + 2] = "\"$normalizedLocation\""
+                        System.err.println("added")
+                    }
                     return@mapIndexed processFileVariableName(token) ?: return null
                 }
 

@@ -36,8 +36,9 @@ interface TagRepository : Neo4jRepository<Tag, UUID> {
      * @param tagName Tag the system associate will with the file
      * @return Inserted tag
      */
-    @Query("MATCH (f:File {location: \$fileLocation}) OPTIONAL MATCH (t:Tag {name: \$tagName}) " +
-            "WITH f, t WHERE t IS NOT NULL AND t.value IS NULL MERGE (f)-[:HasTag]->(t)")
+    @Query("  MERGE (f:File {location: \$fileLocation}) " +
+            "MERGE (t:Tag {name: \$tagName}) " +
+            "MERGE (f)-[:HasTag]->(t)")
     fun addTagToFile(fileLocation: AbsolutePathString, tagName: String)
 
     /**

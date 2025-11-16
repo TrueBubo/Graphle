@@ -39,6 +39,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                 limit = limit
             )
 
+            Commands.REMOVE_REL.command -> completeConnectionCommand(
+                commandType = Commands.REMOVE_REL.command,
+                commandPrefix = commandPrefix.drop(Commands.REMOVE_REL.command.length),
+                limit = limit
+            )
+
             Commands.ADD_TAG.command -> completeTagCommand(
                 commandType = Commands.ADD_TAG.command,
                 commandPrefix = commandPrefix.drop(Commands.ADD_TAG.command.length + 1),

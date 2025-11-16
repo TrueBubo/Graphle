@@ -20,7 +20,6 @@ import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
 import kotlin.test.AfterTest
 import kotlin.test.Test
 
@@ -69,7 +68,7 @@ class DSLInterpreterTest {
             )
 
             val response = interpreter.interpret("find (location = \"${file1.parent}\")[desc]")
-            expectThat(response).isNotNull().and {
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.CONNECTIONS)
                 get {
                     responseObject
@@ -94,7 +93,7 @@ class DSLInterpreterTest {
             )
 
             val response = interpreter.interpret("find (location = \"$file1\")[name = \"$randomString\"]")
-            expectThat(response).isNotNull().and {
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.CONNECTIONS)
                 get {
                     responseObject
@@ -128,9 +127,10 @@ class DSLInterpreterTest {
                 )
             )
 
-            val response =
-                interpreter.interpret("find (location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()")
-            expectThat(response).isNotNull().and {
+            val response = interpreter.interpret(
+                "find (location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()"
+            )
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.FILENAMES)
                 get { responseObject }.hasSize(1).first().isEqualTo((file3.parent))
             }
@@ -142,7 +142,7 @@ class DSLInterpreterTest {
         val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find (location = \" or tagName = \"${randomString}\")")
 
-        expectThat(response).isNotNull().and {
+        expectThat(response).and {
             get { type }.isEqualTo(ResponseType.ERROR)
             get { responseObject }.hasSize(1).first().contains("Unable to parse")
         }
@@ -152,7 +152,7 @@ class DSLInterpreterTest {
     fun `invalid connection syntax returns error response`() {
         val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find ()[nonExistent = 2]")
-        expectThat(response).isNotNull().and {
+        expectThat(response).and {
             get { type }.isEqualTo(ResponseType.ERROR)
             get { responseObject }.hasSize(1).first().contains("Unable to parse")
         }

@@ -3,35 +3,37 @@ package com.graphle
 import androidx.compose.runtime.Composable
 import com.graphle.fileWithTag.components.FilesWithTagBody
 import com.graphle.common.model.DisplayMode
-import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.file.components.FileBody
+import com.graphle.file.components.FilenameBody
 
 object DisplayedBody {
     @Composable
     operator fun invoke(
-        location: String,
-        mode: DisplayMode,
-        setMode: (DisplayMode) -> Unit,
-        displayedData: DisplayedData?,
-        setLocation: (String) -> Unit,
-        setDisplayedData: (DisplayedData?) -> Unit,
-    ) = when (mode) {
-        DisplayMode.File -> FileBody(
-            location = location,
-            displayedData = displayedData,
-            setMode = setMode,
-            setLocation = setLocation,
-            setDisplayedData = setDisplayedData,
-        )
+        displayedSettings: DisplayedSettings,
+        setDisplayedSettings: (DisplayedSettings) -> Unit,
+    ) {
+        val location = displayedSettings.data?.location ?: ""
+        return when (displayedSettings.mode) {
+            DisplayMode.File -> FileBody(
+                displayedSettings = displayedSettings,
+                setDisplayedSettings = setDisplayedSettings,
+            )
 
-        DisplayMode.FilesWithTag -> FilesWithTagBody(
-            displayedData = displayedData,
-            setMode = setMode,
-            setLocation = setLocation,
-            setDisplayedData = setDisplayedData,
-        )
+            DisplayMode.FilesWithTag -> FilesWithTagBody(
+                displayedSettings = displayedSettings,
+                setDisplayedSettings = setDisplayedSettings,
+            )
 
-        DisplayMode.Filenames -> TODO()
-        DisplayMode.Connections -> TODO()
+            DisplayMode.Filenames -> FilenameBody(
+                displayedSettings = displayedSettings,
+                setDisplayedSettings = setDisplayedSettings,
+            )
+
+            DisplayMode.Connections -> FileBody(
+                displayedSettings = displayedSettings,
+                setDisplayedSettings = setDisplayedSettings,
+            )
+        }
     }
 }
