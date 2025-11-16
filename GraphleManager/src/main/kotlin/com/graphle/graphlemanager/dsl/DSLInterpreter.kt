@@ -4,6 +4,7 @@ import com.graphle.graphlemanager.commons.normalize
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
+import com.graphle.graphlemanager.dsl.DSLUtil.ensureQuoted
 import com.graphle.graphlemanager.dsl.DSLUtil.removeQuotes
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
@@ -388,36 +389,63 @@ class DSLInterpreter(
     ): String? {
         var tokenType = TokenType.first()
         val mutableTokens = tokens.toMutableList()
+        var lastVariableName: String? = null
+        var lastOperator: String? = null
+
         val processedTokens: List<String> = mutableTokens.mapIndexed { index, token ->
             if (token == HIGHER_PRIORITY_OPENING_TOKEN || token == HIGHER_PRIORITY_CLOSING_TOKEN) {
                 tokenType = TokenType.first()
+                lastVariableName = null
+                lastOperator = null
                 return@mapIndexed token
             }
             when (tokenType) {
                 TokenType.VARIABLE_NAME -> {
                     tokenType = tokenType.next()
-                    System.err.println("Ensured exist")
+                    lastVariableName = token
+
                     if (token == "location" && index + 2 < tokens.size) {
                         val normalizedLocation = tokens[index + 2].removeQuotes().normalize()
                         ensureFileNodeExists(location = normalizedLocation)
-                        mutableTokens[index + 2] = "\"$normalizedLocation\""
-                        System.err.println("added")
+                        mutableTokens[index + 2] = normalizedLocation.ensureQuoted()
                     }
-                    return@mapIndexed processFileVariableName(token) ?: return null
+
+                    val processedName = processFileVariableName(token) ?: return null
+
+                    // Check if next token is a numeric comparison operator
+                    val nextOperator = tokens.getOrNull(index + 1)
+                    val isNumericComparison = nextOperator in listOf(">", "<", ">=", "<=")
+
+                    // Wrap tagValue with toFloat() for numeric comparisons
+                    return@mapIndexed if (token == "tagValue" && isNumericComparison) {
+                        "toFloat($processedName)"
+                    } else {
+                        processedName
+                    }
                 }
 
                 TokenType.OPERATOR -> {
                     tokenType = tokenType.next()
+                    lastOperator = token
                     return@mapIndexed processOperatorTypes(token) ?: return null
                 }
 
                 TokenType.VALUE -> {
                     tokenType = tokenType.next()
-                    return@mapIndexed token
+
+                    // For numeric comparisons on tagValue, don't quote the value
+                    val isNumericComparison = lastOperator in listOf(">", "<", ">=", "<=")
+                    return@mapIndexed if (lastVariableName == "tagValue" && isNumericComparison) {
+                        token.removeQuotes()
+                    } else {
+                        token.ensureQuoted()
+                    }
                 }
 
                 TokenType.CONJUNCTION -> {
                     tokenType = tokenType.next()
+                    lastVariableName = null
+                    lastOperator = null
                     return@mapIndexed processConjunctionOperators(token) ?: return null
                 }
             }

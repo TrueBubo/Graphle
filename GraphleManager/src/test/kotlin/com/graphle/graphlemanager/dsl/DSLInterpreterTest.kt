@@ -328,7 +328,7 @@ class DSLInterpreterTest {
         expectThat(interpreter.convertScopeToCommand(scope = scope, prevSelectedFilename = null))
             .isEqualTo(
                 "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) " +
-                        "WITH f, t WHERE t.name = \"year\" AND t.value > 2015 AND ( f.location <> \"/home/(Person)\" ) RETURN f"
+                        "WITH f, t WHERE t.name = \"year\" AND toFloat(t.value) > 2015 AND ( f.location <> \"/home/(Person)\" ) RETURN f"
             )
     }
 
@@ -511,5 +511,225 @@ class DSLInterpreterTest {
             get { type }.isEqualTo(ResponseType.TAG)
             get { responseObject }.hasSize(0)
         }
+    }
+
+    @Test
+    fun `should filter out non-numeric tag values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "abc")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "5")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 8"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with less than operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "3.5")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "xyz")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue < 5"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with greater than or equal operator`() = fileTestUtils.withTempFiles(count = 4) { (file1, file2, file3, file4) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "15")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "5")
+        )
+
+        tagService.addTagToFile(
+            location = file4.absolutePath,
+            tag = TagInput(name = randomString, value = "notanumber")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue >= 10"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with less than or equal operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "7")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "7.0")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "8")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue <= 7"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should still use string comparison for equality operator`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "test")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue = \"test\""
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle decimal numbers in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "8.5")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "11.2")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "7.9")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 8"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should exclude tags with empty or whitespace values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "  ")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 5"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
     }
 }
