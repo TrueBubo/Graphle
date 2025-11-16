@@ -45,7 +45,6 @@ object DSLRestManager {
                 setBody(DSLRequest(command))
             }.body()
         } catch (e: Exception) {
-            println(command)
             throw e
         }
     }

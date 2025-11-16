@@ -82,7 +82,6 @@ object AddTagDialog {
             confirmButton = {
                 Button(
                     onClick = {
-                        System.err.println("Add tag \"$name\" \"$value\"")
                         supervisorIoScope.launch {
                             Tag(name = name, value = value.ifBlank { null }).save(location = location)
                             onSubmitted()

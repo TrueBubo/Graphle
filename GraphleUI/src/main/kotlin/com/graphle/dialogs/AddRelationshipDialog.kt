@@ -130,7 +130,7 @@ object AddRelationshipDialog {
                                 from = location,
                                 to = to,
                                 name = name,
-                                value = value.ifBlank { null }).also { println(it) }.save(isBidirectional)
+                                value = value.ifBlank { null }).save(isBidirectional)
                             onSubmitted()
                             onUpdatedData()?.connections.orEmpty()
                                 .none { it.to == to }

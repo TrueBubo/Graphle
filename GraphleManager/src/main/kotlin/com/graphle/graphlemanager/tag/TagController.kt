@@ -30,7 +30,6 @@ class TagController(private val tagService: TagService) {
      */
     @MutationMapping
     fun addTagToFile(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
-        System.err.println("addTagToFile: $tag")
         tagService.addTagToFile(location.normalize(), tag)
         return Tag(tag.name, tag.value)
     }
