@@ -12,7 +12,7 @@ class Neo4JConfig(neo4jClient: Neo4jClient) {
             val fileLocationIndex = "CREATE INDEX file_location_index IF NOT EXISTS FOR (f:File) ON (f.location);"
             neo4jClient.query(fileLocationIndex)
                 .run()
-        } catch (e: ClientException) {
+        } catch (e: Exception) {
             if (!e.message?.contains("equivalent index already exists", ignoreCase = true)!!) {
                 throw e
             }
@@ -22,7 +22,7 @@ class Neo4JConfig(neo4jClient: Neo4jClient) {
             val tagNameIndex = "CREATE INDEX tag_name IF NOT EXISTS FOR (t:Tag) ON (t.name)"
             neo4jClient.query(tagNameIndex)
                 .run()
-        } catch (e: ClientException) {
+        } catch (e: Exception) {
             if (!e.message?.contains("equivalent index already exists", ignoreCase = true)!!) {
                 throw e
             }
