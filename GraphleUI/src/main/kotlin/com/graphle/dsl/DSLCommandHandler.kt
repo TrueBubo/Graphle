@@ -18,7 +18,6 @@ suspend fun handleDslCommand(
     dslCommand: String,
     onEvaluation: (DisplayedSettings) -> Unit,
 ) {
-    System.err.println("[dslCommand] $dslCommand")
     val response = DSLRestManager.interpretCommand(dslCommand)
     val displayedSettings = parseDslResponse(
         response = response
