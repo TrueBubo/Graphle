@@ -2,7 +2,9 @@ package com.graphle.file.model
 
 import com.graphle.common.addRelationshipToFile
 import com.graphle.common.apolloClient
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Connection(
     val from: String,
     val to: String,

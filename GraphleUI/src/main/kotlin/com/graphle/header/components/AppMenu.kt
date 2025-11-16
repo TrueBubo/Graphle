@@ -16,11 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.graphle.common.Trash
+import com.graphle.common.model.DisplayMode
 import com.graphle.file.util.FileFetcher
 import com.graphle.file.components.FileMenu
 import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.common.supervisorIoScope
 import com.graphle.common.userHome
+import com.graphle.dsl.DSLHistory
 import kotlinx.coroutines.launch
 
 
@@ -28,9 +31,8 @@ import kotlinx.coroutines.launch
 internal fun AppMenu(
     showAppMenu: Boolean,
     setShowAppMenu: (Boolean) -> Unit,
-    onResult: (DisplayedData?) -> Unit,
-    location: String,
-    setLocation: (String) -> Unit,
+    onResult: (DisplayedSettings) -> Unit,
+    getDisplayedSettings: () -> DisplayedSettings,
     setDarkMode: (Boolean) -> Unit,
     getDarkMode: () -> Boolean,
 ) =
@@ -55,7 +57,6 @@ internal fun AppMenu(
                             location = userHome,
                             onResult = {
                                 onResult(it)
-                                setLocation(userHome)
                             }
                         )
                     }
@@ -64,27 +65,18 @@ internal fun AppMenu(
 
             Divider()
 
-            FileMenu(
-                location = location,
-                connection = null,
-                setShowMenu = setShowAppMenu,
-                onRefresh = {
-                    supervisorIoScope.launch {
-                        FileFetcher.fetch(
-                            location = location,
-                            onResult = { displayedInfo ->
-                                onResult(
-                                    DisplayedData(
-                                        tags = displayedInfo?.tags ?: emptyList(),
-                                        connections = displayedInfo?.connections ?: emptyList(
-                                        )
-                                    )
-                                )
-                            }
-                        )
+            if (getDisplayedSettings().mode == DisplayMode.File) {
+                FileMenu(
+                    location = getDisplayedSettings().data?.location ?: "",
+                    connection = null,
+                    setShowMenu = setShowAppMenu,
+                    onRefresh = {
+                        supervisorIoScope.launch {
+                            DSLHistory.repeatLastDisplayedCommand(onResult)
+                        }
                     }
-                }
-            )
+                )
+            }
 
             Divider()
 
@@ -93,7 +85,7 @@ internal fun AppMenu(
                 onClick = {
                     setShowAppMenu(false)
                     supervisorIoScope.launch {
-                        Trash.openTrash(setDisplayedData = onResult, setLocation = setLocation)
+                        Trash.openTrash(setDisplayedSettings = onResult)
                     }
                 }
             )
@@ -115,7 +107,7 @@ internal fun AppMenu(
                     setShowAppMenu(false)
                     supervisorIoScope.launch {
                         FileFetcher.fetch(
-                            location = location,
+                            location = getDisplayedSettings().data?.location ?: "",
                             onResult = onResult
                         )
                     }

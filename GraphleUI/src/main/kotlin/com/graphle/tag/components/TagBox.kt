@@ -18,10 +18,12 @@ import androidx.compose.ui.unit.dp
 import com.graphle.common.filesByTag
 import com.graphle.common.model.DisplayMode
 import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.common.removeTag
 import com.graphle.common.supervisorIoScope
 import com.graphle.common.ui.Pill
 import com.graphle.dialogs.ErrorMessage
+import com.graphle.dsl.DSLHistory
 import com.graphle.tag.model.Tag
 import kotlinx.coroutines.launch
 
@@ -30,13 +32,14 @@ private fun textsForTag(tag: Tag): List<String> = buildList {
     tag.value?.let { add(it) }
 }
 
+private fun getTagsCommand(tagName: String) = "find (tagName: \"$tagName\")"
+
 @Composable
 internal fun TagBox(
     location: String,
     tag: Tag,
     isUrl: Boolean = false,
-    setMode: (DisplayMode) -> Unit,
-    setDisplayedData: (DisplayedData) -> Unit,
+    setDisplayedSettings: (DisplayedSettings) -> Unit,
     uriHandler: UriHandler = LocalUriHandler.current,
     onRefresh: suspend () -> Unit,
 ) {
@@ -77,8 +80,13 @@ internal fun TagBox(
                             )
                             return@launch
                         }
-                        setDisplayedData(DisplayedData(filesWithTag = filesByTag))
-                        setMode(DisplayMode.FilesWithTag)
+                        setDisplayedSettings(
+                            DisplayedSettings(
+                                data = DisplayedData(filesWithTag = filesByTag),
+                                mode = DisplayMode.FilesWithTag
+                            )
+                        )
+                        DSLHistory.lastDisplayedCommand.value = getTagsCommand(tag.name)
                     }
                     showMenu = false
                 },

@@ -6,7 +6,12 @@ import com.graphle.file.model.Connection
 import com.graphle.FileByLocationQuery
 import com.graphle.tag.model.Tag
 import com.graphle.common.apolloClient
+import com.graphle.common.model.DisplayMode
 import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
+import com.graphle.dsl.DSLHistory
+
+private fun fileFetchDSLCommand(location: String) = "detail $location"
 
 object FileFetcher {
     var showHiddenFiles = false
@@ -16,18 +21,21 @@ object FileFetcher {
 
     suspend fun fetch(
         location: String,
-        onResult: (DisplayedData?) -> Unit
-    ) = fetchFilesByLocation(
-        location = location,
-        showHiddenFiles = showHiddenFiles,
-        onResult = onResult
-    )
+        onResult: (DisplayedSettings) -> Unit
+    ): DisplayedSettings {
+        DSLHistory.lastDisplayedCommand.value = fileFetchDSLCommand(location)
+        return fetchFilesByLocation(
+            location = location,
+            showHiddenFiles = showHiddenFiles,
+            onResult = onResult
+        )
+    }
 
     private suspend fun fetchFilesByLocation(
         location: String,
         showHiddenFiles: Boolean,
-        onResult: (DisplayedData?) -> Unit
-    ): DisplayedData? {
+        onResult: (DisplayedSettings) -> Unit
+    ): DisplayedSettings {
         _isLoading = true
         val response = apolloClient.getFilesByLocation(location, showHiddenFiles)
         val result = if (response.hasErrors()) {
@@ -36,6 +44,7 @@ object FileFetcher {
             val file = response.data?.fileByLocation
             if (file != null)
                 DisplayedData(
+                    location = location,
                     tags = file.tags.map { Tag(it.name, it.value) },
                     connections = file.connections.map {
                         Connection(
@@ -48,9 +57,13 @@ object FileFetcher {
                 )
             else null
         }
-        onResult(result)
+        val settings = DisplayedSettings(
+            data = result,
+            mode = DisplayMode.File
+        )
+        onResult(settings)
         _isLoading = false
-        return result
+        return settings
     }
 
     private suspend fun ApolloClient.getFilesByLocation(

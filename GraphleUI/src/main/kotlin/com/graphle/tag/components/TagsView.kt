@@ -5,20 +5,18 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
-import com.graphle.common.model.DisplayMode
-import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import java.net.URI
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsView(
     location: String,
-    displayedData: DisplayedData?,
-    setMode: (DisplayMode) -> Unit,
-    setDisplayedData: (DisplayedData?) -> Unit,
+    displayedSettings: DisplayedSettings,
+    setDisplayedSettings: (DisplayedSettings) -> Unit,
     onRefresh: suspend () -> Unit,
 ) {
-    val tags = displayedData?.tags ?: return
+    val tags = displayedSettings.data?.tags ?: return
 
     val (urls, nonUrls) = tags.partition {
         try {
@@ -35,10 +33,9 @@ fun TagsView(
             TagBox(
                 tag = it,
                 isUrl = true,
-                setMode = setMode,
+                setDisplayedSettings = setDisplayedSettings,
                 location = location,
                 onRefresh = onRefresh,
-                setDisplayedData = setDisplayedData
             )
         }
     }
@@ -48,10 +45,9 @@ fun TagsView(
         nonUrls.forEach {
             TagBox(
                 tag = it,
-                setMode = setMode,
+                setDisplayedSettings = setDisplayedSettings,
                 location = location,
                 onRefresh = onRefresh,
-                setDisplayedData = setDisplayedData
             )
         }
     }

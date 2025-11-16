@@ -38,7 +38,6 @@ class TagService(private val tagRepository: TagRepository) {
      */
     fun removeTag(location: AbsolutePathString, tag: TagInput) {
         if (tag.value != null) {
-            System.err.println("Removing tag with value: $tag")
             tagRepository.removeTag(location,tag.name, tag.value)
         }
         else tagRepository.removeTag(location, tag.name)
