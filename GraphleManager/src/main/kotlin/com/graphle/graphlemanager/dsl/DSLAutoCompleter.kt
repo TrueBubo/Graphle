@@ -62,6 +62,8 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                 limit
             )
 
+            Commands.TAG.command -> emptyList()
+
             else -> emptyList()
         }
     }

@@ -2,6 +2,7 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.tag.Tag
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import org.springframework.data.neo4j.core.schema.GeneratedValue
 import org.springframework.data.neo4j.core.schema.Id
@@ -15,7 +16,7 @@ typealias AbsolutePathString = String
  * @param tags file is marked with these tags
  * @param connections How is the file related to other files
  */
-@kotlinx.serialization.Serializable
+@Serializable
 @ConsistentCopyVisibility
 data class File private constructor(
     @Transient @Id @GeneratedValue val id: UUID? = null,

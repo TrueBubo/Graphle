@@ -18,7 +18,8 @@ enum class ResponseType {
     SUCCESS,
     FILENAMES,
     CONNECTIONS,
-    FILE
+    FILE,
+    TAG
 }
 
 @Serializable
