@@ -16,7 +16,6 @@ import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
-import org.neo4j.driver.exceptions.Neo4jException
 
 data class Scope(val entityType: EntityType, val text: String)
 
@@ -315,7 +314,7 @@ class DSLInterpreter(
                                 )
                             )
                             scopeStartIndex = null
-                            scope = null;
+                            scope = null
                         } else return emptyList()
                     }
 
