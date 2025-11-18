@@ -8,6 +8,7 @@ import com.graphle.common.Trash
 import com.graphle.common.clipboard
 import com.graphle.common.config
 import com.graphle.common.fileType
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.common.removeRelationship
 import com.graphle.common.supervisorIoScope
 import com.graphle.common.userHome
@@ -24,6 +25,7 @@ import com.graphle.type.FileType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import okhttp3.Request
 import java.awt.datatransfer.StringSelection
 import java.io.File
 import kotlin.io.path.Path
@@ -31,7 +33,7 @@ import kotlin.io.path.Path
 @Composable
 internal fun FileMenu(
     location: String,
-    connection: Connection?,
+    connection: Connection? = null,
     setShowMenu: (Boolean) -> Unit,
     onRefresh: () -> Unit
 ) {
@@ -109,7 +111,6 @@ internal fun FileMenu(
         DropdownMenuItem(
             content = { Text("Remove relationship") },
             onClick = {
-                println("Remove relationship ${connection}")
                 supervisorIoScope.launch {
                     removeRelationship(connection)
                     onRefresh()

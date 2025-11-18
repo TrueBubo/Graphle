@@ -55,7 +55,7 @@ object AddRelationshipDialog {
                     if (showToMissingError && hasInteractedWithTo) {
                         Text(
                             text = "Related to field is required",
-                            color = Color.Companion.Red,
+                            color = Color.Red,
                         )
                     }
                     OutlinedTextField(
@@ -66,7 +66,7 @@ object AddRelationshipDialog {
                         },
                         label = { Text("Related to*") },
                         isError = hasInteractedWithTo && showToMissingError,
-                        modifier = Modifier.Companion.onFocusChanged {
+                        modifier = Modifier.onFocusChanged {
                             showToMissingError = to.isBlank()
                             if (it.isFocused) {
                                 hasInteractedWithTo = true
@@ -77,12 +77,12 @@ object AddRelationshipDialog {
                         singleLine = true
                     )
 
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     if (showNameMissingError && hasInteractedWithName) {
                         Text(
                             text = "Name field is required",
-                            color = Color.Companion.Red,
+                            color = Color.Red,
                         )
                     }
                     OutlinedTextField(
@@ -93,7 +93,7 @@ object AddRelationshipDialog {
                         },
                         label = { Text("Relationship name*") },
                         isError = showNameMissingError && hasInteractedWithName,
-                        modifier = Modifier.Companion.onFocusChanged {
+                        modifier = Modifier.onFocusChanged {
                             showNameMissingError = name.isBlank()
                             if (it.isFocused) {
                                 hasInteractedWithName = true
@@ -103,16 +103,16 @@ object AddRelationshipDialog {
                         },
                         singleLine = true
                     )
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = value,
                         onValueChange = { value = it },
                         label = { Text("Relationship value") },
                         singleLine = true
                     )
-                    Row(verticalAlignment = Alignment.Companion.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Is bidirectional")
-                        Spacer(Modifier.Companion.width(8.dp))
+                        Spacer(Modifier.width(8.dp))
                         Checkbox(
                             checked = isBidirectional,
                             onCheckedChange = { isBidirectional = it }
@@ -130,7 +130,7 @@ object AddRelationshipDialog {
                                 from = location,
                                 to = to,
                                 name = name,
-                                value = value.ifBlank { null }).also { println(it) }.save(isBidirectional)
+                                value = value.ifBlank { null }).save(isBidirectional)
                             onSubmitted()
                             onUpdatedData()?.connections.orEmpty()
                                 .none { it.to == to }

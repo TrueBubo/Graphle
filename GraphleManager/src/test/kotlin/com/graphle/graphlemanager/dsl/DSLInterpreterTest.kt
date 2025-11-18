@@ -7,8 +7,10 @@ import com.graphle.graphlemanager.connection.ConnectionService
 import com.graphle.graphlemanager.file.FileController
 import com.graphle.graphlemanager.file.FileService
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
+import com.graphle.graphlemanager.tag.TagForFile
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
+import com.graphle.graphlemanager.file.File as GraphleFile
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -20,7 +22,6 @@ import strikt.assertions.containsExactlyInAnyOrder
 import strikt.assertions.first
 import strikt.assertions.hasSize
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
 import kotlin.test.AfterTest
 import kotlin.test.Test
 
@@ -69,7 +70,7 @@ class DSLInterpreterTest {
             )
 
             val response = interpreter.interpret("find (location = \"${file1.parent}\")[desc]")
-            expectThat(response).isNotNull().and {
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.CONNECTIONS)
                 get {
                     responseObject
@@ -94,7 +95,7 @@ class DSLInterpreterTest {
             )
 
             val response = interpreter.interpret("find (location = \"$file1\")[name = \"$randomString\"]")
-            expectThat(response).isNotNull().and {
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.CONNECTIONS)
                 get {
                     responseObject
@@ -128,9 +129,10 @@ class DSLInterpreterTest {
                 )
             )
 
-            val response =
-                interpreter.interpret("find (location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()")
-            expectThat(response).isNotNull().and {
+            val response = interpreter.interpret(
+                "find (location = \"$file1\")[name = \"$randomString\"]()[name = \"${randomString}2\"]()[pred]()"
+            )
+            expectThat(response).and {
                 get { type }.isEqualTo(ResponseType.FILENAMES)
                 get { responseObject }.hasSize(1).first().isEqualTo((file3.parent))
             }
@@ -142,7 +144,7 @@ class DSLInterpreterTest {
         val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find (location = \" or tagName = \"${randomString}\")")
 
-        expectThat(response).isNotNull().and {
+        expectThat(response).and {
             get { type }.isEqualTo(ResponseType.ERROR)
             get { responseObject }.hasSize(1).first().contains("Unable to parse")
         }
@@ -152,7 +154,7 @@ class DSLInterpreterTest {
     fun `invalid connection syntax returns error response`() {
         val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find ()[nonExistent = 2]")
-        expectThat(response).isNotNull().and {
+        expectThat(response).and {
             get { type }.isEqualTo(ResponseType.ERROR)
             get { responseObject }.hasSize(1).first().contains("Unable to parse")
         }
@@ -326,7 +328,408 @@ class DSLInterpreterTest {
         expectThat(interpreter.convertScopeToCommand(scope = scope, prevSelectedFilename = null))
             .isEqualTo(
                 "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) " +
-                        "WITH f, t WHERE t.name = \"year\" AND t.value > 2015 AND ( f.location <> \"/home/(Person)\" ) RETURN f"
+                        "WITH f, t WHERE t.name = \"year\" AND toFloat(t.value) > 2015 AND ( f.location <> \"/home/(Person)\" ) RETURN f"
             )
+    }
+
+    @Test
+    fun `should add relationship between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+        val response = interpreter.interpret("addRel \"${file1.absolutePath}\" \"${file2.absolutePath}\" \"$randomString\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val verifyResponse = interpreter.interpret("find (location = \"${file1.absolutePath}\")[name = \"$randomString\"]")
+        expectThat(verifyResponse.type).isEqualTo(ResponseType.CONNECTIONS)
+    }
+
+    @Test
+    fun `should add relationship with value between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+        val response = interpreter.interpret("addRel \"${file1.absolutePath}\" \"${file2.absolutePath}\" \"$randomString\" \"testValue\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val verifyResponse = interpreter.interpret("find (location = \"${file1.absolutePath}\")[name = \"$randomString\"]")
+        expectThat(verifyResponse.type).isEqualTo(ResponseType.CONNECTIONS)
+    }
+
+    @Test
+    fun `should remove relationship between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        connectionService.addConnection(
+            ConnectionInput(
+                name = randomString,
+                value = null,
+                from = file1.absolutePath,
+                to = file2.absolutePath,
+                bidirectional = false
+            )
+        )
+
+        val response = interpreter.interpret("removeRel \"${file1.absolutePath}\" \"${file2.absolutePath}\" \"$randomString\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+    }
+
+    @Test
+    fun `should add tag to file`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+        val response = interpreter.interpret("addTag \"${file.absolutePath}\" \"$randomString\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val tags = tagService.tagsByFileLocation(file.absolutePath)
+        expectThat(tags).hasSize(1).first().and {
+            get { name }.isEqualTo(randomString)
+        }
+    }
+
+    @Test
+    fun `should add tag with value to file`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+        val response = interpreter.interpret("addTag \"${file.absolutePath}\" \"$randomString\" \"testValue\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val tags = tagService.tagsByFileLocation(file.absolutePath)
+        expectThat(tags).hasSize(1).first().and {
+            get { name }.isEqualTo(randomString)
+            get { value }.isEqualTo("testValue")
+        }
+    }
+
+    @Test
+    fun `should remove tag from file`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file.absolutePath,
+            tag = TagInput(name = randomString, value = null)
+        )
+
+        val response = interpreter.interpret("removeTag \"${file.absolutePath}\" \"$randomString\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val tags = tagService.tagsByFileLocation(file.absolutePath)
+        expectThat(tags).hasSize(0)
+    }
+
+    @Test
+    fun `should remove tag with value from file`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+
+        tagService.addTagToFile(
+            location = file.absolutePath,
+            tag = TagInput(name = randomString, value = "testValue")
+        )
+
+        val response = interpreter.interpret("removeTag \"${file.absolutePath}\" \"$randomString\" \"testValue\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.SUCCESS)
+        }
+
+        val tags = tagService.tagsByFileLocation(file.absolutePath)
+        expectThat(tags).hasSize(0)
+    }
+
+    @Test
+    fun `should get file details`() = fileTestUtils.withTempFiles { (file) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        val response = interpreter.interpret("detail \"${file.absolutePath}\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.FILE)
+            get { responseObject }.hasSize(1)
+        }
+
+        val fileDetail = Json.decodeFromString<GraphleFile>(response.responseObject.first())
+        expectThat(fileDetail.location).isEqualTo(file.absolutePath)
+    }
+
+    @Test
+    fun `should return error for non-existent file details`() {
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+        val nonExistentPath = "/non/existent/path"
+
+        val response = interpreter.interpret("detail \"$nonExistentPath\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.ERROR)
+            get { responseObject }.hasSize(1).first().contains("not found")
+        }
+    }
+
+    @Test
+    fun `should get files by tag name`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = null)
+        )
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = null)
+        )
+
+        val response = interpreter.interpret("tag \"$randomString\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.TAG)
+            get { responseObject }.hasSize(2)
+        }
+
+        val tagLocations = response.responseObject.map { Json.decodeFromString<TagForFile>(it) }
+        expectThat(tagLocations.map { it.location }).containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should return empty list for tag with no files`() {
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        val response = interpreter.interpret("tag \"nonExistentTag\"")
+
+        expectThat(response).and {
+            get { type }.isEqualTo(ResponseType.TAG)
+            get { responseObject }.hasSize(0)
+        }
+    }
+
+    @Test
+    fun `should filter out non-numeric tag values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "abc")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "5")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 8"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with less than operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "3.5")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "xyz")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue < 5"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with greater than or equal operator`() = fileTestUtils.withTempFiles(count = 4) { (file1, file2, file3, file4) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "15")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "5")
+        )
+
+        tagService.addTagToFile(
+            location = file4.absolutePath,
+            tag = TagInput(name = randomString, value = "notanumber")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue >= 10"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should handle numeric comparison with less than or equal operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "7")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "7.0")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "8")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue <= 7"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should still use string comparison for equality operator`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "test")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue = \"test\""
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
+    }
+
+    @Test
+    fun `should handle decimal numbers in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "8.5")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "11.2")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "7.9")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 8"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(2)
+            .containsExactlyInAnyOrder(file1.absolutePath, file2.absolutePath)
+    }
+
+    @Test
+    fun `should exclude tags with empty or whitespace values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
+        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+
+        tagService.addTagToFile(
+            location = file1.absolutePath,
+            tag = TagInput(name = randomString, value = "10")
+        )
+
+        tagService.addTagToFile(
+            location = file2.absolutePath,
+            tag = TagInput(name = randomString, value = "")
+        )
+
+        tagService.addTagToFile(
+            location = file3.absolutePath,
+            tag = TagInput(name = randomString, value = "  ")
+        )
+
+        val response = interpreter.executeScope(
+            scope = Scope(
+                entityType = EntityType.File,
+                text = "tagName = \"$randomString\" AND tagValue > 5"
+            ),
+            prevSelectedFilenames = null
+        )
+
+        expectThat(response.type).isEqualTo(ResponseType.FILENAMES)
+        expectThat(response.responseObject).hasSize(1).containsExactly(file1.absolutePath)
     }
 }

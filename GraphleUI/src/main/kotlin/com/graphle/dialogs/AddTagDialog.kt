@@ -35,13 +35,12 @@ object AddTagDialog {
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit)
     {
-        var showNameMissingError by mutableStateOf(false)
-        var hasInteractedWithName by mutableStateOf(false)
-
-
         if (!isShown) return
         var name by remember { mutableStateOf("") }
         var value by remember { mutableStateOf("") }
+        var showNameMissingError by remember { mutableStateOf(false) }
+        var hasInteractedWithName by remember { mutableStateOf(false) }
+
         AlertDialog(
             onDismissRequest = { isShown = false },
             title = { Text("Enter information about the tag") },
@@ -50,7 +49,7 @@ object AddTagDialog {
                     if (hasInteractedWithName && showNameMissingError) {
                         Text(
                             text = "Name field is required",
-                            color = Color.Companion.Red,
+                            color = Color.Red,
                         )
                     }
                     OutlinedTextField(
@@ -60,7 +59,7 @@ object AddTagDialog {
                             showNameMissingError = name.isBlank()
                         },
                         isError = hasInteractedWithName && showNameMissingError,
-                        modifier = Modifier.Companion.onFocusChanged {
+                        modifier = Modifier.onFocusChanged {
                             showNameMissingError = name.isBlank()
                             if (it.isFocused) {
                                 hasInteractedWithName = true
@@ -71,7 +70,7 @@ object AddTagDialog {
                         label = { Text("Tag name*") },
                         singleLine = true
                     )
-                    Spacer(modifier = Modifier.Companion.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = value,
                         onValueChange = { value = it },
@@ -83,12 +82,11 @@ object AddTagDialog {
             confirmButton = {
                 Button(
                     onClick = {
-                        isShown = false
                         supervisorIoScope.launch {
-                            if (name == "") return@launch
                             Tag(name = name, value = value.ifBlank { null }).save(location = location)
                             onSubmitted()
                         }
+                        isShown = false
                     },
                     enabled = name.isNotBlank()
                 ) {

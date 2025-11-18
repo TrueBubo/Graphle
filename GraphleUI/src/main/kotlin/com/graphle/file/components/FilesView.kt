@@ -5,7 +5,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.text.font.FontWeight
+import com.graphle.common.model.DisplayMode
 import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.common.supervisorIoScope
 import com.graphle.dialogs.ErrorMessage
 import com.graphle.file.util.FileFetcher
@@ -14,11 +16,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun FilesView(
-    displayedData: DisplayedData?,
-    setLocation: (String) -> Unit,
-    setDisplayedData: (DisplayedData?) -> Unit,
+    displayedSettings: DisplayedSettings,
+    setDisplayedSettings: (DisplayedSettings) -> Unit,
 ) {
-    displayedData?.connections
+    displayedSettings.data?.connections
         ?.apply { Text(text = "Files", fontWeight = FontWeight.Bold) }
         ?.let { connections ->
             if (connections.isEmpty()) return@let emptyList()
@@ -36,35 +37,29 @@ internal fun FilesView(
                     FileBox(
                         connection = connection,
                         onResult = {
-                            if (it == null) {
+                            if (it.data == null) {
                                 ErrorMessage.set(
                                     showErrorMessage = true,
                                     errorMessage = "Failed to load ${connection.to}, " +
                                             "check the file exists and you have permission to read it.",
                                 )
                             } else {
-                                setLocation(connection.to)
-                                setDisplayedData(it)
+                                setDisplayedSettings(it)
                             }
                         },
                         onRefresh = {
                             supervisorIoScope.launch {
                                 FileFetcher.fetch(
                                     location = connection.from,
-                                    onResult = { displayedInfo ->
-                                        if (displayedInfo == null) {
+                                    onResult = {
+                                        if (it.data == null) {
                                             ErrorMessage.set(
                                                 showErrorMessage = true,
                                                 errorMessage = "Failed to load ${connection.from}, " +
                                                         "check the file exists and you have permission to read it.",
                                             )
                                         } else {
-                                            setDisplayedData(
-                                                DisplayedData(
-                                                    tags = displayedInfo.tags,
-                                                    connections = displayedInfo.connections
-                                                )
-                                            )
+                                            setDisplayedSettings(it)
                                         }
                                     }
                                 )
