@@ -18,7 +18,8 @@ enum class ResponseType {
     SUCCESS,
     FILENAMES,
     CONNECTIONS,
-    FILE
+    FILE,
+    TAG
 }
 
 @Serializable
@@ -44,7 +45,6 @@ object DSLRestManager {
                 setBody(DSLRequest(command))
             }.body()
         } catch (e: Exception) {
-            println(command)
             throw e
         }
     }

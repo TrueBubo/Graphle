@@ -26,7 +26,6 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
     fun completeCommandPrefix(commandPrefix: String, limit: Int): List<String> {
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.isEmpty()) return emptyList()
-        println(tokens)
         return when (tokens.first()) {
             Commands.FIND.command -> completeFindCommand(
                 commandPrefix = commandPrefix.drop(Commands.FIND.command.length + 1),
@@ -36,6 +35,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
             Commands.ADD_REL.command -> completeConnectionCommand(
                 commandType = Commands.ADD_REL.command,
                 commandPrefix = commandPrefix.drop(Commands.ADD_REL.command.length),
+                limit = limit
+            )
+
+            Commands.REMOVE_REL.command -> completeConnectionCommand(
+                commandType = Commands.REMOVE_REL.command,
+                commandPrefix = commandPrefix.drop(Commands.REMOVE_REL.command.length),
                 limit = limit
             )
 
@@ -56,12 +61,13 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                 limit
             )
 
+            Commands.TAG.command -> emptyList()
+
             else -> emptyList()
         }
     }
 
     private fun completeFindCommand(commandPrefix: String, limit: Int): List<String> {
-        println(commandPrefix)
         var scope: EntityType? = null
         var previousScope: EntityType? = null
         var inQuotes = false
@@ -83,7 +89,7 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
                     ')' -> {
                         if (scope == EntityType.File) {
                             previousScope = EntityType.File
-                            scope = null;
+                            scope = null
                         } else {
                             if (parenthesisLevel > 0) parenthesisLevel--
                             else return emptyList()
@@ -184,9 +190,9 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
     }
 
     private fun completeFilenamesForToken(token: String, limit: Int): List<String> =
-        if (token.startsWith('"')) {
+        (if (token.startsWith('"')) {
             completeFilenames(token.drop(1), limit)
-        } else emptyList()
+        } else completeFilenames(token, limit))
 
 
     private fun processFileQuery(tokens: List<String>, limit: Int): List<String> {
@@ -200,10 +206,14 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         filename: String,
         filenamePrefixToken: String,
         commandPrefix: String
-    ) = if (filename.startsWith(filenamePrefixToken.drop(1)))
-        "$commandType ${commandPrefix}${filename.drop(filenamePrefixToken.length - 1)}"
-    else {
-        "$commandType ${commandPrefix.dropLast(filenamePrefixToken.length - 1)}$filename"
+    ): String {
+        val dropLetters = if (filenamePrefixToken.startsWith("\"")) filenamePrefixToken.length - 1 else filenamePrefixToken.length
+        val filenamePrefixUnquoted = filenamePrefixToken.drop(if (dropLetters == filenamePrefixToken.length) 0 else 1)
+        return if (filename.startsWith(filenamePrefixUnquoted))
+            "$commandType ${commandPrefix}${filename.drop(dropLetters)}"
+        else {
+            "$commandType ${commandPrefix.dropLast(dropLetters)}$filename"
+        }
     }
 
 

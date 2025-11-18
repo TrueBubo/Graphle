@@ -7,6 +7,7 @@ import com.graphle.dialogs.ErrorMessage
 import com.graphle.dsl.util.decodeFromStringOrNull
 import com.graphle.file.model.Connection
 import com.graphle.file.model.File
+import com.graphle.fileWithTag.model.FileWithTag
 import com.graphle.header.util.DSLResponse
 import com.graphle.header.util.DSLRestManager
 import com.graphle.header.util.ResponseType.*
@@ -15,17 +16,20 @@ import java.lang.System.lineSeparator
 
 suspend fun handleDslCommand(
     dslCommand: String,
-    onEvaluation: (DisplayedData?) -> Unit,
-    onModeUpdated: (DisplayMode) -> Unit,
+    onEvaluation: (DisplayedSettings) -> Unit,
 ) {
+    val response = DSLRestManager.interpretCommand(dslCommand)
     val displayedSettings = parseDslResponse(
-        response = DSLRestManager.interpretCommand(dslCommand)
+        response = response
     )
-    if (displayedSettings == null) return
-    onEvaluation(displayedSettings.displayedData)
-    onModeUpdated(displayedSettings.displayedModel)
-}
 
+    if (displayedSettings == null) {
+        DSLHistory.repeatLastDisplayedCommand(onEvaluation)
+        return
+    }
+    DSLHistory.lastDisplayedCommand.value = dslCommand
+    onEvaluation(displayedSettings)
+}
 
 private fun parseDslResponse(
     response: DSLResponse
@@ -40,10 +44,10 @@ private fun parseDslResponse(
 
     SUCCESS -> null
     FILENAMES -> DisplayedSettings(
-        displayedData = DisplayedData(
+        data = DisplayedData(
             filenames = response.responseObject,
         ),
-        displayedModel = DisplayMode.Filenames
+        mode = DisplayMode.Filenames
     )
 
     CONNECTIONS -> {
@@ -57,8 +61,8 @@ private fun parseDslResponse(
             )
             null
         } else DisplayedSettings(
-            displayedData = DisplayedData(connections = responses.filterNotNull()),
-            displayedModel = DisplayMode.Connections
+            data = DisplayedData(connections = responses.filterNotNull()),
+            mode = DisplayMode.Connections
         )
     }
 
@@ -66,8 +70,30 @@ private fun parseDslResponse(
         Json.decodeFromStringOrNull<File>(it)
     }?.let {
         DisplayedSettings(
-            displayedData = DisplayedData(file = it),
-            displayedModel = DisplayMode.File
+            data = DisplayedData(
+                location = it.location,
+                tags = it.tags,
+                connections = it.connections,
+            ),
+            mode = DisplayMode.File
+        )
+    }
+
+    TAG -> response.responseObject.map {
+        Json.decodeFromString<FileWithTag>(it)
+    }.let {
+        val responses = response.responseObject.map {
+            Json.decodeFromStringOrNull<FileWithTag>(it)
+        }
+        if (responses.any { it == null }) {
+            ErrorMessage.set(
+                showErrorMessage = true,
+                errorMessage = "Could not parse the response from the server"
+            )
+            null
+        } else DisplayedSettings(
+            data = DisplayedData(filesWithTag = responses.filterNotNull()),
+            mode = DisplayMode.FilesWithTag
         )
     }
 }

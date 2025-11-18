@@ -1,6 +1,6 @@
 package com.graphle.common
 
-import com.graphle.common.model.DisplayedData
+import com.graphle.common.model.DisplayedSettings
 import com.graphle.dialogs.ErrorMessage
 import com.graphle.file.util.FileFetcher
 import java.nio.file.Path
@@ -28,7 +28,7 @@ object Trash {
         )
     }
 
-    suspend fun openTrash(setDisplayedData: (DisplayedData?) -> Unit, setLocation: (String) -> Unit) {
+    suspend fun openTrash(setDisplayedSettings: (DisplayedSettings) -> Unit) {
         if (!ensureTrashAvailable()) {
             ErrorMessage.set(
                 showErrorMessage = true,
@@ -39,8 +39,7 @@ object Trash {
         FileFetcher.fetch(
             location = TRASH_DIR_PATH.absolutePathString(),
             onResult = {
-                setDisplayedData(it)
-                setLocation(TRASH_DIR_PATH.absolutePathString())
+                setDisplayedSettings(it)
             }
         )
     }
