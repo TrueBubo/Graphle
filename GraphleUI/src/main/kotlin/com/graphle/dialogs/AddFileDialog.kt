@@ -17,15 +17,29 @@ import com.graphle.common.addFile
 import com.graphle.common.supervisorIoScope
 import kotlinx.coroutines.launch
 
+/**
+ * Dialog for adding a new file to a directory.
+ */
 object AddFileDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
 
+    /**
+     * Sets the dialog state and target directory location.
+     *
+     * @param location Path to the directory where the file will be created
+     * @param isShown Whether the dialog should be shown
+     */
     fun set(location: String, isShown: Boolean) {
         this.location = location
         this.isShown = isShown
     }
 
+    /**
+     * Renders the add file dialog.
+     *
+     * @param onConfirmed Callback invoked after successful file creation
+     */
     @Composable
     operator fun invoke(onConfirmed: suspend () -> Unit) {
         if (!isShown) return

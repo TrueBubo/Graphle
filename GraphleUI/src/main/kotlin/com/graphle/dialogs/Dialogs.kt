@@ -6,6 +6,13 @@ import com.graphle.file.util.FileFetcher
 import com.graphle.common.model.DisplayedSettings
 import com.graphle.dsl.DSLHistory
 
+/**
+ * Composite component that renders all application dialogs.
+ *
+ * @param setDisplayedSettings Callback to update displayed settings
+ * @param getDisplayedSettings Function providing current displayed settings
+ * @param isInvalidFile Whether the current file is invalid
+ */
 @Composable
 fun Dialogs(
     setDisplayedSettings: (DisplayedSettings) -> Unit,

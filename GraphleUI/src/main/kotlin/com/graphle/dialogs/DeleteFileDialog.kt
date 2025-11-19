@@ -12,15 +12,29 @@ import com.graphle.common.removeFileByLocation
 import com.graphle.common.supervisorIoScope
 import kotlinx.coroutines.launch
 
+/**
+ * Dialog for confirming permanent file deletion.
+ */
 object DeleteFileDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
 
+    /**
+     * Sets the dialog state and file location.
+     *
+     * @param location Path to the file to delete
+     * @param isShown Whether the dialog should be shown
+     */
     fun set(location: String, isShown: Boolean) {
         this.location = location
         this.isShown = isShown
     }
 
+    /**
+     * Renders the delete file confirmation dialog.
+     *
+     * @param onConfirmed Callback invoked after successful deletion
+     */
     @Composable
     operator fun invoke(onConfirmed: suspend () -> Unit) {
         if (!isShown) return

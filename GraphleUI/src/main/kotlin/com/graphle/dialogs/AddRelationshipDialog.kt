@@ -25,16 +25,31 @@ import com.graphle.common.model.DisplayedData
 import com.graphle.common.supervisorIoScope
 import kotlinx.coroutines.launch
 
+/**
+ * Dialog for adding relationships/connections between files.
+ */
 object AddRelationshipDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
     private var isBidirectional by mutableStateOf(false)
 
+    /**
+     * Sets the dialog state and source file location.
+     *
+     * @param location Path to the source file
+     * @param isShown Whether the dialog should be shown
+     */
     fun set(location: String, isShown: Boolean) {
         this.location = location
         this.isShown = isShown
     }
 
+    /**
+     * Renders the add relationship dialog.
+     *
+     * @param onSubmitted Callback invoked after successful relationship creation
+     * @param onUpdatedData Function providing the current displayed data
+     */
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit, onUpdatedData: () -> DisplayedData?) {
         var showToMissingError by mutableStateOf(false)

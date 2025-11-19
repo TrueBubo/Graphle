@@ -8,10 +8,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+/**
+ * Dialog for displaying error messages to the user.
+ */
 object ErrorMessage {
     private var showErrorMessage by mutableStateOf( false )
     private var errorMessage by mutableStateOf("")
 
+    /**
+     * Sets the error message state.
+     *
+     * @param showErrorMessage Whether to show the error dialog
+     * @param errorMessage The error message text to display
+     */
     fun set(
         showErrorMessage: Boolean,
         errorMessage: String,
@@ -20,6 +29,9 @@ object ErrorMessage {
         this.errorMessage = errorMessage
     }
 
+    /**
+     * Renders the error message dialog.
+     */
     @Composable
     operator fun invoke() {
         if (!showErrorMessage) return

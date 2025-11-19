@@ -20,10 +20,19 @@ import com.graphle.tag.model.Tag
 import com.graphle.common.supervisorIoScope
 import kotlinx.coroutines.launch
 
+/**
+ * Dialog for adding tags to a file.
+ */
 object AddTagDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
 
+    /**
+     * Sets the dialog state and target file location.
+     *
+     * @param location Path to the file to tag
+     * @param isShown Whether the dialog should be shown
+     */
     fun set(
         location: String,
         isShown: Boolean,
@@ -32,6 +41,11 @@ object AddTagDialog {
         this.isShown = isShown
     }
 
+    /**
+     * Renders the add tag dialog.
+     *
+     * @param onSubmitted Callback invoked after successful tag addition
+     */
     @Composable
     operator fun invoke(onSubmitted: suspend () -> Unit)
     {
