@@ -20,6 +20,11 @@ class ConnectionController(val connectionService: ConnectionService) {
     fun neighborsByFileLocation(locationFrom: AbsolutePathString): List<NeighborConnection> =
         connectionService.neighborsByFileLocation(locationFrom.normalize())
 
+    /**
+     * Adds a new connection between two files
+     * @param connection Input data containing connection details
+     * @return The created connection
+     */
     @MutationMapping
     fun addConnection(@Argument connection: ConnectionInput): Connection {
         connectionService.addConnection(
@@ -38,6 +43,11 @@ class ConnectionController(val connectionService: ConnectionService) {
         }
     }
 
+    /**
+     * Removes an existing connection between two files
+     * @param connection Input data containing connection details to remove
+     * @return The removed connection
+     */
     @MutationMapping
     fun removeConnection(@Argument connection: ConnectionInput): Connection {
         connectionService.removeConnection(
