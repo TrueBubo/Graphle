@@ -27,6 +27,9 @@ import com.graphle.dialogs.ErrorMessage
 import com.graphle.header.components.Header
 import kotlinx.coroutines.runBlocking
 
+/**
+ * Main application composable that sets up the UI structure and manages application state.
+ */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 @Preview

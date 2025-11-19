@@ -20,6 +20,9 @@ import com.graphle.common.ui.Pill
 import com.graphle.file.util.FileFetcher
 import kotlinx.coroutines.launch
 
+/**
+ * Formats relationship name and value for display in a pill.
+ */
 private fun pillText(relationshipName: String, value: String?): String =
     "${
         when (relationshipName) {
@@ -29,6 +32,14 @@ private fun pillText(relationshipName: String, value: String?): String =
         }
     }${value?.let { " = $it" } ?: ""}"
 
+/**
+ * Displays a file connection as a clickable pill with a context menu.
+ *
+ * @param connection The file connection to display
+ * @param onResult Callback when the connected file is clicked
+ * @param onRefresh Callback to refresh the view
+ * @param displayRelationshipInfo Whether to show relationship details in the pill
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FileBox(

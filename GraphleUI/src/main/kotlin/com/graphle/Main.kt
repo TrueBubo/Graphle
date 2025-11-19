@@ -9,6 +9,10 @@ import androidx.compose.ui.window.application
 
 private const val minWidthPx = 600
 private const val minHeightPx = 400
+
+/**
+ * Main application entry point.
+ */
 fun main() = application {
     var title by remember { mutableStateOf("Graphle") }
     Window(onCloseRequest = ::exitApplication, title = title) {

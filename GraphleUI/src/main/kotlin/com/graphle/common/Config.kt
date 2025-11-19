@@ -4,10 +4,21 @@ import com.graphle.common.Server.Companion.parse
 import org.yaml.snakeyaml.Yaml
 import kotlin.collections.get
 
+/**
+ * Application configuration data class.
+ *
+ * @property server Server configuration containing port and localhost settings
+ */
 data class Config(
     val server: Server
 ) {
     companion object {
+        /**
+         * Loads and parses configuration from YAML text.
+         *
+         * @param configText YAML configuration text to parse
+         * @return Result containing parsed Config or error
+         */
         fun load(configText: String): Result<Config> = runCatching {
             val yaml = Yaml()
             val map = yaml.load<Map<String, Any>>(configText)
@@ -32,8 +43,20 @@ data class Config(
     }
 }
 
+/**
+ * Server configuration data class.
+ *
+ * @property port Server port number (must be between 1 and 65535)
+ * @property localhost Whether the server is running on localhost
+ */
 data class Server(val port: Int, val localhost: Boolean) {
     companion object {
+        /**
+         * Parses server configuration from a map.
+         *
+         * @receiver Map containing server configuration
+         * @return Parsed Server instance
+         */
         internal fun Map<*, *>.parse(): Server {
             val notProcessed = this.toMutableMap()
             val server = Server(

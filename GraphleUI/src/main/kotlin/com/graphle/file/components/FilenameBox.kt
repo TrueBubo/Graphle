@@ -17,6 +17,13 @@ import com.graphle.file.components.FileMenu
 import com.graphle.file.util.FileFetcher
 import kotlinx.coroutines.launch
 
+/**
+ * Displays a filename as a clickable pill with a context menu.
+ *
+ * @param filename The filename to display
+ * @param onResult Callback when the file is clicked
+ * @param onRefresh Callback to refresh the view
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FilenameBox(

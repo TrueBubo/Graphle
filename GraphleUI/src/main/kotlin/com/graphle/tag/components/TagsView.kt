@@ -8,6 +8,14 @@ import androidx.compose.ui.text.font.FontWeight
 import com.graphle.common.model.DisplayedSettings
 import java.net.URI
 
+/**
+ * Displays tags for a file, separating URLs from regular tags.
+ *
+ * @param location File location
+ * @param displayedSettings Current displayed settings
+ * @param setDisplayedSettings Callback to update displayed settings
+ * @param onRefresh Callback to refresh the view
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsView(
