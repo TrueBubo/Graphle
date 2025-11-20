@@ -17,19 +17,17 @@ object InvalidFileMessage {
     /**
      * Renders the invalid file message dialog.
      *
-     * @param location Path to the file that could not be found
      * @param isInvalidFile Whether the file is invalid
      */
     @Composable
     operator fun invoke(
-        location: String,
         isInvalidFile: Boolean,
     ) {
         if (!showInvalidFileMessage || !isInvalidFile) return
         AlertDialog(
             onDismissRequest = { showInvalidFileMessage = false },
             title = { Text("Error") },
-            text = { Text("Could not find the file at $location") },
+            text = { Text("Could not find the file") },
             confirmButton = {
                 TextButton(onClick = {
                     showInvalidFileMessage = false

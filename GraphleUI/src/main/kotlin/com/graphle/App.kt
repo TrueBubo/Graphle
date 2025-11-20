@@ -16,8 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import com.graphle.file.util.FileFetcher
-import com.graphle.common.model.DisplayMode
-import com.graphle.common.model.DisplayedSettings
 import com.graphle.dialogs.InvalidFileMessage.showInvalidFileMessage
 import com.graphle.common.ui.DarkColorPalette
 import com.graphle.common.ui.LightColorPalette
@@ -34,21 +32,15 @@ import kotlinx.coroutines.runBlocking
 @Composable
 @Preview
 fun App() {
-    var oldLocation by remember { mutableStateOf("") }
-    var lastUpdated by remember { mutableStateOf(0L) }
-
     var displayedSettings by remember {
         mutableStateOf(
-            DisplayedSettings(
-                data = runBlocking {
-                    FileFetcher.fetch(
-                        location = userHome,
-                        onResult = { }
-                    )
-                }.data,
-                mode = DisplayMode.File
-            )
-            )
+            runBlocking {
+                FileFetcher.fetch(
+                    location = userHome,
+                    onResult = { }
+                )
+            }
+        )
     }
     val defaultSystemThemeIsDark = isSystemInDarkTheme()
     var isDarkTheme by remember { mutableStateOf(defaultSystemThemeIsDark) }

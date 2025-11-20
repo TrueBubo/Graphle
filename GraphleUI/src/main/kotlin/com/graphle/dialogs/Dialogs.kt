@@ -19,7 +19,7 @@ fun Dialogs(
     getDisplayedSettings: () -> DisplayedSettings,
     isInvalidFile: Boolean,
 ) {
-    val location = getDisplayedSettings().data?.location ?: ""
+    val location = getDisplayedSettings().data?.location ?: return
     AddTagDialog(
         onSubmitted = {
             FileFetcher.fetch(
@@ -70,7 +70,6 @@ fun Dialogs(
     ErrorMessage()
 
     InvalidFileMessage(
-        location = location,
         isInvalidFile = isInvalidFile,
     )
 }

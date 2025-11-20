@@ -19,7 +19,6 @@ import com.graphle.common.Trash
 import com.graphle.common.model.DisplayMode
 import com.graphle.file.util.FileFetcher
 import com.graphle.file.components.FileMenu
-import com.graphle.common.model.DisplayedData
 import com.graphle.common.model.DisplayedSettings
 import com.graphle.common.supervisorIoScope
 import com.graphle.common.userHome
@@ -65,9 +64,10 @@ internal fun AppMenu(
 
             Divider()
 
-            if (getDisplayedSettings().mode == DisplayMode.File) {
+            val location = getDisplayedSettings().data?.location
+            if (getDisplayedSettings().mode == DisplayMode.File && location != null) {
                 FileMenu(
-                    location = getDisplayedSettings().data?.location ?: "",
+                    location = location,
                     connection = null,
                     setShowMenu = setShowAppMenu,
                     onRefresh = {
@@ -106,8 +106,9 @@ internal fun AppMenu(
 
                     setShowAppMenu(false)
                     supervisorIoScope.launch {
+                        if (location == null) return@launch
                         FileFetcher.fetch(
-                            location = getDisplayedSettings().data?.location ?: "",
+                            location = location,
                             onResult = onResult
                         )
                     }
