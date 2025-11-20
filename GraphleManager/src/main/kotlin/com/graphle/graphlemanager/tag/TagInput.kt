@@ -1,18 +1,12 @@
 package com.graphle.graphlemanager.tag
 
-import org.springframework.data.neo4j.core.schema.GeneratedValue
-import org.springframework.data.neo4j.core.schema.Id
-import java.util.UUID
-
+/**
+ * Input data class for creating or removing tags
+ * @property name The name of the tag
+ * @property value Optional value for the tag
+ */
 data class TagInput(
-    @GeneratedValue @Id val id: UUID?,
     val name: String,
     val value: String?
-) {
-    constructor(name: String, value: String?) : this(
-        null,
-        name,
-        value
-    )
-}
+) {}
 
