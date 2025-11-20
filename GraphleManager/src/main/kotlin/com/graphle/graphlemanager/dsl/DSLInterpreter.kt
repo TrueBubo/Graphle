@@ -1,25 +1,23 @@
 package com.graphle.graphlemanager.dsl
 
-import com.graphle.graphlemanager.commons.normalize
-import com.graphle.graphlemanager.connection.Connection
-import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
-import com.graphle.graphlemanager.dsl.DSLUtil.ensureQuoted
-import com.graphle.graphlemanager.dsl.DSLUtil.removeQuotes
 import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.file.File
 import com.graphle.graphlemanager.file.FileController
-import com.graphle.graphlemanager.file.FileService
 import com.graphle.graphlemanager.tag.TagForFile
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
 import kotlinx.serialization.Serializable
-import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
+/**
+ * Represents a scope in a DSL query.
+ * @property entityType The type of entity (File or Relationship)
+ * @property text The text content within the scope
+ */
 data class Scope(val entityType: EntityType, val text: String)
 
 const val FILE_SCOPE_OPENING = '('
@@ -30,47 +28,111 @@ const val RELATIONSHIP_SCOPE_CLOSING = ']'
 const val HIGHER_PRIORITY_OPENING_TOKEN = "("
 const val HIGHER_PRIORITY_CLOSING_TOKEN = ")"
 
+/**
+ * Marker interface for scope output results.
+ */
 sealed interface ScopeOutput
 
+/**
+ * Represents a filename as a scope output result.
+ * @property path The absolute path to the file
+ */
 @JvmInline
 value class Filename(val path: AbsolutePathString) : ScopeOutput
 
+/**
+ * Types of responses that can be returned from DSL command execution.
+ */
 enum class ResponseType {
+    /** Error occurred during execution */
     ERROR,
+
+    /** Operation completed successfully */
     SUCCESS,
+
+    /** Response contains a list of filenames */
     FILENAMES,
+
+    /** Response contains a list of connections */
     CONNECTIONS,
+
+    /** Response contains file details */
     FILE,
+
+    /** Response contains tag information */
     TAG
 }
 
+/**
+ * Response object for DSL command execution.
+ * @property type The type of response
+ * @property responseObject List of response data as strings
+ */
 @Serializable
 data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
+/**
+ * Input for tag modification operations.
+ * @property location The file location to modify tags for
+ * @property tag The tag information to add or remove
+ */
 data class TagModificationInput(val location: AbsolutePathString, val tag: TagInput)
 
+/**
+ * Available DSL commands.
+ * @property command The string representation of the command
+ */
 enum class Commands(val command: String) {
+    /** Find files matching criteria */
     FIND("find"),
+
+    /** Add a relationship between files */
     ADD_REL("addRel"),
+
+    /** Remove a relationship between files */
     REMOVE_REL("removeRel"),
+
+    /** Add a tag to a file */
     ADD_TAG("addTag"),
+
+    /** Remove a tag from a file */
     REMOVE_TAG("removeTag"),
+
+    /** Get detailed information about a file */
     DETAIL("detail"),
+
+    /** Query files by tag */
     TAG("tag")
 }
 
+/**
+ * Service responsible for interpreting and executing DSL commands.
+ * @param scopeParser Parser for splitting commands into scopes
+ * @param tokenInterpreter Interpreter for parsing command tokens
+ * @param commandExecutor Executor for running scope queries
+ * @param connectionService Service for managing file relationships
+ * @param tagService Service for managing file tags
+ * @param fileController Controller for file-related operations
+ */
 @Service
 class DSLInterpreter(
-    private val neo4jClient: Neo4jClient,
-    private val fileService: FileService,
+    private val scopeParser: DSLScopeParser,
+    private val tokenInterpreter: DSLTokenInterpreter,
+    private val commandExecutor: DSLCommandExecutor,
     private val connectionService: ConnectionService,
     private val tagService: TagService,
     private val fileController: FileController
 ) {
 
+    /**
+     * Interprets and executes a DSL command.
+     * @param command The DSL command string to interpret
+     * @return The response containing execution results or error information
+     */
     fun interpret(command: String): DSLResponse {
         val tokens = splitIntoTokens(command)
-        if (tokens.isEmpty()) parseError(command)
+        if (tokens.isEmpty()) return parseError(command)
+
         return try {
             when (tokens.first()) {
                 Commands.FIND.command -> {
@@ -78,464 +140,77 @@ class DSLInterpreter(
                 }
 
                 Commands.ADD_REL.command -> {
-                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return parseError(command)
+                    val connectionInput = tokenInterpreter.parseRelationshipTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     connectionService.addConnection(connectionInput)
-                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                    DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.REMOVE_REL.command -> {
-                    val connectionInput = interpretConnectionTokens(tokens.drop(1)) ?: return parseError(command)
+                    val connectionInput = tokenInterpreter.parseRelationshipTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     connectionService.removeConnection(connectionInput)
-                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                    DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.ADD_TAG.command -> {
-                    val tagInput = interpretModifyTagTokens(tokens.drop(1)) ?: return parseError(command)
+                    val tagInput = tokenInterpreter.parseTagModificationTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     tagService.addTagToFile(tagInput.location, tagInput.tag)
-                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                    DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.REMOVE_TAG.command -> {
-                    val tagInput = interpretModifyTagTokens(tokens.drop(1)) ?: return parseError(command)
+                    val tagInput = tokenInterpreter.parseTagModificationTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     tagService.removeTag(tagInput.location, tagInput.tag)
-                    return DSLResponse(ResponseType.SUCCESS, listOf())
+                    DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 Commands.DETAIL.command -> {
-                    val filename = interpretDetailTokens(tokens.drop(1)) ?: return parseError(command)
+                    val filename = tokenInterpreter.parseDetailTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     val detail: File = fileController.fileByLocation(filename) ?: return DSLResponse(
                         ResponseType.ERROR,
                         listOf("File $filename not found")
                     )
-                    return DSLResponse(ResponseType.FILE, listOf(Json.encodeToString(detail)))
+                    DSLResponse(ResponseType.FILE, listOf(Json.encodeToString(detail)))
                 }
 
                 Commands.TAG.command -> {
-                    val tag = interpretGetTokens(tokens.drop(1)) ?: return parseError(command)
+                    val tag = tokenInterpreter.parseGetTokens(tokens.drop(1))
+                        ?: return parseError(command)
                     val tagLocations = tagService.filesByTag(tag)
-                    return DSLResponse(
+                    DSLResponse(
                         type = ResponseType.TAG,
                         responseObject = tagLocations.map { Json.encodeToString<TagForFile>(it) }
                     )
                 }
 
                 else -> DSLResponse(ResponseType.ERROR, listOf("Unknown command ${tokens.first()}"))
-
             }
-        } catch (_: Exception) {
-            return parseError(command)
+        } catch (e: Exception) {
+            DSLResponse(ResponseType.ERROR, listOf("Error executing command: ${e.message}"))
         }
     }
 
+    /**
+     * Creates an error response for parse failures.
+     * @param command The command that failed to parse
+     * @return A DSLResponse with error type and message
+     */
     private fun parseError(command: String) =
         DSLResponse(ResponseType.ERROR, listOf("Unable to parse $command"))
 
+    /**
+     * Interprets a 'find' command to search for files.
+     * @param command The find command string (without the 'find' keyword)
+     * @return The response containing matching filenames or connections
+     */
     fun interpretFind(command: String): DSLResponse {
-        var prevSelectedFilenames: List<AbsolutePathString>? = null
-        val scopes = splitSearchIntoScopes(command)
+        val scopes = scopeParser.splitSearchIntoScopes(command)
         if (scopes.isEmpty()) return parseError(command)
 
-        var response: DSLResponse = parseError(command)
-        for (scope in scopes) {
-            response = executeScope(scope, prevSelectedFilenames).run { DSLResponse(type, responseObject.distinct()) }
-            prevSelectedFilenames = when (response.type) {
-                ResponseType.FILENAMES -> {
-                    response.responseObject
-                }
-
-                ResponseType.CONNECTIONS -> {
-                    response.responseObject.map {
-                        val connection = Json.decodeFromString<Connection>(it)
-                        connection.to
-                    }
-                }
-
-                ResponseType.ERROR, ResponseType.SUCCESS, ResponseType.FILE, ResponseType.TAG -> return response
-            }
-        }
-        return response
-    }
-
-    fun interpretConnectionTokens(tokens: List<String>): ConnectionInput? {
-        if (tokens.size !in 3..4) return null
-        return ConnectionInput(
-            from = tokens[0].removeQuotes().normalize(),
-            to = tokens[1].removeQuotes().normalize(),
-            name = tokens[2].removeQuotes(),
-            value = tokens.getOrNull(3)?.removeQuotes(),
-            bidirectional = false
-        )
-    }
-
-    fun interpretModifyTagTokens(tokens: List<String>): TagModificationInput? {
-        if (tokens.size !in 2..3) return null
-        return TagModificationInput(
-            location = tokens[0].removeQuotes().normalize(),
-            tag = TagInput(
-                name = tokens[1].removeQuotes(),
-                value = tokens.getOrNull(2)?.removeQuotes(),
-            )
-        )
-    }
-
-    fun interpretGetTokens(tokens: List<String>): String? {
-        if (tokens.size != 1) return null
-        return tokens.first().removeQuotes()
-    }
-
-    fun interpretDetailTokens(tokens: List<String>): AbsolutePathString? {
-        if (tokens.size != 1) return null
-        return tokens.first().removeQuotes()
-    }
-
-
-    fun executeScope(
-        scope: Scope,
-        prevSelectedFilenames: List<AbsolutePathString>?
-    ): DSLResponse {
-        val additionalConnections: MutableList<Connection> = mutableListOf()
-
-        val ranScope = when (scope.entityType) {
-            EntityType.Relationship -> {
-                val tokens = processRelationshipTokens(scope.text, additionalConnections, prevSelectedFilenames)
-                Scope(
-                    entityType = scope.entityType,
-                    text = tokens.joinToString(separator = " ")
-                )
-            }
-
-            EntityType.File -> scope
-        }
-
-        val query = convertScopeToCommand(ranScope, prevSelectedFilenames) ?: return parseError(scope.text)
-        return when (scope.entityType) {
-            EntityType.File -> DSLResponse(
-                type = ResponseType.FILENAMES,
-                responseObject =
-                    if (ranScope.text == "" && prevSelectedFilenames != null) prevSelectedFilenames.map { it }
-                    else neo4jClient.query(query)
-                        .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-                        .fetchAs(Filename::class.java)
-                        .mappedBy { _, record -> Filename(record["f"].asNode().get("location").asString()) }
-                        .all()
-                        .map { it.path }
-            )
-
-            EntityType.Relationship -> DSLResponse(
-                type = ResponseType.CONNECTIONS,
-                responseObject = neo4jClient.query(query)
-                    .bindAll(mapOf("locations" to (prevSelectedFilenames ?: emptyList())))
-                    .fetchAs(Connection::class.java)
-                    .mappedBy { _, record ->
-                        Connection(
-                            from = record["f1"].asNode().get("location").asString(),
-                            to = record["f2"].asNode().get("location").asString(),
-                            name = record["r"].asRelationship().get("name").asString(),
-                            value = record["r"].asRelationship().get("value").asString()
-                        )
-                    }.all()
-                    .plus(additionalConnections)
-                    .map { Json.encodeToString<Connection>(it) }
-            )
-        }
-    }
-
-    private fun processRelationshipTokens(
-        scopeText: String,
-        additionalConnections: MutableList<Connection>,
-        prevSelectedFilenames: List<AbsolutePathString>?
-    ): List<String> {
-        var tokens = splitIntoTokens(scopeText)
-        val firstTokens = listOfNotNull(tokens.getOrNull(0), tokens.getOrNull(1))
-        val additionalFilenameGetter = listOf("DESC", "PRED")
-
-        if (firstTokens.isNotEmpty() && firstTokens.first().uppercase() in additionalFilenameGetter) {
-            tokens = tokens.drop(1)
-            addAdditionalFilenames(firstTokens.first(), additionalConnections, prevSelectedFilenames)
-        }
-        if (firstTokens.size > 1 && firstTokens[1].uppercase() in additionalFilenameGetter) {
-            tokens = tokens.drop(1)
-            addAdditionalFilenames(firstTokens[1], additionalConnections, prevSelectedFilenames)
-        }
-        return tokens
-    }
-
-    private fun addAdditionalFilenames(
-        getter: String,
-        additionalConnections: MutableList<Connection>,
-        prevSelectedFilenames: List<AbsolutePathString>?
-    ) {
-        if (prevSelectedFilenames != null) {
-            when (getter.uppercase()) {
-                "DESC" -> additionalConnections.addAll(
-                    prevSelectedFilenames
-                        .flatMap { from ->
-                            FileService.descendantsOfFile(from).map { to ->
-                                Connection(
-                                    from = from,
-                                    to = to,
-                                    name = "descendant",
-                                )
-                            }
-                        }
-                )
-
-                "PRED" -> additionalConnections.addAll(
-                    prevSelectedFilenames
-                        .mapNotNull { child ->
-                            FileService.parentOfFile(child)?.let { parent ->
-                                Connection(
-                                    from = child,
-                                    to = parent,
-                                    name = "parent",
-                                )
-                            }
-                        }
-                )
-            }
-        }
-    }
-
-    fun splitSearchIntoScopes(command: String): List<Scope> {
-        var scope: EntityType? = null
-        var scopeStartIndex: Int? = null
-        var previousScope: EntityType? = null
-        var inQuotes = false
-        var isEscaped = false
-        val scopes = mutableListOf<Scope>()
-        var parenthesisLevel = 0
-
-        command.forEachIndexed { idx, char ->
-            if (char == '"' && !isEscaped) {
-                inQuotes = !inQuotes
-            }
-            if (!inQuotes) {
-                when (char) {
-                    FILE_SCOPE_OPENING -> {
-                        if (scope == null && previousScope != EntityType.File) {
-                            scope = EntityType.File
-                            scopeStartIndex = idx + 1
-                        } else {
-                            parenthesisLevel++
-                        }
-                    }
-
-                    FILE_SCOPE_CLOSING -> {
-                        if (parenthesisLevel > 0) parenthesisLevel--
-                        else if (scope == EntityType.File) {
-                            if (scopeStartIndex == null) return emptyList()
-                            previousScope = EntityType.File
-                            scopes.addLast(
-                                Scope(
-                                    entityType = EntityType.File,
-                                    text = command.substring(scopeStartIndex, idx),
-                                )
-                            )
-                            scopeStartIndex = null
-                            scope = null
-                        } else return emptyList()
-                    }
-
-                    RELATIONSHIP_SCOPE_OPENING -> {
-                        if (scope == null && previousScope != EntityType.Relationship && previousScope != null) {
-                            scope = EntityType.Relationship
-                            scopeStartIndex = idx + 1
-                        } else return emptyList()
-                    }
-
-                    RELATIONSHIP_SCOPE_CLOSING -> {
-                        if (scope == EntityType.Relationship) {
-                            if (scopeStartIndex == null) return emptyList()
-                            previousScope = EntityType.Relationship
-                            scopes.addLast(
-                                Scope(
-                                    entityType = EntityType.Relationship,
-                                    text = command.substring(scopeStartIndex, idx)
-                                )
-                            )
-                            scopeStartIndex = null
-                            scope = null
-                        }
-                    }
-
-                    else -> {
-                        if (scope == null) return emptyList()
-                    }
-                }
-
-                isEscaped = false
-                if (char == '\\') {
-                    isEscaped = true
-                }
-            }
-        }
-        return scopes
-    }
-
-    fun convertScopeToCommand(
-        scope: Scope,
-        prevSelectedFilename: List<AbsolutePathString>?
-    ): String? {
-        val tokens = splitIntoTokens(scope.text)
-        return when (scope.entityType) {
-            EntityType.File -> convertFileScopeToCommand(tokens, prevSelectedFilename)
-            EntityType.Relationship -> convertRelationshipScopeToCommand(tokens, prevSelectedFilename)
-        }
-    }
-
-    private fun convertFileScopeToCommand(
-        tokens: List<String>,
-        prevSelectedFilenames: List<AbsolutePathString>?
-    ): String? {
-        var tokenType = TokenType.first()
-        val mutableTokens = tokens.toMutableList()
-        var lastVariableName: String? = null
-        var lastOperator: String? = null
-
-        val processedTokens: List<String> = mutableTokens.mapIndexed { index, token ->
-            if (token == HIGHER_PRIORITY_OPENING_TOKEN || token == HIGHER_PRIORITY_CLOSING_TOKEN) {
-                tokenType = TokenType.first()
-                lastVariableName = null
-                lastOperator = null
-                return@mapIndexed token
-            }
-            when (tokenType) {
-                TokenType.VARIABLE_NAME -> {
-                    tokenType = tokenType.next()
-                    lastVariableName = token
-
-                    if (token == "location" && index + 2 < tokens.size) {
-                        val normalizedLocation = tokens[index + 2].removeQuotes().normalize()
-                        ensureFileNodeExists(location = normalizedLocation)
-                        mutableTokens[index + 2] = normalizedLocation.ensureQuoted()
-                    }
-
-                    val processedName = processFileVariableName(token) ?: return null
-
-                    // Check if next token is a numeric comparison operator
-                    val nextOperator = tokens.getOrNull(index + 1)
-                    val isNumericComparison = nextOperator in listOf(">", "<", ">=", "<=")
-
-                    // Wrap tagValue with toFloat() for numeric comparisons
-                    return@mapIndexed if (token == "tagValue" && isNumericComparison) {
-                        "toFloat($processedName)"
-                    } else {
-                        processedName
-                    }
-                }
-
-                TokenType.OPERATOR -> {
-                    tokenType = tokenType.next()
-                    lastOperator = token
-                    return@mapIndexed processOperatorTypes(token) ?: return null
-                }
-
-                TokenType.VALUE -> {
-                    tokenType = tokenType.next()
-
-                    // For numeric comparisons on tagValue, don't quote the value
-                    val isNumericComparison = lastOperator in listOf(">", "<", ">=", "<=")
-                    return@mapIndexed if (lastVariableName == "tagValue" && isNumericComparison) {
-                        token.removeQuotes()
-                    } else {
-                        token.ensureQuoted()
-                    }
-                }
-
-                TokenType.CONJUNCTION -> {
-                    tokenType = tokenType.next()
-                    lastVariableName = null
-                    lastOperator = null
-                    return@mapIndexed processConjunctionOperators(token) ?: return null
-                }
-            }
-        }
-
-        val whereCondition = (if (prevSelectedFilenames == null) "" else "f.location in locs ") +
-                (if (processedTokens.isNotEmpty() && prevSelectedFilenames != null) "AND " else "") +
-                processedTokens.joinToString(" ")
-
-        return (if (prevSelectedFilenames == null) "" else $$"UNWIND $locations as loc ") +
-                "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) WITH f, t" +
-                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
-                " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f".trimMargin()
-
-    }
-
-    private fun convertRelationshipScopeToCommand(
-        tokens: List<String>,
-        prevSelectedFilenames: List<AbsolutePathString>?
-    ): String? {
-        var tokenType = TokenType.first()
-        val processedTokens: List<String> = tokens.map { token ->
-            if (token == HIGHER_PRIORITY_OPENING_TOKEN || token == HIGHER_PRIORITY_CLOSING_TOKEN) {
-                tokenType = TokenType.first()
-                return@map token
-            }
-            when (tokenType) {
-                TokenType.VARIABLE_NAME -> {
-                    tokenType = tokenType.next()
-                    return@map processRelationshipVariableName(token) ?: return null
-                }
-
-                TokenType.OPERATOR -> {
-                    tokenType = tokenType.next()
-                    return@map processOperatorTypes(token) ?: return null
-                }
-
-                TokenType.VALUE -> {
-                    tokenType = tokenType.next()
-                    return@map token
-                }
-
-                TokenType.CONJUNCTION -> {
-                    tokenType = tokenType.next()
-                    return@map processConjunctionOperators(token) ?: return null
-                }
-            }
-        }
-
-        val whereCondition = (if (prevSelectedFilenames == null) "" else "f1.location in locs ") +
-                (if (processedTokens.isNotEmpty()) "AND " else "") +
-                processedTokens.joinToString(" ")
-        return (if (prevSelectedFilenames == null) "" else $$"UNWIND $locations as loc ") +
-                "MATCH (f1:File)-[r:Relationship]->(f2:File) WITH r, f1, f2" +
-                (if (prevSelectedFilenames == null) "" else ",collect(loc) as locs ") +
-                " ${if (whereCondition.isEmpty()) "" else "WHERE $whereCondition"} RETURN f1, r, f2".trimMargin()
-
-    }
-
-    private fun ensureFileNodeExists(location: AbsolutePathString) {
-        fileService.addFileNode(location)
-    }
-
-    private fun processFileVariableName(variableName: String): String? = when (variableName) {
-        "location" -> "f.location"
-        "tagName" -> "t.name"
-        "tagValue" -> "t.value"
-        else -> null
-    }
-
-    private fun processRelationshipVariableName(variableName: String): String? = when (variableName) {
-        "name" -> "r.name"
-        "value" -> "r.value"
-        else -> null
-    }
-
-    private fun processOperatorTypes(operatorType: String): String? = when (operatorType) {
-        "=" -> "="
-        ">" -> ">"
-        ">=" -> ">="
-        "<" -> "<"
-        "<=" -> "<="
-        "!=" -> "<>"
-        "<>" -> "<>"
-        else -> null
-    }
-
-    private fun processConjunctionOperators(operatorType: String): String? = when (operatorType.uppercase()) {
-        "AND" -> "AND"
-        "OR" -> "OR"
-        else -> null
+        return commandExecutor.executeFindCommand(scopes)
     }
 }

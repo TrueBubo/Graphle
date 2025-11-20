@@ -4,6 +4,7 @@ import com.graphle.graphlemanager.BaseRestIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
+import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +23,7 @@ class DSLInterpreterIntegrationTest : BaseRestIntegrationTest() {
     private lateinit var tagService: TagService
     @Autowired
     private lateinit var fileTestUtils: FileTestUtils
-    private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
+    private val randomString = randomString(20)
 
     @Test
     fun `should run the select command via api`() = fileTestUtils.withTempFiles(3) { (file1, file2, file3) ->

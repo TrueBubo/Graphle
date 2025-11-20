@@ -14,6 +14,12 @@ import com.graphle.header.util.ResponseType.*
 import kotlinx.serialization.json.Json
 import java.lang.System.lineSeparator
 
+/**
+ * Handles execution of a DSL command.
+ *
+ * @param dslCommand The DSL command string to execute
+ * @param onEvaluation Callback with the command result
+ */
 suspend fun handleDslCommand(
     dslCommand: String,
     onEvaluation: (DisplayedSettings) -> Unit,
