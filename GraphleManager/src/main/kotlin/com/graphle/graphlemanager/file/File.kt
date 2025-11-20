@@ -24,6 +24,12 @@ data class File private constructor(
     val tags: List<Tag>,
     val connections: List<Connection>
 ) {
+    /**
+     * Public constructor for creating a File instance
+     * @param location The absolute path of the file
+     * @param tags List of tags associated with the file
+     * @param connections List of connections to other files
+     */
     constructor(
         location: AbsolutePathString,
         tags: List<Tag>,
@@ -36,6 +42,9 @@ data class File private constructor(
     )
 }
 
+/**
+ * Represents the type of a file system entity
+ */
 enum class FileType {
     File,
     Directory

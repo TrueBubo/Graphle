@@ -12,6 +12,10 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Configuration
 @EnableWebSocket
 open class DSLAutoCompleterWebSocketConfig(private val dslAutoCompleter: DSLAutoCompleter) : WebSocketConfigurer {
+    /**
+     * Registers WebSocket handlers for autocomplete functionality.
+     * @param registry The WebSocket handler registry to configure
+     */
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry.addHandler(DSLAutoCompleterHandler(SessionRegistry, dslAutoCompleter), "/ws")
             .setAllowedOriginPatterns("*")

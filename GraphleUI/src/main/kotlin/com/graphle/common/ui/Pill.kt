@@ -24,6 +24,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
+/**
+ * A pill-shaped button component that displays one or more text segments separated by dividers.
+ *
+ * @param texts List of text strings to display in the pill
+ * @param onClick Callback invoked when the pill is left-clicked
+ * @param onRightClick Callback invoked when the pill is right-clicked
+ * @param background Background color of the pill
+ * @param contentColor Text color
+ * @param horizontalPadding Horizontal padding in dp
+ * @param verticalPadding Vertical padding in dp
+ * @param cornerRadiusDp Corner radius in dp for rounded corners
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Pill(

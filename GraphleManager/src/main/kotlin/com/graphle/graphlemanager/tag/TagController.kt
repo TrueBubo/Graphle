@@ -34,6 +34,12 @@ class TagController(private val tagService: TagService) {
         return Tag(tag.name, tag.value)
     }
 
+    /**
+     * Removes a tag from the specified file
+     * @param location Absolute path of the file
+     * @param tag Tag to remove from the file
+     * @return The removed tag
+     */
     @MutationMapping
     fun removeTag(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
         tagService.removeTag(location.normalize(), tag)

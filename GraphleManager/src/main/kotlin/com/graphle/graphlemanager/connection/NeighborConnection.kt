@@ -16,13 +16,4 @@ data class NeighborConnection(
     val relationship: String,
     val to: AbsolutePathString,
     val value: String? = null
-) {
-    constructor(
-        relationship: String,
-        to: AbsolutePathString
-    ): this(
-        id = null,
-        relationship = relationship,
-        to = to
-    )
-}
+)

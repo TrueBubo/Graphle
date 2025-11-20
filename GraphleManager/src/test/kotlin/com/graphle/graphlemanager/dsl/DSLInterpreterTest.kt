@@ -4,8 +4,7 @@ import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.connection.ConnectionInput
 import com.graphle.graphlemanager.connection.ConnectionService
-import com.graphle.graphlemanager.file.FileController
-import com.graphle.graphlemanager.file.FileService
+import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import com.graphle.graphlemanager.tag.TagForFile
 import com.graphle.graphlemanager.tag.TagInput
@@ -14,7 +13,6 @@ import com.graphle.graphlemanager.file.File as GraphleFile
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.neo4j.core.Neo4jClient
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsExactly
@@ -27,16 +25,7 @@ import kotlin.test.Test
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DSLInterpreterTest {
-    private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
-
-    @Autowired
-    private lateinit var neo4jClient: Neo4jClient
-
-    @Autowired
-    private lateinit var fileService: FileService
-
-    @Autowired
-    private lateinit var fileController: FileController
+    private val randomString = randomString(20)
 
     @Autowired
     private lateinit var neo4JSweeper: Neo4JSweeper
@@ -50,6 +39,18 @@ class DSLInterpreterTest {
     @Autowired
     private lateinit var fileTestUtils: FileTestUtils
 
+    @Autowired
+    private lateinit var interpreter: DSLInterpreter
+
+    @Autowired
+    private lateinit var dslCommandExecutor: DSLCommandExecutor
+
+    @Autowired
+    private lateinit var dslScopeParser: DSLScopeParser
+
+    @Autowired
+    private lateinit var cypherQueryBuilder: CypherQueryBuilder
+
     @AfterTest
     fun tearDown() {
         neo4JSweeper.sweep()
@@ -58,7 +59,6 @@ class DSLInterpreterTest {
     @Test
     fun `should execute using the whole command for hierarchical connection`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
             connectionService.addConnection(
                 ConnectionInput(
                     name = randomString,
@@ -83,7 +83,6 @@ class DSLInterpreterTest {
     @Test
     fun `should execute using the whole command for custom connection`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
             connectionService.addConnection(
                 ConnectionInput(
                     name = randomString,
@@ -108,7 +107,6 @@ class DSLInterpreterTest {
     @Test
     fun `should handle longer chain`() {
         fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-            val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
             connectionService.addConnection(
                 ConnectionInput(
                     name = randomString,
@@ -141,7 +139,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `invalid file syntax returns error response`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find (location = \" or tagName = \"${randomString}\")")
 
         expectThat(response).and {
@@ -152,18 +149,16 @@ class DSLInterpreterTest {
 
     @Test
     fun `invalid connection syntax returns error response`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("find ()[nonExistent = 2]")
         expectThat(response).and {
             get { type }.isEqualTo(ResponseType.ERROR)
-            get { responseObject }.hasSize(1).first().contains("Unable to parse")
+            get { responseObject }.hasSize(1).first().contains("Failed to build query for scope: nonExistent = 2")
         }
     }
 
     @Test
     fun `should return file matching the file scope command`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
             connectionService.addConnection(
                 ConnectionInput(
                     name = "",
@@ -177,7 +172,7 @@ class DSLInterpreterTest {
                 location = file2.absolutePath,
                 tag = TagInput(name = randomString, value = randomString)
             )
-            val response = interpreter.executeScope(
+            val response = dslCommandExecutor.executeFindScope(
                 scope = Scope(
                     entityType = EntityType.File,
                     text = "location = \"${file1.absolutePath}\" or tagName = \"${randomString}\"",
@@ -193,7 +188,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should return file with tag matching the range`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "8")
@@ -202,7 +196,7 @@ class DSLInterpreterTest {
             location = file2.absolutePath,
             tag = TagInput(name = randomString, value = "11.2")
         )
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "location = \"${file1.absolutePath}\" or location = \"${file2.absolutePath}\" AND " +
@@ -220,7 +214,6 @@ class DSLInterpreterTest {
     @Test
     fun `should return file connected via the relationship command`() =
         fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-            val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
             connectionService.addConnection(
                 ConnectionInput(
                     name = randomString,
@@ -231,7 +224,7 @@ class DSLInterpreterTest {
                 )
             )
 
-            val response = interpreter.executeScope(
+            val response = dslCommandExecutor.executeFindScope(
                 scope = Scope(
                     entityType = EntityType.Relationship,
                     text = "name = \"${randomString}\""
@@ -250,8 +243,7 @@ class DSLInterpreterTest {
 
     @Test
     fun `should return tree edges`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.Relationship,
                 text = "PRED",
@@ -295,10 +287,9 @@ class DSLInterpreterTest {
     }
 
     @Test
-    fun `interpreter splits search command to scopes`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
+    fun `parser splits search command to scopes`() {
         val command = """(tagName = "name")[name = "friend"](location = "/home/(Person)")"""
-        val scopes = interpreter.splitSearchIntoScopes(command)
+        val scopes = dslScopeParser.splitSearchIntoScopes(command)
         expectThat(scopes).hasSize(3).containsExactly(
             Scope(entityType = EntityType.File, text = """tagName = "name""""),
             Scope(entityType = EntityType.Relationship, text = """name = "friend""""),
@@ -308,9 +299,8 @@ class DSLInterpreterTest {
 
     @Test
     fun `interpreter splits search command with priorities`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val command = """(tagName = "name" AND (location = "/home"))[name = "friend"](location = "/home/(Person)")"""
-        val scopes = interpreter.splitSearchIntoScopes(command)
+        val scopes = dslScopeParser.splitSearchIntoScopes(command)
         expectThat(scopes).hasSize(3).containsExactly(
             Scope(entityType = EntityType.File, text = """tagName = "name" AND (location = "/home")"""),
             Scope(entityType = EntityType.Relationship, text = """name = "friend""""),
@@ -320,12 +310,11 @@ class DSLInterpreterTest {
 
     @Test
     fun `interpreter correctly translates file scope into neo4j`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val scope = Scope(
             entityType = EntityType.File,
             text = """tagName = "year" AND tagValue > 2015 AND (location != "/home/(Person)")"""
         )
-        expectThat(interpreter.convertScopeToCommand(scope = scope, prevSelectedFilename = null))
+    expectThat(cypherQueryBuilder.convertScopeToQuery(scope = scope, prevSelectedFilename = null))
             .isEqualTo(
                 "MATCH (f:File) OPTIONAL MATCH (f)-[:HasTag]-(t:Tag) " +
                         "WITH f, t WHERE t.name = \"year\" AND toFloat(t.value) > 2015 AND ( f.location <> \"/home/(Person)\" ) RETURN f"
@@ -334,7 +323,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should add relationship between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("addRel \"${file1.absolutePath}\" \"${file2.absolutePath}\" \"$randomString\"")
 
         expectThat(response).and {
@@ -347,7 +335,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should add relationship with value between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("addRel \"${file1.absolutePath}\" \"${file2.absolutePath}\" \"$randomString\" \"testValue\"")
 
         expectThat(response).and {
@@ -360,8 +347,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should remove relationship between files`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         connectionService.addConnection(
             ConnectionInput(
                 name = randomString,
@@ -381,7 +366,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should add tag to file`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("addTag \"${file.absolutePath}\" \"$randomString\"")
 
         expectThat(response).and {
@@ -396,7 +380,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should add tag with value to file`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val response = interpreter.interpret("addTag \"${file.absolutePath}\" \"$randomString\" \"testValue\"")
 
         expectThat(response).and {
@@ -412,8 +395,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should remove tag from file`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file.absolutePath,
             tag = TagInput(name = randomString, value = null)
@@ -431,9 +412,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should remove tag with value from file`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
-
         tagService.addTagToFile(
             location = file.absolutePath,
             tag = TagInput(name = randomString, value = "testValue")
@@ -451,8 +429,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should get file details`() = fileTestUtils.withTempFiles { (file) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         val response = interpreter.interpret("detail \"${file.absolutePath}\"")
 
         expectThat(response).and {
@@ -466,7 +442,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should return error for non-existent file details`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
         val nonExistentPath = "/non/existent/path"
 
         val response = interpreter.interpret("detail \"$nonExistentPath\"")
@@ -479,8 +454,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should get files by tag name`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = null)
@@ -503,8 +476,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should return empty list for tag with no files`() {
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         val response = interpreter.interpret("tag \"nonExistentTag\"")
 
         expectThat(response).and {
@@ -515,8 +486,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should filter out non-numeric tag values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "10")
@@ -532,7 +501,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "5")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue > 8"
@@ -546,8 +515,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should handle numeric comparison with less than operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "3.5")
@@ -563,7 +530,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "10")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue < 5"
@@ -577,8 +544,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should handle numeric comparison with greater than or equal operator`() = fileTestUtils.withTempFiles(count = 4) { (file1, file2, file3, file4) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "10")
@@ -599,7 +564,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "notanumber")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue >= 10"
@@ -614,8 +579,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should handle numeric comparison with less than or equal operator`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "7")
@@ -631,7 +594,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "8")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue <= 7"
@@ -646,8 +609,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should still use string comparison for equality operator`() = fileTestUtils.withTempFiles(count = 2) { (file1, file2) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "test")
@@ -658,7 +619,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "10")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue = \"test\""
@@ -672,8 +633,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should handle decimal numbers in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "8.5")
@@ -689,7 +648,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "7.9")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue > 8"
@@ -704,8 +663,6 @@ class DSLInterpreterTest {
 
     @Test
     fun `should exclude tags with empty or whitespace values in numeric comparisons`() = fileTestUtils.withTempFiles(count = 3) { (file1, file2, file3) ->
-        val interpreter = DSLInterpreter(neo4jClient, fileService, connectionService, tagService, fileController)
-
         tagService.addTagToFile(
             location = file1.absolutePath,
             tag = TagInput(name = randomString, value = "10")
@@ -721,7 +678,7 @@ class DSLInterpreterTest {
             tag = TagInput(name = randomString, value = "  ")
         )
 
-        val response = interpreter.executeScope(
+        val response = dslCommandExecutor.executeFindScope(
             scope = Scope(
                 entityType = EntityType.File,
                 text = "tagName = \"$randomString\" AND tagValue > 5"

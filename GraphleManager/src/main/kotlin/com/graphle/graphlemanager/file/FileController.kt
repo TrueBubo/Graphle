@@ -85,6 +85,11 @@ class FileController(
         } else null
     }
 
+    /**
+     * Determines the type of file at the specified location
+     * @param location Absolute path to check
+     * @return FileType if the file exists, null otherwise
+     */
     @QueryMapping
     fun fileType(@Argument location: AbsolutePathString): FileType? = FileService.fileType(location.normalize())
 

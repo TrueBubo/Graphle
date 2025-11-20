@@ -18,6 +18,10 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
         return connectionRepository.neighborsByFileLocation(locationFrom)
     }
 
+    /**
+     * Adds a connection between files, handling bidirectional relationships
+     * @param connection Connection input data specifying the relationship to create
+     */
     fun addConnection(connection: ConnectionInput) = with(connection) {
         when {
             (value == null) && bidirectional -> {
@@ -42,6 +46,10 @@ class ConnectionService(val connectionRepository: ConnectionRepository) {
         }
     }
 
+    /**
+     * Removes a connection between files, handling bidirectional relationships
+     * @param connection Connection input data specifying the relationship to remove
+     */
     fun removeConnection(connection: ConnectionInput) = with(connection) {
         if (value == null) {
             connectionRepository.removeConnection(from, to, name)

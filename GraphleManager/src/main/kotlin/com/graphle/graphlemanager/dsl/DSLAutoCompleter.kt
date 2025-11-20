@@ -11,7 +11,9 @@ const val COMPLETIONS_LIMIT = 5
  * Used as a response getter for a prefix entered from GUI
  */
 @Service
-class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
+class DSLAutoCompleter(
+    filenameCompleterService: FilenameCompleterService,
+) {
     private val filenameCompleter = filenameCompleterService.completer
 
     /**
@@ -23,6 +25,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
     fun complete(commandPrefix: String, limit: Int = COMPLETIONS_LIMIT): List<String> =
         completeCommandPrefix(commandPrefix, limit)
 
+    /**
+     * Completes a command prefix by determining the command type and delegating to the appropriate completion method.
+     * @param commandPrefix The command prefix to complete
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
     fun completeCommandPrefix(commandPrefix: String, limit: Int): List<String> {
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.isEmpty()) return emptyList()
@@ -67,6 +75,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         }
     }
 
+    /**
+     * Completes a 'find' command by analyzing scopes and providing filename suggestions.
+     * @param commandPrefix The find command prefix (without the 'find' keyword)
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
     private fun completeFindCommand(commandPrefix: String, limit: Int): List<String> {
         var scope: EntityType? = null
         var previousScope: EntityType? = null
@@ -147,6 +161,13 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
         return emptyList()
     }
 
+    /**
+     * Completes a connection command (addRel/removeRel) by providing filename suggestions.
+     * @param commandType The command type (addRel or removeRel)
+     * @param commandPrefix The command prefix (without the command keyword)
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
     private fun completeConnectionCommand(commandType: String, commandPrefix: String, limit: Int): List<String> {
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.size !in 1..2) return emptyList()
@@ -161,6 +182,13 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
             }
     }
 
+    /**
+     * Completes a tag command (addTag/removeTag) by providing filename suggestions.
+     * @param commandType The command type (addTag or removeTag)
+     * @param commandPrefix The command prefix (without the command keyword)
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
     private fun completeTagCommand(commandType: String, commandPrefix: String, limit: Int): List<String> {
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.size != 1) return emptyList()
@@ -175,6 +203,12 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
             }
     }
 
+    /**
+     * Completes a detail command by providing filename suggestions.
+     * @param commandPrefix The command prefix (without the 'detail' keyword)
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
     private fun completeDetailCommand(commandPrefix: String, limit: Int): List<String> {
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.size != 1) return emptyList()
@@ -189,18 +223,38 @@ class DSLAutoCompleter(filenameCompleterService: FilenameCompleterService) {
             }
     }
 
+    /**
+     * Completes filenames for a single token, handling quoted strings.
+     * @param token The token to complete
+     * @param limit Maximum number of completions to return
+     * @return List of filename completions
+     */
     private fun completeFilenamesForToken(token: String, limit: Int): List<String> =
         (if (token.startsWith('"')) {
             completeFilenames(token.drop(1), limit)
         } else completeFilenames(token, limit))
 
 
+    /**
+     * Processes a file query and returns filename completions if applicable.
+     * @param tokens The tokens in the file scope
+     * @param limit Maximum number of completions to return
+     * @return List of filename completions or empty list
+     */
     private fun processFileQuery(tokens: List<String>, limit: Int): List<String> {
         return if (tokens.size > 2 && tokens[tokens.size - 3] == "location") {
             completeFilenamesForToken(tokens.last(), limit)
         } else emptyList()
     }
 
+    /**
+     * Adds a completed filename to the command string.
+     * @param commandType The type of command
+     * @param filename The completed filename
+     * @param filenamePrefixToken The original filename prefix token
+     * @param commandPrefix The command prefix before completion
+     * @return The complete command with the filename added
+     */
     private fun addFilenameToCommand(
         commandType: String,
         filename: String,

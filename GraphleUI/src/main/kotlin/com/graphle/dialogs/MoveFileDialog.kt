@@ -19,15 +19,29 @@ import com.graphle.common.supervisorIoScope
 import com.graphle.type.FileType
 import kotlinx.coroutines.launch
 
+/**
+ * Dialog for moving files to a different directory.
+ */
 object MoveFileDialog {
     private var location by mutableStateOf("")
     private var isShown by mutableStateOf(false)
 
+    /**
+     * Sets the dialog state and file location.
+     *
+     * @param location Path to the file to move
+     * @param isShown Whether the dialog should be shown
+     */
     fun set(location: String, isShown: Boolean) {
         this.location = location
         this.isShown = isShown
     }
 
+    /**
+     * Renders the move file dialog.
+     *
+     * @param onMoved Callback invoked after successful file move
+     */
     @Composable
     operator fun invoke(onMoved: suspend () -> Unit) {
         var showToMissingError by mutableStateOf(false)

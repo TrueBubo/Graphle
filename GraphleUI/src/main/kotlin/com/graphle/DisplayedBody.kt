@@ -7,13 +7,21 @@ import com.graphle.common.model.DisplayedSettings
 import com.graphle.file.components.FileBody
 import com.graphle.file.components.FilenameBody
 
+/**
+ * Renders the appropriate body component based on the current display mode.
+ */
 object DisplayedBody {
+    /**
+     * Displays content based on the current display mode.
+     *
+     * @param displayedSettings Current display settings and data
+     * @param setDisplayedSettings Callback to update display settings
+     */
     @Composable
     operator fun invoke(
         displayedSettings: DisplayedSettings,
         setDisplayedSettings: (DisplayedSettings) -> Unit,
     ) {
-        val location = displayedSettings.data?.location ?: ""
         return when (displayedSettings.mode) {
             DisplayMode.File -> FileBody(
                 displayedSettings = displayedSettings,

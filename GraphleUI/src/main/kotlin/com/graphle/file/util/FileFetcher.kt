@@ -13,12 +13,30 @@ import com.graphle.dsl.DSLHistory
 
 private fun fileFetchDSLCommand(location: String) = "detail $location"
 
+/**
+ * Fetches file information from the server and manages loading state.
+ */
 object FileFetcher {
+    /**
+     * Whether to show hidden files in directory listings.
+     */
     var showHiddenFiles = false
+
     private var _isLoading = false
+
+    /**
+     * Indicates whether a fetch operation is currently in progress.
+     */
     val isLoading: Boolean
         get() = _isLoading
 
+    /**
+     * Fetches file data by location from the server.
+     *
+     * @param location File path to fetch
+     * @param onResult Callback invoked with the fetched settings
+     * @return DisplayedSettings containing the fetched data
+     */
     suspend fun fetch(
         location: String,
         onResult: (DisplayedSettings) -> Unit

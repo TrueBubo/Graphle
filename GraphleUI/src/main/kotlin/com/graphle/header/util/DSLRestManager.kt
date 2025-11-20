@@ -13,6 +13,9 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+/**
+ * Type of response from DSL command execution.
+ */
 enum class ResponseType {
     ERROR,
     SUCCESS,
@@ -22,12 +25,26 @@ enum class ResponseType {
     TAG
 }
 
+/**
+ * Request payload for DSL command execution.
+ *
+ * @property command The DSL command string
+ */
 @Serializable
 data class DSLRequest(val command: String)
 
+/**
+ * Response payload from DSL command execution.
+ *
+ * @property type Type of response
+ * @property responseObject List of response data strings
+ */
 @Serializable
 data class DSLResponse(val type: ResponseType, val responseObject: List<String>)
 
+/**
+ * Manages REST communication for DSL command interpretation.
+ */
 object DSLRestManager {
     private val client = HttpClient(CIO) {
         install(ContentNegotiation) {
@@ -38,6 +55,12 @@ object DSLRestManager {
         }
     }
 
+    /**
+     * Sends a DSL command to the server for interpretation.
+     *
+     * @param command The DSL command to execute
+     * @return Server response with execution results
+     */
     suspend fun interpretCommand(command: String): DSLResponse {
         try {
             return client.post(dslURL) {

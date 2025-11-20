@@ -3,6 +3,7 @@ package com.graphle.graphlemanager.connection
 import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
 import com.graphle.graphlemanager.file.AbsolutePathString
+import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.beans.factory.annotation.Autowired
 import strikt.api.expectThat
@@ -17,7 +18,7 @@ class ConnectionIntegrationTests(
     @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
 ) : BaseGraphQlIntegrationTest() {
-    private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
+    private val randomString = randomString(20)
 
     @AfterTest
     fun tearDown() {

@@ -1,10 +1,13 @@
 package com.graphle.graphlemanager.init
 
-import org.neo4j.driver.exceptions.ClientException
 import org.springframework.data.neo4j.core.Neo4jClient
 import org.springframework.stereotype.Service
 
-// Setting up Neo4J for better query performance
+/**
+ * Configuration service for setting up Neo4j database indexes.
+ * Creates indexes on startup to improve query performance.
+ * @param neo4jClient The Neo4j client used to execute index creation queries
+ */
 @Service
 class Neo4JConfig(neo4jClient: Neo4jClient) {
     init {
