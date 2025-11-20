@@ -9,6 +9,12 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.awt.Desktop
 import java.io.File
 
+/**
+ * Creates parent directories for a file path if they don't exist.
+ *
+ * @param filePath Absolute path to the file
+ * @return File object for the given path
+ */
 fun createParentDirectories(filePath: String): File {
     val file = File(filePath)
 
@@ -17,6 +23,11 @@ fun createParentDirectories(filePath: String): File {
     return file
 }
 
+/**
+ * Opens a file using the system's default application.
+ *
+ * @param file File to open
+ */
 fun openFile(file: File) {
     if (!file.exists()) {
         return
@@ -34,6 +45,13 @@ fun openFile(file: File) {
     }
 }
 
+/**
+ * Downloads a file from the server to a local destination.
+ *
+ * @param filePath Server path of the file to download
+ * @param destinationFile Local file destination
+ * @return true if download succeeded, false otherwise
+ */
 suspend fun downloadFile(filePath: String, destinationFile: File): Boolean {
     val client = HttpClient(CIO)
     try {
