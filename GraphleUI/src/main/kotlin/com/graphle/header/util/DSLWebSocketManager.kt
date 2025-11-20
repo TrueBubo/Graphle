@@ -23,24 +23,39 @@ import kotlinx.serialization.json.Json
 import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * Manages WebSocket connection for DSL autocomplete functionality.
+ */
 object DSLWebSocketManager {
     private val client = HttpClient(CIO) {
         install(WebSockets)
     }
 
     private val _messages = MutableSharedFlow<List<String>>(replay = 0)
+
+    /**
+     * Flow of autocomplete suggestion messages from the server.
+     */
     val messages: SharedFlow<List<String>> = _messages
 
     private val _isConnected = MutableStateFlow(false)
+
+    /**
+     * Flow indicating current connection status.
+     */
     val isConnected: StateFlow<Boolean> = _isConnected
 
-    private val sendQueue = Channel<String>(capacity = Channel.Factory.UNLIMITED)
+    private val sendQueue = Channel<String>(capacity = Channel.UNLIMITED)
 
     private var connectionRetries = 0
     private var maxRetries = 2
     private val retryDelay = { retryIdx: Int -> 1000.milliseconds * 2.0.pow(retryIdx.toDouble()) }
 
     private val _isFailed = MutableStateFlow(false)
+
+    /**
+     * Flow indicating whether connection has permanently failed.
+     */
     val isFailed: StateFlow<Boolean> = _isFailed
 
     private suspend inline fun tryToReconnect(failMessage: String) {
@@ -82,6 +97,9 @@ object DSLWebSocketManager {
 
     }
 
+    /**
+     * Establishes WebSocket connection to the server.
+     */
     fun connect() {
         if (_isConnected.value) return // avoid reconnecting
         CoroutineScope(Dispatchers.IO).launch {
@@ -105,6 +123,11 @@ object DSLWebSocketManager {
         }
     }
 
+    /**
+     * Sends an autocomplete request for the given input.
+     *
+     * @param input Command text to get autocomplete suggestions for
+     */
     suspend fun sendAutocompleteRequest(input: String) {
         sendQueue.send(input)
     }
