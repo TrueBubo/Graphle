@@ -2,6 +2,7 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
+import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.apache.commons.io.FileUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +23,7 @@ class FileIntegrationTest(
     @Autowired private val fileTestUtils: FileTestUtils,
     @Autowired private val neo4JSweeper: Neo4JSweeper
 ) : BaseGraphQlIntegrationTest() {
-    private val randomString = (1..20).map { ('a'..'z').random() }.joinToString("")
+    private val randomString = randomString(20)
 
     @AfterTest
     fun tearDown() {
