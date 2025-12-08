@@ -1,0 +1,17 @@
+@startuml
+start
+:The user opens the file browser;
+if (Does the user want to use GUI) then (Yes)
+:The user searches for a file;
+:The user selects "Add relationship" in the menu;
+:The system displays a menu where the \nuser can enter info about the relationship;
+if (Does user want to proceed) then (Yes)
+:The user enters the information and submits it;
+else (No)
+:The user cancels the operation;
+endif
+else (No)
+:The user issues the DSL command to create a new relationship;
+endif
+stop
+@enduml
