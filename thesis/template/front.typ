@@ -44,10 +44,7 @@
   box(inset: (left: 15mm))[
     #b(26.2mm)[
       #image("./res/logo-en.svg", width: 166mm)
-      
-    // #todo()[
-    //   Hello my friend
-    // ]
+
     ]
   ]
 
