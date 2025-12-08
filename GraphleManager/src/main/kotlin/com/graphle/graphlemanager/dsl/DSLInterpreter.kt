@@ -5,6 +5,7 @@ import com.graphle.graphlemanager.dsl.DSLUtil.splitIntoTokens
 import com.graphle.graphlemanager.file.AbsolutePathString
 import com.graphle.graphlemanager.file.File
 import com.graphle.graphlemanager.file.FileController
+import com.graphle.graphlemanager.file.FileService
 import com.graphle.graphlemanager.tag.TagForFile
 import com.graphle.graphlemanager.tag.TagInput
 import com.graphle.graphlemanager.tag.TagService
@@ -82,7 +83,7 @@ data class TagModificationInput(val location: AbsolutePathString, val tag: TagIn
  * Available DSL commands.
  * @property command The string representation of the command
  */
-enum class Commands(val command: String) {
+enum class Command(val command: String) {
     /** Find files matching criteria */
     FIND("find"),
 
@@ -102,7 +103,16 @@ enum class Commands(val command: String) {
     DETAIL("detail"),
 
     /** Query files by tag */
-    TAG("tag")
+    TAG("tag"),
+
+    /** Add a new file */
+    ADD_FILE("addFile"),
+
+    /** Remove a file */
+    REMOVE_FILE("removeFile"),
+
+    /** Move a file */
+    MOVE_FILE("moveFile"),
 }
 
 /**
@@ -121,7 +131,8 @@ class DSLInterpreter(
     private val commandExecutor: DSLCommandExecutor,
     private val connectionService: ConnectionService,
     private val tagService: TagService,
-    private val fileController: FileController
+    private val fileController: FileController,
+    private val fileService: FileService
 ) {
 
     /**
@@ -135,39 +146,39 @@ class DSLInterpreter(
 
         return try {
             when (tokens.first()) {
-                Commands.FIND.command -> {
+                Command.FIND.command -> {
                     interpretFind(command.drop(tokens.first().length + 1))
                 }
 
-                Commands.ADD_REL.command -> {
+                Command.ADD_REL.command -> {
                     val connectionInput = tokenInterpreter.parseRelationshipTokens(tokens.drop(1))
                         ?: return parseError(command)
                     connectionService.addConnection(connectionInput)
                     DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
-                Commands.REMOVE_REL.command -> {
+                Command.REMOVE_REL.command -> {
                     val connectionInput = tokenInterpreter.parseRelationshipTokens(tokens.drop(1))
                         ?: return parseError(command)
                     connectionService.removeConnection(connectionInput)
                     DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
-                Commands.ADD_TAG.command -> {
+                Command.ADD_TAG.command -> {
                     val tagInput = tokenInterpreter.parseTagModificationTokens(tokens.drop(1))
                         ?: return parseError(command)
                     tagService.addTagToFile(tagInput.location, tagInput.tag)
                     DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
-                Commands.REMOVE_TAG.command -> {
+                Command.REMOVE_TAG.command -> {
                     val tagInput = tokenInterpreter.parseTagModificationTokens(tokens.drop(1))
                         ?: return parseError(command)
                     tagService.removeTag(tagInput.location, tagInput.tag)
                     DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
-                Commands.DETAIL.command -> {
+                Command.DETAIL.command -> {
                     val filename = tokenInterpreter.parseDetailTokens(tokens.drop(1))
                         ?: return parseError(command)
                     val detail: File = fileController.fileByLocation(filename) ?: return DSLResponse(
@@ -177,7 +188,7 @@ class DSLInterpreter(
                     DSLResponse(ResponseType.FILE, listOf(Json.encodeToString(detail)))
                 }
 
-                Commands.TAG.command -> {
+                Command.TAG.command -> {
                     val tag = tokenInterpreter.parseGetTokens(tokens.drop(1))
                         ?: return parseError(command)
                     val tagLocations = tagService.filesByTag(tag)
@@ -185,6 +196,24 @@ class DSLInterpreter(
                         type = ResponseType.TAG,
                         responseObject = tagLocations.map { Json.encodeToString<TagForFile>(it) }
                     )
+                }
+
+                Command.ADD_FILE.command -> {
+                    val (filename) = tokenInterpreter.parseFilenamesTokens(tokens.drop(1)) ?: return parseError(command)
+                    fileService.addFile(filename)
+                    DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Command.REMOVE_FILE.command -> {
+                    val (filename) = tokenInterpreter.parseFilenamesTokens(tokens.drop(1)) ?: return parseError(command)
+                    fileService.removeFile(filename)
+                    DSLResponse(ResponseType.SUCCESS, listOf())
+                }
+
+                Command.MOVE_FILE.command -> {
+                    val (from, to) = tokenInterpreter.parseFilenamesTokens(tokens.drop(1), count = 2) ?: return parseError(command)
+                    fileService.moveFile(from, to)
+                    DSLResponse(ResponseType.SUCCESS, listOf())
                 }
 
                 else -> DSLResponse(ResponseType.ERROR, listOf("Unknown command ${tokens.first()}"))

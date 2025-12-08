@@ -211,9 +211,13 @@ class FilenameCompleter(
             currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
         }
 
-        return filenameDFS(currNode, limit, fileExistsPredicate = fileExistsPredicate).map {
-            val list = it.split(File.separator)
-            if (list.first() == "") list.drop(1) else list
+        return try {
+            filenameDFS(currNode, limit, fileExistsPredicate = fileExistsPredicate).map {
+                val list = it.split(File.separator)
+                if (list.first() == "") list.drop(1) else list
+            }
+        } catch (_: ClassCastException) {
+            emptyList()
         }
     }
 }

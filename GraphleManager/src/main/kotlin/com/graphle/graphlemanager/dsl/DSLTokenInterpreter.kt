@@ -65,4 +65,15 @@ class DSLTokenInterpreter {
         if (tokens.size != 1) return null
         return tokens.first().removeQuotes()
     }
+
+    /**
+     * Parses tokens for command operations returning filenames.
+     * @param tokens The list of tokens to parse
+     * @param count The list of filenames to process
+     * @return The file paths if parsing succeeds, null otherwise
+     */
+    fun parseFilenamesTokens(tokens: List<String>, count: Int = 1): List<AbsolutePathString>? {
+        if (tokens.size != count) return null
+        return tokens.map { it.removeQuotes() }
+    }
 }
