@@ -35,41 +35,60 @@ class DSLAutoCompleter(
         val tokens = splitIntoTokens(commandPrefix)
         if (tokens.isEmpty()) return emptyList()
         return when (tokens.first()) {
-            Commands.FIND.command -> completeFindCommand(
-                commandPrefix = commandPrefix.drop(Commands.FIND.command.length + 1),
+            Command.FIND.command -> completeFindCommand(
+                commandPrefix = commandPrefix.drop(Command.FIND.command.length + 1),
                 limit = limit
             )
 
-            Commands.ADD_REL.command -> completeConnectionCommand(
-                commandType = Commands.ADD_REL.command,
-                commandPrefix = commandPrefix.drop(Commands.ADD_REL.command.length),
+            Command.ADD_REL.command -> completeConnectionCommand(
+                commandType = Command.ADD_REL.command,
+                commandPrefix = commandPrefix.drop(Command.ADD_REL.command.length),
                 limit = limit
             )
 
-            Commands.REMOVE_REL.command -> completeConnectionCommand(
-                commandType = Commands.REMOVE_REL.command,
-                commandPrefix = commandPrefix.drop(Commands.REMOVE_REL.command.length),
+            Command.REMOVE_REL.command -> completeConnectionCommand(
+                commandType = Command.REMOVE_REL.command,
+                commandPrefix = commandPrefix.drop(Command.REMOVE_REL.command.length),
                 limit = limit
             )
 
-            Commands.ADD_TAG.command -> completeTagCommand(
-                commandType = Commands.ADD_TAG.command,
-                commandPrefix = commandPrefix.drop(Commands.ADD_TAG.command.length + 1),
+            Command.ADD_TAG.command -> completeTagCommand(
+                commandType = Command.ADD_TAG.command,
+                commandPrefix = commandPrefix.drop(Command.ADD_TAG.command.length + 1),
                 limit = limit
             )
 
-            Commands.REMOVE_TAG.command -> completeTagCommand(
-                commandType = Commands.REMOVE_TAG.command,
-                commandPrefix = commandPrefix.drop(Commands.REMOVE_TAG.command.length + 1),
+            Command.REMOVE_TAG.command -> completeTagCommand(
+                commandType = Command.REMOVE_TAG.command,
+                commandPrefix = commandPrefix.drop(Command.REMOVE_TAG.command.length + 1),
                 limit = limit
             )
 
-            Commands.DETAIL.command -> completeDetailCommand(
-                commandPrefix.drop(Commands.DETAIL.command.length + 1),
+            Command.DETAIL.command -> completeDetailCommand(
+                commandPrefix.drop(Command.DETAIL.command.length + 1),
                 limit
             )
 
-            Commands.TAG.command -> emptyList()
+            Command.TAG.command -> emptyList()
+
+            Command.ADD_FILE.command -> completeFilenamesCommand(
+                commandPrefix = commandPrefix.drop(Command.ADD_FILE.command.length + 1),
+                command = Command.ADD_FILE,
+                limit = limit
+            )
+
+            Command.REMOVE_FILE.command -> completeFilenamesCommand(
+                commandPrefix = commandPrefix.drop(Command.REMOVE_FILE.command.length + 1),
+                command = Command.REMOVE_FILE,
+                limit = limit
+            )
+
+            Command.MOVE_FILE.command -> completeFilenamesCommand(
+                commandPrefix = commandPrefix.drop(Command.MOVE_FILE.command.length + 1),
+                command = Command.MOVE_FILE,
+                limit = limit,
+                count = 2
+            )
 
             else -> emptyList()
         }
@@ -146,11 +165,11 @@ class DSLAutoCompleter(
         if (commandPrefix[lastOpeningIndex] == '(') {
             val filenames = processFileQuery(tokens, limit)
             if (filenames.isEmpty()) return emptyList()
-            if (tokens.isEmpty()) return filenames.map { "${Commands.FIND.command} $it" }
+            if (tokens.isEmpty()) return filenames.map { "${Command.FIND.command} $it" }
             return filenames
                 .map {
                     addFilenameToCommand(
-                        commandType = Commands.FIND.command,
+                        commandType = Command.FIND.command,
                         filename = it,
                         commandPrefix = commandPrefix,
                         filenamePrefixToken = tokens.last(),
@@ -215,7 +234,28 @@ class DSLAutoCompleter(
         return completeFilenamesForToken(tokens.last(), limit)
             .map {
                 addFilenameToCommand(
-                    commandType = Commands.DETAIL.command,
+                    commandType = Command.DETAIL.command,
+                    filename = it,
+                    commandPrefix = commandPrefix,
+                    filenamePrefixToken = tokens.last(),
+                )
+            }
+    }
+
+    /**
+     * Completes a filenames only expecting command by providing filename suggestions.
+     * @param commandPrefix The command prefix (without the command keyword)
+     * @param count How many
+     * @param limit Maximum number of completions to return
+     * @return List of completion suggestions
+     */
+    private fun completeFilenamesCommand(commandPrefix: String, count: Int = 1, command: Command, limit: Int): List<String> {
+        val tokens = splitIntoTokens(commandPrefix)
+        if (tokens.isEmpty() || tokens.size > count) return emptyList()
+        return completeFilenamesForToken(tokens.last(), limit)
+            .map {
+                addFilenameToCommand(
+                    commandType = command.command,
                     filename = it,
                     commandPrefix = commandPrefix,
                     filenamePrefixToken = tokens.last(),
@@ -261,7 +301,8 @@ class DSLAutoCompleter(
         filenamePrefixToken: String,
         commandPrefix: String
     ): String {
-        val dropLetters = if (filenamePrefixToken.startsWith("\"")) filenamePrefixToken.length - 1 else filenamePrefixToken.length
+        val dropLetters =
+            if (filenamePrefixToken.startsWith("\"")) filenamePrefixToken.length - 1 else filenamePrefixToken.length
         val filenamePrefixUnquoted = filenamePrefixToken.drop(if (dropLetters == filenamePrefixToken.length) 0 else 1)
         return if (filename.startsWith(filenamePrefixUnquoted))
             "$commandType ${commandPrefix}${filename.drop(dropLetters)}"

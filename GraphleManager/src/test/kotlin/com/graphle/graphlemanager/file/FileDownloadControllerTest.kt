@@ -12,6 +12,7 @@ import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import java.nio.file.Files
 import kotlin.test.Test
+import kotlin.test.fail
 
 class FileDownloadControllerTest : BaseRestIntegrationTest() {
     @Autowired
@@ -22,6 +23,7 @@ class FileDownloadControllerTest : BaseRestIntegrationTest() {
         val content = "Hello, World!"
         Files.writeString(file.toPath(), content)
 
+//        fail()
         val result = mockMvc.perform(
             get("/download")
                 .param("path", file.absolutePath)
