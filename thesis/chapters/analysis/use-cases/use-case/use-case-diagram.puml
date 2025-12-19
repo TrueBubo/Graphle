@@ -1,0 +1,23 @@
+@startuml USE CASE DIAGRAM
+Title Use Case Diagram
+
+left to right direction
+
+actor User
+
+usecase UC1 as "Searching for\na file"
+usecase UC2 as "Relationship manipulation"
+usecase UC3 as "Tag manipulation"
+usecase UC4 as "File manipulation"
+
+
+User  --> UC1
+User  --> UC2
+User  --> UC3
+User  --> UC4
+
+UC2 ..> UC1 : <<extend>>
+UC3 ..> UC1 : <<extend>>
+UC4 ..> UC1 : <<extend>>
+
+@enduml
