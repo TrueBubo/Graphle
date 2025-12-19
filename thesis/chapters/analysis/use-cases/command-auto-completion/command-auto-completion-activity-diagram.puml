@@ -1,0 +1,24 @@
+@startuml
+start
+:The user opens the DSL command interface;
+:The user starts typing a command;
+
+repeat
+  :System analyzes the current command prefix;
+  :System queries the auto-completion service;
+  :System generates suggestions;
+  :System displays a list of suggestions to the user;
+
+  if (User action?) then (Selects suggestion)
+    :System completes the command with the selected text;
+  else (Continues typing)
+    :User continues typing;
+  endif
+
+repeat while (Command complete?) is (No)
+->Yes;
+
+:User executes or continues editing the command;
+
+stop
+@enduml

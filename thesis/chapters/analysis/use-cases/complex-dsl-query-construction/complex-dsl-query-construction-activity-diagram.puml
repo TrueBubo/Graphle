@@ -1,0 +1,27 @@
+@startuml
+start
+:The user opens the DSL command interface;
+
+repeat
+  :The user starts constructing a query with filters;
+  note right
+    Details on available filters
+    are covered in the user tutorial
+  end note
+
+  :The user submits the command;
+  :System validates the query syntax;
+
+  if (Query valid?) then (Yes)
+    :System executes DSL query;
+    :System returns the result of the command;
+    stop
+  else (No)
+    :System shows error message;
+  endif
+
+repeat while (Retry?) is (Yes)
+->No;
+stop
+
+@enduml

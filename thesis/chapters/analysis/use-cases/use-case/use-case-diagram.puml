@@ -9,15 +9,20 @@ usecase UC1 as "Searching for\na file"
 usecase UC2 as "Relationship manipulation"
 usecase UC3 as "Tag manipulation"
 usecase UC4 as "File manipulation"
-
+usecase UC5 as "Complex DSL\nquery construction"
+usecase UC6 as "Command\nauto-completion"
 
 User  --> UC1
 User  --> UC2
 User  --> UC3
 User  --> UC4
+User  --> UC5
+User  --> UC6
 
 UC2 ..> UC1 : <<extend>>
 UC3 ..> UC1 : <<extend>>
 UC4 ..> UC1 : <<extend>>
+UC5 ..> UC1 : <<extend>>
+UC6 ..> UC5 : <<extend>>
 
 @enduml
