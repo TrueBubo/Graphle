@@ -1,0 +1,11 @@
+@startuml
+start
+:The user opens the file browser;
+if (Does the user want to use GUI) then (Yes)
+:The user searches for a file;
+:The user selects "Remove relationship" in the menu on the desired relationship;
+else (No)
+:The user issues the DSL command to remove a relationship;
+endif
+stop
+@enduml

@@ -7,15 +7,14 @@
 - c) The user wants to tag a file
 
 * Flow *
-1. The user opens a file browser
-2. The user searches for a file
-3. The user selects the operation "Add tag"
-4. The system displays the menu where the user can enter info about the tag
-5. The user enters the information and submits it
+1. The user searches for a file
+2. The user selects the operation "Add tag"
+3. The system displays the menu where the user can enter info about the tag
+4. The user enters the information and submits it
 
 * Alternative flow *
-
-5a) The user cancels the operation
+- 1a) The user issues a DSL command
+- 4b) The user cancels the operation
 
 * Postconditions *
 - a) The system remembers a new tag
