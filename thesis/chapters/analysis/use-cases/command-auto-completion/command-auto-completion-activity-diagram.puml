@@ -4,7 +4,7 @@ start
 :The user starts typing a command;
 
 repeat
-  :System analyzes the current input prefix;
+  :System analyzes the current command prefix;
   :System queries the auto-completion service;
   :System generates suggestions;
   :System displays a list of suggestions to the user;
