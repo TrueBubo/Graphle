@@ -2,6 +2,13 @@
 
 == Functional and Qualitative Requirements
 
+I defined the requirements based on my personal analysis of existing tools and their limitations.
+I examined existing filesystem tools and productivity applications to identify potential enhancement that can be made to them.
+The existing solutions will be discussed further in the #link(label("landscape"))[Current landscape] section.
+No formal user interviews were conducted. The requirements were instead derived from my own experience with the problem domain.
+The main goal of this project is to extend a standard filesystem to support faster traversal via interpreting the 
+#link(label("voc_relationship"))[relationships] as an #link(label("voc_lpg"))[LPG].
+
 === Functional Requirements
 This list serves as a feature list this application should fulfill in order to be considered complete.
 
@@ -19,15 +26,10 @@ This list serves as a feature list this application should fulfill in order to b
 === Qualitative Requirements
 This list serves as a requirement list for how well they should handle the users' wishes.
 
-- *Q1 Usability*
-    - The application provides the users with the option to choose between interacting via DSL or GUI
-    - Users can set other themes or use a different GUI client altogether
-    - Users can connect remotely
-- *Q2 Performance*
-    - The autocomplete responds with available filenames within 250ms
-    - The GUI should update within 200ms after clicking to see #link(label("voc_neighbor"))[neighbors] for a node
-- *Q3 Reliability*
-  - The application will retry performing failing operations before giving up
-  - The failure of auxiliary components, such as an auto-completer or GUI, does not prevent the core from running
-- *Q4 Extensibility*
-  - The application can be extended to allow new commands
+- *Q1.1 Usability - Interaction modes* - The application provides the users with the option to choose between interacting via DSL or GUI
+- *Q1.2 Usability - Theming* - Users can set other themes or use a different GUI client altogether
+- *Q1.3 Usability - Remote access* - Users can connect remotely
+- *Q2.1 Performance - Autocomplete latency* - The autocomplete responds with available filenames within 250ms, ensured by an in-memory index of recently visited files
+- *Q3.1 Reliability - Operation retries* - The application will retry performing failing operations before giving up
+- *Q3.2 Reliability - Component isolation* - The failure of auxiliary components, such as an auto-completer or GUI, does not prevent the core from running
+- *Q4.1 Extensibility - New commands* - The application can be extended to allow new commands
