@@ -8,3 +8,5 @@
 #label("voc_tag") *Tag* - Category of an entity
 
 #label("voc_dsl") *DSL* - Domain specific language
+
+#label("voc_lpg") *LPG* - Labeled property graph
