@@ -10,18 +10,20 @@ fun FileBody(
     displayedSettings: DisplayedSettings,
     setDisplayedSettings: (DisplayedSettings) -> Unit,
 ) {
-    val location = displayedSettings.data?.location ?: return
-    TagsView(
-        location = location,
-        displayedSettings = displayedSettings,
-        setDisplayedSettings = setDisplayedSettings,
-        onRefresh = {
-            FileFetcher.fetch(
-                location = location,
-                onResult = setDisplayedSettings
-            )
-        }
-    )
+    val location = displayedSettings.data?.location
+    if (location != null) {
+        TagsView(
+            location = location,
+            displayedSettings = displayedSettings,
+            setDisplayedSettings = setDisplayedSettings,
+            onRefresh = {
+                FileFetcher.fetch(
+                    location = location,
+                    onResult = setDisplayedSettings
+                )
+            }
+        )
+    }
 
     FilesView(
         displayedSettings = displayedSettings,
