@@ -148,7 +148,7 @@ class CypherQueryBuilder(
 
                 TokenType.VALUE -> {
                     tokenType = tokenType.next()
-                    return@map token
+                    return@map token.ensureQuoted()
                 }
 
                 TokenType.CONJUNCTION -> {
