@@ -8,3 +8,7 @@
 #label("voc_tag") *Tag* - Category of an entity
 
 #label("voc_dsl") *DSL* - Domain specific language
+
+#label("voc_graphql") *GraphQL* - A query language for APIs that allows clients to request exactly the data they need
+
+#label("voc_lpg") *LPG (Labeled Property Graph)* - A graph data model in which nodes and edges carry both labels and arbitrary key-value properties
