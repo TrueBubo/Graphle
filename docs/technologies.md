@@ -60,5 +60,5 @@ After the licence change fiasco, many companies such as
 [Oracle, AWS, and Google](https://www.thestack.technology/redis-fork-valkey-linux-foundation/) embraced it. The corporate
 backing gives it higher credibility as they now need to rely on it as well.
 
-To save space and support infix completion, a modified suffix tree is used. The suffix tree saves only bottom-level names without parents
+To save space and support infix completion, a modified trie is used. The trie saves only bottom-level names without parents
 to utilize efficient prefix search. Parents are saved as a link to word-ending nodes.
