@@ -6,7 +6,7 @@ to utilize, and does not need to adjust to a more powerful way of traversing fil
 
 === Regular User
 
-A regular user is anyone who wants to organize their files beyond a plain folder hierarchy.
+A regular user is anyone who wants to organise their files beyond a plain folder hierarchy.
 They interact with the application through the GUI, browsing the filesystem, assigning #link(label("voc_tag"))[tags] to files, 
 and navigating #link(label("voc_relationship"))[relationships] between them.
 No special technical knowledge is required beyond basic computer literacy.
