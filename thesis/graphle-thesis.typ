@@ -47,9 +47,9 @@
 
 #include "chapters/introduction.typ"
 
-#include "chapters/landscape.typ"
-
 #include "chapters/analysis/analysis.typ"
+
+#include "chapters/landscape.typ"
 
 #include "chapters/design/design.typ"
 
