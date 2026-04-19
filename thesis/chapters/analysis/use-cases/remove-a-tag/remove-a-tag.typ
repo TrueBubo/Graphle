@@ -15,7 +15,7 @@
 - 4b) The user cancels the operation
 
 * Postconditions *
-- a) The system removes the relationship between two entities
+- a) The system removes the tag
 #figure(
   placement: none,
   image("remove-a-tag-activity-diagram.svg", width: use-case-figure-scale),
