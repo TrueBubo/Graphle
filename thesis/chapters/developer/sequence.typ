@@ -7,13 +7,13 @@
 == Sequence Diagrams
 
 This section walks through four representative end-to-end flows.
-The first two are the most common write and read paths a user issues from the GUI and the DSL client; the third describes how the autocomplete loop meets the 250 ms latency budget (Q2.1); the fourth shows the background work that keeps the database consistent with the filesystem (F9).
-In every diagram, solid arrows represent synchronous calls and dashed arrows represent returned values; the `↺` glyph marks work performed on the actor's own lifeline (an asynchronous task, a disk write, or an internal computation).
+The first two are the most common write and read paths a user issues from the GUI and the DSL client. The third describes how the autocomplete loop meets the 250 ms latency budget (Q2.1). The fourth shows the background work that keeps the database consistent with the filesystem (F9).
+In every diagram, solid arrows represent synchronous calls and dashed arrows represent returned values. The `↺` glyph marks work performed on the actor's own lifeline (an asynchronous task, a disk write, or an internal computation).
 
 === Adding a File with a Tag
 
-The user triggers the "add file" dialog in the GUI and then attaches a tag to the newly created file.
-The first round trip creates the file on disk and the `File` node in Neo4j, and — as a side effect — asks the autocomplete service to index the new path.
+The "add file" dialog is triggered from the GUI and a #link(label("voc_tag"))[tag] is attached to the newly created file.
+The first round trip creates the file on disk and the `File` node in Neo4j, and, as a side effect, asks the autocomplete service to index the new path.
 The second round trip merges the tag node and the `HasTag` edge.
 After both complete, the GUI re-fetches the file detail to display the updated tag set.
 
@@ -22,7 +22,7 @@ After both complete, the GUI re-fetches the file detail to display the updated t
 === DSL `find` Query
 
 The DSL client posts a command string to `/dsl`.
-`DSLInterpreter` selects the `find` branch, and the query is split into file- and relationship-level scopes by `DSLScopeParser`, compiled into Cypher by `CypherQueryBuilder`, and executed by `DSLCommandExecutor` against Neo4j.
+`DSLInterpreter` selects the `find` branch, and the query is split into file- and relationship-level scopes by `DSLScopeParser`, compiled into #link(label("voc_cypher"))[Cypher] by `CypherQueryBuilder`, and executed by `DSLCommandExecutor` against Neo4j.
 The response type (`FILENAMES` vs `CONNECTIONS`) is derived from the last scope of the query so that the client can choose a matching `DisplayMode` without a second round trip.
 
 #dsl-query-diagram()
@@ -31,7 +31,7 @@ The response type (`FILENAMES` vs `CONNECTIONS`) is derived from the last scope 
 
 Every keystroke in the DSL command line sends the current prefix over a persistent WebSocket.
 `DSLAutoCompleter` first classifies the command kind from the opening token, then asks `FilenameCompleter` for up to five completions.
-The filename completer reads its trie primarily from an in-process `ConcurrentCache` and falls back to Valkey only on a miss; every Valkey access also refreshes the key's TTL so hot entries stay warm for `cache.ttl`.
+The filename completer reads its trie primarily from an in-process `ConcurrentCache` and falls back to Valkey only on a miss. Every Valkey access also refreshes the key's TTL so hot entries stay warm for `cache.ttl`.
 
 #autocomplete-keystroke-diagram()
 
