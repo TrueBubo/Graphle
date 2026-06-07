@@ -1,0 +1,93 @@
+digraph GraphleContainers {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.25,
+    nodesep=0.8,
+    ranksep=1.05,
+    splines=polyline,
+    compound=true,
+    outputorder=edgesfirst
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=12,
+    color="#455a64",
+    penwidth=1.3,
+    fillcolor="#f7f9fb",
+    margin="0.14,0.10"
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=10,
+    color="#546e7a",
+    arrowsize=0.75,
+    penwidth=1.2
+  ];
+
+  user [
+    label="User\n[Person]\nUses graphical browsing and\nDSL-based commands.",
+    fillcolor="#fff7dd",
+    color="#8a6d3b"
+  ];
+
+  dsl_client [
+    label="External DSL client\n[Optional REST client]\nScript or command-line tool\nposting DSL commands.",
+    fillcolor="#fff7dd",
+    color="#8a6d3b"
+  ];
+
+  subgraph cluster_graphle {
+    label="Graphle";
+    fontname="Arial";
+    fontsize=13;
+    color="#90a4ae";
+    penwidth=1.0;
+    style="rounded,dashed";
+    margin=18;
+
+    graphle_ui [
+      label="GraphleUI\n[Container: Kotlin, Compose Multiplatform]\nDesktop GUI, command line input,\ndialogs, and local display state.",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    graphle_manager [
+      label="GraphleManager\n[Container: Kotlin, Spring Boot]\nBackend API, DSL interpreter,\nfilesystem coordination, and data access.",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+  }
+
+  filesystem [
+    label="Operating filesystem\n[Existing system]\nFile contents and hierarchy.",
+    fillcolor="#eeeeee",
+    color="#737373"
+  ];
+
+  neo4j [
+    label="Neo4j\n[Database]\nGraph metadata store.",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  valkey [
+    label="Valkey\n[Database]\nAutocomplete trie store.",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  user -> graphle_ui [label="browses and edits files"];
+  user -> dsl_client [label="automates commands"];
+  graphle_ui -> graphle_manager [label="/graphql GraphQL\n/dsl and /download REST\n/ws WebSocket"];
+  dsl_client -> graphle_manager [label="POST /dsl"];
+  graphle_manager -> filesystem [label="java.nio.file\nread/write/move/delete"];
+  graphle_manager -> neo4j [label="Bolt via Spring Data Neo4j"];
+  graphle_manager -> valkey [label="Valkey client\ntrie reads/writes"];
+}

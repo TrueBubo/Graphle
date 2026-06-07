@@ -2,8 +2,8 @@
 == Use Cases
 
 This section outlines the use cases describing how the user interacts with the application. Use cases range from
-a variety of functionalities, including creating and deleting semantic information, browsing through the filesystem,
-and using the DSL.
+a variety of functionalities, including creating and deleting semantic information, browsing through the #link(label("voc_filesystem"))[filesystem],
+and using the #link(label("voc_dsl"))[DSL].
 
 #figure(
   placement: none,
@@ -26,4 +26,3 @@ The @use-case-diagram shows the overall picture of use cases and how they relate
 #include "use-cases/complex-dsl-query-construction/complex-dsl-query-construction.typ"
 
 #include "use-cases/command-auto-completion/command-auto-completion.typ"
-

@@ -3,9 +3,9 @@
 == Testing
 
 The backend favours integration tests over isolated unit tests.
-GraphQL resolvers and REST endpoints are exercised through Spring's `MockMvc` against a real Spring context wired up to live Neo4j and Valkey instances, so behaviour observed in tests is the same behaviour the production process will produce.
-Pure logic such as DSL token handling, the autocomplete trie, and the concurrent cache are is still covered by focused unit tests, but anything that touches persistence is verified end-to-end.
-Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide the boilerplate of issuing GraphQL operations and HTTP requests, and randomised identifiers keep parallel runs from colliding on shared graph state.
+#link(label("voc_graphql"))[GraphQL] resolvers and #link(label("voc_rest"))[REST] endpoints are exercised through Spring's `MockMvc` against a real Spring context wired up to live Neo4j and Valkey instances, so behaviour observed in tests is the same behaviour the production process will produce.
+Pure logic such as #link(label("voc_dsl"))[DSL] token handling, the autocomplete #link(label("voc_trie"))[trie], and the concurrent #link(label("voc_cache"))[cache] is still covered by focused unit tests, but anything that touches persistence is verified end-to-end.
+Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide the boilerplate of issuing #link(label("voc_graphql"))[GraphQL] operations and #link(label("voc_http"))[HTTP] requests, and randomised identifiers keep parallel runs from colliding on shared graph state.
 
 === Continuous Integration
 

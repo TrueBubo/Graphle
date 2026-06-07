@@ -1,0 +1,68 @@
+digraph GraphleContext {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.25,
+    nodesep=0.9,
+    ranksep=1.15,
+    splines=polyline,
+    outputorder=edgesfirst
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=12,
+    color="#455a64",
+    penwidth=1.3,
+    fillcolor="#f7f9fb",
+    margin="0.14,0.10"
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=10,
+    color="#546e7a",
+    arrowsize=0.75,
+    penwidth=1.2
+  ];
+
+  user [
+    label="User\n[Person]\nBrowses files, creates tags and relationships,\nand writes DSL commands.",
+    fillcolor="#fff7dd",
+    color="#8a6d3b"
+  ];
+
+  graphle [
+    label="Graphle\n[Software system]\nGraph-oriented file management system\nfor existing local or remote filesystems.",
+    fillcolor="#e3f2fd",
+    color="#1e5f8f",
+    penwidth=1.7
+  ];
+
+  filesystem [
+    label="Operating filesystem\n[Existing system]\nSource of file contents, file existence,\nand directory hierarchy.",
+    fillcolor="#eeeeee",
+    color="#737373"
+  ];
+
+  neo4j [
+    label="Neo4j\n[External datastore]\nStores file nodes, tags,\nand semantic relationships.",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  valkey [
+    label="Valkey\n[External datastore]\nStores the filename autocomplete\ntrie index.",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  user -> graphle [label="uses GUI and DSL"];
+  graphle -> filesystem [label="reads hierarchy\ncreates, moves, deletes files"];
+  graphle -> neo4j [label="persists graph metadata"];
+  graphle -> valkey [label="updates and queries\nautocomplete index"];
+}
