@@ -2,8 +2,8 @@
 == Use Cases
 
 This section outlines the use cases describing how the user interacts with the application. Use cases range from
-a variety of functionalities, including creating and deleting semantic information, browsing through the #link(label("voc_filesystem"))[filesystem],
-and using the #link(label("voc_dsl"))[DSL].
+a variety of functionalities, including creating and deleting semantic information, browsing through the #voc("filesystem"),
+and using the #voc("dsl").
 
 #figure(
   placement: none,

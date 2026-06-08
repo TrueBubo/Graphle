@@ -4,7 +4,7 @@
 
 The application works with a graph-oriented extension of the user's existing filesystem.
 The filesystem itself remains outside the application data model: it stores file contents, permissions, timestamps, and the directory hierarchy.
-Graphle stores only the #link(label("voc_metadata"))[metadata] needed for graph navigation and derives the rest from the live filesystem when a query is executed.
+Graphle stores only the #voc("metadata") needed for graph navigation and derives the rest from the live filesystem when a query is executed.
 
 #figure(
   placement: none,
@@ -14,9 +14,9 @@ Graphle stores only the #link(label("voc_metadata"))[metadata] needed for graph 
 
 The @graphle-data-model contains two node types and two edge types.
 `File` is the central node type.
-Its `location` attribute is the absolute path on the machine where `GraphleManager` runs and acts as the logical identifier used by the API, DSL, and UI.
+Its `location` attribute is the absolute path on the machine where `GraphleManager` runs and acts as the logical identifier used by the #voc("api"), DSL, and UI.
 The database does not duplicate the file's binary content or operating-system metadata.
-This keeps the model compatible with existing filesystem tools and supports #link(label("voc_lazy_loading"))[lazy loading] (F1, F9).
+This keeps the model compatible with existing filesystem tools and supports #voc("lazy_loading") (F1, F9).
 
 `Tag` represents a reusable categorization label.
 It has a required `name` and an optional `value`.
@@ -24,7 +24,7 @@ The value allows both simple tags, such as `project`, and key-value tags, such a
 A file is connected to a tag by a `HasTag` edge.
 Tags that are no longer connected to any file can be removed without changing the filesystem.
 
-`Relationship` represents a semantic #link(label("voc_relationship"))[relationship] between two files or folders.
+`Relationship` represents a semantic #voc("relationship") between two files or folders.
 It is stored as a directed edge from one `File` node to another and contains a required `name` and an optional `value`.
 The direction is part of the model, so a relationship from `A` to `B` does not imply the reverse relationship.
 When a user requests a bidirectional relationship, the application represents it as two directed `Relationship` edges with the same attributes.

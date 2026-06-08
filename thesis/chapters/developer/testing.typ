@@ -3,14 +3,14 @@
 == Testing
 
 The backend favors integration tests over isolated unit tests.
-#link(label("voc_graphql"))[GraphQL] resolvers and #link(label("voc_rest"))[REST] endpoints are exercised through Spring's `MockMvc` against a real Spring context wired up to live Neo4j and Valkey instances, so behavior observed in tests is the same behavior the production process will produce.
-Pure logic such as #link(label("voc_dsl"))[DSL] token handling, the autocomplete #link(label("voc_trie"))[trie], and the concurrent #link(label("voc_cache"))[cache] is still covered by focused unit tests, but anything that touches persistence is verified end-to-end.
-Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide the boilerplate of issuing #link(label("voc_graphql"))[GraphQL] operations and #link(label("voc_http"))[HTTP] requests, and randomized identifiers keep parallel runs from colliding on shared graph state.
+#voc("graphql") resolvers and #voc("rest") endpoints are exercised through Spring's `MockMvc` against a real Spring context wired up to live Neo4j and Valkey instances, so behavior observed in tests is the same behavior the production process will produce.
+Pure logic such as #voc("dsl") token handling, the autocomplete #voc("trie"), and the concurrent #voc("cache") is still covered by focused unit tests, but anything that touches persistence is verified end-to-end.
+Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide the boilerplate of issuing #voc("graphql") operations and #voc("http") requests, and randomized identifiers keep parallel runs from colliding on shared graph state.
 
 === Autocomplete latency measurement
 
-Autocomplete latency was measured manually from the GUI because the perceived responsiveness of the #link(label("voc_dsl"))[DSL] command line depends on the full #link(label("voc_websocket"))[WebSocket] round trip, not only on the pure trie lookup.
-The client timed each autocomplete request from prefix frame send to matching response frame on an already established `/ws` connection.
+Autocomplete latency was measured manually from the GUI because the perceived responsiveness of the #voc("dsl") command line depends on the full round trip over #voc("websocket"), not only on the pure trie lookup.
+The client timed each autocomplete request from prefix frame send to matching response frame receipt on an already established `/ws` connection.
 The samples therefore exclude connection setup and focus on request handling. This includes Valkey lookup, path reconstruction, filesystem checks, response transfer, and client-side parsing.
 Test inputs were randomly chosen path prefixes.
 
@@ -23,7 +23,7 @@ Test inputs were randomly chosen path prefixes.
 )
 
 Latency mainly increased with the number of valid paths returned.
-Prefixes with no result completed almost immediately, while the default five suggestions per call were slower
+Prefixes with no result completed almost immediately, while the default five-result case was slower
 because it had to collect, reconstruct, validate, and encode more candidates.
 Even the slowest measured group stayed well below the 250 ms limit defined by #link(label("qualitative_requirements"))[qualitative requirement Q2.1].
 
