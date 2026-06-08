@@ -10,10 +10,9 @@ Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide th
 === Autocomplete latency measurement
 
 Autocomplete latency was measured manually from the GUI because the perceived responsiveness of the #link(label("voc_dsl"))[DSL] command line depends on the full #link(label("voc_websocket"))[WebSocket] round trip, not only on the pure trie lookup.
-The client recorded a timestamp immediately before sending an autocomplete prefix frame and printed the elapsed time when the corresponding response frame arrived.
-The measurement was taken on an already established `/ws` connection, so the numbers exclude TCP and WebSocket handshake cost and focus on request handling, Valkey lookup, path reconstruction, filesystem existence checks, response encoding, transfer, and client-side parsing.
-
-The test input was produced by typing randomly chosen path prefixes.
+The client timed each autocomplete request from prefix frame send to matching response frame on an already established `/ws` connection.
+The samples therefore exclude connection setup and focus on request handling. This includes Valkey lookup, path reconstruction, filesystem checks, response transfer, and client-side parsing.
+Test inputs were randomly chosen path prefixes.
 
 #table(
   columns: (auto, auto, auto, auto, auto, auto, auto),
@@ -23,14 +22,10 @@ The test input was produced by typing randomly chosen path prefixes.
   [5], [40], [33.7 ms], [47.9 ms], [46.6 ms], [64.1 ms], [66.1 ms],
 )
 
-The results show that autocomplete latency is primarily correlated with how many valid paths the backend has to return.
-Prefixes with no matching file path returned almost immediately, because lookup can stop without reconstructing and validating candidates.
-Prefixes with a single result were slower, but still below 30 ms in the measured sample.
-The default five-result case dominated the slower group. It required collecting multiple candidates, reconstructing full paths, checking that the files still existed, and serializing a larger response.
-This explains why otherwise similar prefixes can differ substantially in latency depending on whether they return zero, one, or five suggestions.
-
+Latency mainly increased with the number of valid paths returned.
+Prefixes with no result completed almost immediately, while the default five suggestions per call were slower
+because it had to collect, reconstruct, validate, and encode more candidates.
 Even the slowest measured group stayed well below the 250 ms limit defined by #link(label("qualitative_requirements"))[qualitative requirement Q2.1].
-The measured latency therefore leaves room for a larger indexed search space or slower hardware while still satisfying the required autocomplete responsiveness.
 
 === Continuous Integration
 

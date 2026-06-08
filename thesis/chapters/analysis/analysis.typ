@@ -15,10 +15,6 @@ the #link(label("voc_dsl"))[DSL].
 
 #include "requirements.typ"
 
-#include "data-model.typ"
-
-#include "architecture.typ"
-
 #include "user-roles.typ"
 
 #include "security.typ"

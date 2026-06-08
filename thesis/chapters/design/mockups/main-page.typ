@@ -20,7 +20,7 @@
 
 #let main-page-mockup() = figure(
   placement: none,
-  caption: [Main page — file detail view],
+  caption: [Main page - file detail view],
   box(
     width: 88%,
     stroke: 0.5pt + luma(200),

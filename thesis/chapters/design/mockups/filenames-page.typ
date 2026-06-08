@@ -15,7 +15,7 @@
 
 #let find-relationships-page-mockup() = figure(
   placement: none,
-  caption: [Main page — find results with relationship filter view],
+  caption: [Main page - find results with relationship filter view],
   box(
     width: 88%,
     stroke: 0.5pt + luma(200),
@@ -37,7 +37,7 @@
 
 #let filenames-page-mockup() = figure(
   placement: none,
-  caption: [Main page — filenames view],
+  caption: [Main page - filenames view],
   box(
     width: 88%,
     stroke: 0.5pt + luma(200),

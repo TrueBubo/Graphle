@@ -1,9 +1,9 @@
 #import "../../template/shared.typ": *
 
-== Architecture and Module Decomposition
+== Module Decomposition
 
-This section adds an analytical C4 view of the system.
-The diagrams define the architectural boundaries that follow from the requirements before the detailed design is discussed.
+This section adds a C4 view of the system.
+The diagrams define the architectural boundaries that follow from the requirements and complement the component-level design.
 The module names follow the current package structure of `GraphleManager` and `GraphleUI`, so the diagrams can be traced back to the implementation.
 
 === System Context
@@ -35,8 +35,9 @@ It communicates with `GraphleManager` through public network interfaces only: #l
   caption: [C4 container diagram]
 ) <graphle-containers-c4>
 
-The @graphle-containers-c4 shows that the GUI is not coupled to the database schema directly.
-This supports remote access (Q1.3) and extensibility (Q4.1), since another client can reuse the same public #link(label("voc_api"))[API] instead of linking to the backend internals.
+The @graphle-containers-c4 shows that the GUI is not coupled to the database and filesystem directly.
+This supports remote access (Q1.3) and extensibility (Q4.1), as another client can reuse the same public #link(label("voc_api"))[API]
+instead of having to rely on the current state of backend internals.
 
 === GraphleManager Modules
 

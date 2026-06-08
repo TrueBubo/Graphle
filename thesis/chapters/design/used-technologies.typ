@@ -2,9 +2,9 @@
 
 == Used Technologies
 
-The selection of technologies was guided by three overarching criteria applied consistently across all components:
-cross-platform compatibility to ensure the application runs on macOS and Linux without platform-specific defects (requirement F10);
-ecosystem maturity and community size to lower the barrier for future contributors and reduce the risk of relying on abandoned dependencies;
+The selection of technologies was guided by three criteria which apply to all components:
+cross-platform compatibility to ensure the application runs on macOS and Linux without platform-specific defects (requirement F10),
+ecosystem maturity and community size to lower the barrier for future contributors and reduce the risk of relying on abandoned dependencies,
 and fit for the specific technical constraints of each component, such as latency requirements or data-model alignment.
 Where multiple candidates satisfied the first two criteria, the decision was made on technical fit.
 

@@ -35,5 +35,5 @@ This means that moving or deleting a file outside Graphle does not immediately c
 The next query or background sweep can reconcile the graph with the actual filesystem.
 
 The public API exposes `File` as an aggregate view containing its `location`, `tags`, and visible `connections`.
-Additional response types, such as `FilesByTagResponse`, `MoveFileResponse`, and DSL responses, are transport shapes rather than independent domain entities.
+Additional response types, such as `FilesByTagResponse` and DSL responses, are transport shapes rather than independent domain entities.
 They exist so clients can display query results and mutation outcomes without introducing new persisted concepts into the data model.

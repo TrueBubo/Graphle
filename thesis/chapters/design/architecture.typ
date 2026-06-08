@@ -3,7 +3,7 @@
 
 The system is composed of five components: GraphleManager, GraphleUI, the #link(label("voc_dsl"))[DSL] client, Neo4j, and Valkey.
 The application is not purely RESTful.
-GraphleManager exposes three distinct communication interfaces — #link(label("voc_graphql"))[GraphQL], #link(label("voc_rest"))[REST], and #link(label("voc_websocket"))[WebSocket] — each chosen for the specific needs of the client that uses it.
+GraphleManager exposes three distinct communication interfaces - #link(label("voc_graphql"))[GraphQL], #link(label("voc_rest"))[REST], and #link(label("voc_websocket"))[WebSocket] - each chosen for the specific needs of the client that uses it.
 The following sections describe how each component and interface addresses the #link(label("functional_requirements"))[functional] and #link(label("qualitative_requirements"))[qualitative] requirements defined in the analysis.
 
 === Components
