@@ -10,7 +10,7 @@
 * Flow *
 1. The user opens the file browser
 2. The file browser opens the user-defined home location
-3. Application shows the graph of possible #link(label("voc_neighbor"))[neighbors] from the current location
+3. Application shows possible #voc("neighbor") entities from the current location
 4. The user clicks on the neighbor they want to visit
 5. If the file was not located then go back to step 3
 6. The user clicks on the file

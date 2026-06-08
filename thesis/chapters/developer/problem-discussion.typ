@@ -4,17 +4,17 @@
 === Real-time autocomplete
 
 Requirement Q2.1 caps an autocomplete response at 250 ms, which rules out doing per-keystroke network work that scales with the input.
-A fresh TCP handshake on every keystroke is avoided by keeping a single #link(label("voc_websocket"))[WebSocket] open on `/ws`. The client transparently reconnects with exponential back-off when the link drops, so an established #link(label("voc_connection"))[connection] is already in place whenever typing occurs.
-A Valkey round trip per #link(label("voc_trie"))[trie] node traversed would in turn make lookup cost linear in the prefix length, which is avoided by fronting each access pattern with an in-process #link(label("voc_cache"))[cache] and by the modified #link(label("voc_trie"))[trie] encoding described in the Algorithms section.
+A fresh TCP handshake on every keystroke is avoided by keeping a single #voc("websocket") open on `/ws`. The client transparently reconnects with exponential back-off when the link drops, so an established #voc("connection") is already in place whenever typing occurs.
+A Valkey round trip per #voc("trie") node traversed would in turn make lookup cost linear in the prefix length, which is avoided by fronting each access pattern with an in-process #voc("cache") and by the modified #voc("trie") encoding described in the Algorithms section.
 
-The 250 ms target is therefore a guarantee that holds once the #link(label("voc_cache"))[caches] are hot. Under normal interactive use the relevant #link(label("voc_trie"))[trie] nodes already sit in #link(label("voc_cache"))[cache], so a lookup is bounded by local work plus a single network round trip.
+The 250 ms target is therefore a guarantee that holds once the #voc("cache", text: "caches") are hot. Under normal interactive use the relevant #voc("trie") nodes already sit in #voc("cache"), so a lookup is bounded by local work plus a single network round trip.
 It is explicitly *not* a worst-case guarantee for a freshly started session.
 The first few keystrokes after a cold start may exceed the budget while the in-process layer is repopulated from Valkey.
 
 === Transparent computing
 
-Transparent computing in Graphle means a GUI on one machine can drive a #link(label("voc_filesystem"))[filesystem] that lives on another (Q1.3).
-The invariant that holds this together is that all #link(label("voc_filesystem"))[filesystem] I/O is performed on the server.
+Transparent computing in Graphle means a GUI on one machine can drive a #voc("filesystem") that lives on another (Q1.3).
+The invariant that holds this together is that all #voc("filesystem") I/O is performed on the server.
 The GUI never assumes a path received from the backend is a local path.
 Paths are meaningful only on the host where `GraphleManager` runs.
 
@@ -31,7 +31,7 @@ Everything else (file existence, directory enumeration, path normalization) dele
 === User navigation
 
 The file-detail view is intentionally the central point of the GUI.
-`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #link(label("voc_neighbor"))[neighbors] (`descendantsOfFile`, `parentOfFile`) come from the live #link(label("voc_filesystem"))[filesystem] via `FileService`, persisted graph #link(label("voc_relationship"))[relationships] come from `ConnectionController.neighborsByFileLocation`, and #link(label("voc_tag"))[tags] come from `TagController.tagsByFileLocation`.
+`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #voc("neighbor", text: "neighbors") (`descendantsOfFile`, `parentOfFile`) come from the live #voc("filesystem") via `FileService`, persisted graph #voc("relationship", text: "relationships") come from `ConnectionController.neighborsByFileLocation`, and #voc("tag", text: "tags") come from `TagController.tagsByFileLocation`.
 Before the merged result is returned, every entry is checked with `Files.exists` (and optionally `Files.isHidden`), so a file deleted between the last sweeper run and the current request is silently dropped rather than surfaced to the user.
 
 A subtle consequence is that files which exist on disk but were never explicitly registered with Graphle are still reachable: navigating into a directory shows them under the hierarchical descendants even though they have no `File` node yet (F1).

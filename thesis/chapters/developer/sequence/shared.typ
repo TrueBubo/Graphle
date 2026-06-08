@@ -60,12 +60,12 @@
 ))
 
 // Draws the body of a single step.
-//   from, to  — 0-based column indices of the actors involved
-//   label     — message text shown above the arrow
-//   kind      — "call"   (solid arrow, default),
+//   from, to  - 0-based column indices of the actors involved
+//   label     - message text shown above the arrow
+//   kind      - "call"   (solid arrow, default),
 //               "return" (dashed arrow),
 //               "self"   (self-message on a single actor)
-//   total     — total number of actors in the diagram
+//   total     - total number of actors in the diagram
 #let step(from: 0, to: 0, label: "", kind: "call", total: 2) = {
   let lo = calc.min(from, to)
   let hi = calc.max(from, to)
@@ -111,10 +111,10 @@
 }
 
 // Renders a full sequence diagram.
-//   actors — list of actor names, left to right
-//   steps  — list of step entries. Each entry is a dictionary with keys:
+//   actors - list of actor names, left to right
+//   steps  - list of step entries. Each entry is a dictionary with keys:
 //            from, to, label, and optional kind.
-//   caption — figure caption
+//   caption - figure caption
 #let seq-diagram(actors: (), steps: (), caption: "") = figure(
   placement: none,
   caption: caption,

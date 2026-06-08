@@ -1,10 +1,10 @@
 #import "../../template/shared.typ": *
-== #link(label("voc_api"))[API] Documentation
+== #voc("api") Documentation
 
-`GraphleManager` exposes three interfaces on the same #link(label("voc_http"))[HTTP] port:
-#link(label("voc_graphql"))[GraphQL] at `/graphql` for structured CRUD operations,
-#link(label("voc_rest"))[REST] under `/dsl` and `/download` for the command-line DSL client and for file transfers,
-and a #link(label("voc_websocket"))[WebSocket] at `/ws` for real-time autocomplete.
+`GraphleManager` exposes three interfaces on the same #voc("http") port:
+#voc("graphql") at `/graphql` for structured CRUD operations,
+#voc("rest") under `/dsl` and `/download` for the command-line DSL client and for file transfers,
+and a #voc("websocket") at `/ws` for real-time autocomplete.
 All three share the same Spring process and the same security model.
 
 === GraphQL
@@ -17,13 +17,13 @@ GraphiQL is enabled in `application.properties`, so the schema can be explored i
   align: (left, left),
   stroke: 0.4pt + luma(160),
   table.header([*Query*], [*Purpose*]),
-  [`fileByLocation(location, showHiddenFiles)`], [File detail with #link(label("voc_tag"))[tags] and all live #link(label("voc_neighbor"))[neighbors] (parent, descendants, custom #link(label("voc_connection"))[connections]).],
+  [`fileByLocation(location, showHiddenFiles)`], [File detail with #voc("tag", text: "tags") and all live #voc("neighbor", text: "neighbors") (parent, descendants, custom #voc("connection", text: "connections")).],
   [`fileType(location)`], [Returns `File` or `Directory`, or `null` if the path is not present.],
-  [`tagsByFileLocation(location)`], [Lists every #link(label("voc_tag"))[tag] attached to the given file.],
-  [`filesByTag(tagName)`], [Reverse lookup from #link(label("voc_tag"))[tag] to the files that carry it.],
-  [`filesFromFileByRelationship(fromLocation, relationshipName)`], [Files reachable from `fromLocation` via a named #link(label("voc_relationship"))[relationship] (custom or hierarchical).],
-  [`optionsByDslPrefix(dslPrefix, limit)`], [Autocomplete suggestions for a #link(label("voc_dsl"))[DSL] prefix, offered over #link(label("voc_graphql"))[GraphQL] as an alternative to the #link(label("voc_websocket"))[WebSocket].],
-  [`entriesFromDSL(dslCommand, limit)`], [Executes a #link(label("voc_dsl"))[DSL] command from #link(label("voc_graphql"))[GraphQL] and returns an `Entries { entryTypeName, identifiers[] }` tuple.],
+  [`tagsByFileLocation(location)`], [Lists every #voc("tag") attached to the given file.],
+  [`filesByTag(tagName)`], [Reverse lookup from #voc("tag") to the files that carry it.],
+  [`filesFromFileByRelationship(fromLocation, relationshipName)`], [Files reachable from `fromLocation` via a named #voc("relationship") (custom or hierarchical).],
+  [`optionsByDslPrefix(dslPrefix, limit)`], [Autocomplete suggestions for a #voc("dsl") prefix, offered over #voc("graphql") as an alternative to the #voc("websocket").],
+  [`entriesFromDSL(dslCommand, limit)`], [Executes a #voc("dsl") command from #voc("graphql") and returns an `Entries { entryTypeName, identifiers[] }` tuple.],
 )
 
 #table(
@@ -31,11 +31,11 @@ GraphiQL is enabled in `application.properties`, so the schema can be explored i
   align: (left, left),
   stroke: 0.4pt + luma(160),
   table.header([*Mutation*], [*Purpose*]),
-  [`addFile(location)`], [Creates the file on disk, adds the `File` node, schedules an insert into the autocomplete #link(label("voc_trie"))[trie].],
+  [`addFile(location)`], [Creates the file on disk, adds the `File` node, schedules an insert into the autocomplete #voc("trie").],
   [`removeFile(location)`], [Removes the file from disk and deletes its node along with all its edges from the graph.],
   [`moveFile(locationFrom, locationTo)`], [Moves the file on disk and updates the stored path.],
-  [`addTagToFile(location, tag)`], [Creates or updates the #link(label("voc_tag"))[tag] node and its link to the file.],
-  [`removeTag(location, tag)`], [Removes the #link(label("voc_tag"))[tag] link and garbage-collects the #link(label("voc_tag"))[tag] node if it becomes orphaned.],
+  [`addTagToFile(location, tag)`], [Creates or updates the #voc("tag") node and its link to the file.],
+  [`removeTag(location, tag)`], [Removes the #voc("tag") link and garbage-collects the #voc("tag") node if it becomes orphaned.],
   [`addConnection(connection)`], [Creates a named edge between two `File` nodes.],
   [`removeConnection(connection)`], [Removes a named edge between two `File` nodes.],
 )
@@ -45,12 +45,12 @@ Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionIn
 
 === REST
 
-`POST /dsl` accepts `{ "command": "<`#link(label("voc_dsl"))[dsl]` command>" }` and returns `{ "type": ResponseType, "responseObject": [String] }`.
+`POST /dsl` accepts `{ "command": "<`#voc("dsl", text: "dsl")` command>" }` and returns `{ "type": ResponseType, "responseObject": [String] }`.
 `ResponseType` is one of `FILENAMES`, `CONNECTIONS`, `FILE`, `TAG`, `SUCCESS`, or `ERROR`. The payload shape depends on the type:
 
 - `FILENAMES`: absolute paths.
-- `CONNECTIONS`: #link(label("voc_json"))[JSON]-serialized `Connection` records.
-- `FILE` / `TAG`: #link(label("voc_json"))[JSON]-serialized `File` / `TagForFile` records.
+- `CONNECTIONS`: #voc("json")-serialized `Connection` records.
+- `FILE` / `TAG`: #voc("json")-serialized `File` / `TagForFile` records.
 - `SUCCESS`: empty list, used by mutating commands such as `addFile`, `addRel`, `addTag`.
 - `ERROR`: a single human-readable message.
 
@@ -59,12 +59,12 @@ Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionIn
 === WebSocket
 
 `/ws` carries the autocomplete protocol used by the GUI.
-The client opens a single long-lived session, which is able to reconnect with exponential back-off if it drops, and sends the current #link(label("voc_dsl"))[DSL] prefix on every keystroke.
-The server answers with a #link(label("voc_json"))[JSON] array of suggestions produced by `DSLAutoCompleter`.
+The client opens a single long-lived session, which is able to reconnect with exponential back-off if it drops, and sends the current #voc("dsl") prefix on every keystroke.
+The server answers with a #voc("json") array of suggestions produced by `DSLAutoCompleter`.
 Keeping the connection persistent avoids a TCP handshake per keystroke, which is what makes the 250 ms budget in Q2.1 achievable.
 
 === Authentication
 
 No authentication is performed on any of the three interfaces.
-GraphleManager is intended to run on the operator's own machine or on a trusted #link(label("voc_lan"))[LAN] host under their control, which matches the remote-access requirement (Q1.3) without exposing the filesystem to untrusted callers.
-Adding authentication would require a uniform layer across #link(label("voc_graphql"))[GraphQL], #link(label("voc_rest"))[REST], and the #link(label("voc_websocket"))[WebSocket] handshake and is deliberately out of scope.
+GraphleManager is intended to run on the operator's own machine or on a trusted #voc("lan") host under their control, which matches the remote-access requirement (Q1.3) without exposing the filesystem to untrusted callers.
+Adding authentication would require a uniform layer across #voc("graphql"), #voc("rest"), and the #voc("websocket") handshake and is deliberately out of scope.
