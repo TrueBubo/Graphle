@@ -15,11 +15,11 @@ Graphle stores only semantic #link(label("voc_metadata"))[metadata] in Neo4j and
 #figure(
   placement: none,
   image("architecture/graphle-context-c4.svg", width: 100%),
-  caption: [C4 level 1 system context diagram]
+  caption: [C4 system context diagram]
 ) <graphle-context-c4>
 
 The @graphle-context-c4 separates Graphle from the external systems it depends on.
-This separation is important for backwards compatibility (F1), because files can still be manipulated by normal operating-system tools.
+This separation is important for backward compatibility (F1), because files can still be manipulated by normal operating-system tools.
 It is also important for component isolation (Q3.2), because the autocomplete datastore can fail without preventing the core graph and filesystem operations from running.
 
 === Containers
@@ -32,7 +32,7 @@ It communicates with `GraphleManager` through public network interfaces only: #l
 #figure(
   placement: none,
   image("architecture/graphle-containers-c4.svg", width: 100%),
-  caption: [C4 level 2 container diagram]
+  caption: [C4 container diagram]
 ) <graphle-containers-c4>
 
 The @graphle-containers-c4 shows that the GUI is not coupled to the database schema directly.
@@ -65,7 +65,7 @@ All backend communication is kept in transport helpers, which lets the composabl
 #figure(
   placement: none,
   image("architecture/graphle-ui-components-c4.svg", width: 100%),
-  caption: [C4 level 3 component diagram of GraphleUI]
+  caption: [C4 component diagram of GraphleUI]
 ) <graphle-ui-components-c4>
 
 The @graphle-ui-components-c4 shows how the GUI keeps its visible content in one shared state model.

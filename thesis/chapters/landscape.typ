@@ -42,7 +42,7 @@ receives a partial rating for DSL part.
 
 Obsidian @obsidian is a personal knowledge management application built on top of a local folder
 of Markdown files.
-Its central feature is a graph view that visualises the `wikilink` connections users embed
+Its central feature is a graph view that visualizes the `wikilink` connections users embed
 in their notes, establishing explicit, browsable #link(label("voc_relationship"))[relationships] between documents.
 Because links are stored as plain text, the vault remains readable without the application.
 #link(label("voc_tag"))[Tags] are supported via `#hashtag` syntax or YAML front matter.
@@ -71,7 +71,7 @@ TagSpaces has no concept of directed, typed connections between individual files
 Files that share a #link(label("voc_tag"))[tag] can be gathered through a tag-intersection search, but there is no way
 to express that _document A cites document B_ or that _image X was exported from project Y_.
 Its query model is limited to #link(label("voc_tag"))[tag] and filename matching, and there is no composable #link(label("voc_dsl"))[DSL] for
-queries spaning multiple edges. The application has no remote-access capability.
+queries spanning multiple edges. The application has no remote-access capability.
 
 == autojump
 

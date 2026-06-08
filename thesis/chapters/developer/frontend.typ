@@ -24,7 +24,7 @@ The GUI reads a YAML configuration file with a single `server` section that expo
 
 === State Management
 
-The UI is driven by a single source of truth held in `App.kt`: `displayedSettings: MutableState<DisplayedSettings>`.
+The UI is driven by a single source of truth held in `App.kt`: a reactive variable `displayedSettings` holding `DisplayedSettings>`.
 `DisplayedSettings` wraps a nullable `DisplayedData` (the currently visible entities: filenames, #link(label("voc_tag"))[tags], #link(label("voc_connection"))[connections], or a file detail) and a `DisplayMode` enum that selects which body to render.
 `DisplayedBody.kt` branches on the mode and delegates to the feature specific page type.
 Child composables never hold the state themselves. `App` hands them paired getter and setter lambdas (`getDisplayedSettings`/`setDisplayedSettings`, and analogous ones for the theme), so the source of truth stays unique and any update, whether from a dialog, a menu entry, or a body composable, flows back through the same write path.

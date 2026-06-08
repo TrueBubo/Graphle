@@ -1,6 +1,6 @@
 #import "../../template/shared.typ": *
 = Analysis
-Standard #link(label("voc_filesystem"))[filesystems] organise files in a strict hierarchy of folders, forcing users to pick a single location 
+Standard #link(label("voc_filesystem"))[filesystems] organize files in a strict hierarchy of folders, forcing users to pick a single location 
 for each file and making it difficult to express #link(label("voc_relationship"))[relationships] that span multiple topics or projects.
 This section provides the analytical documentation for an application designed
 to extend existing filesystems with #link(label("voc_relationship"))[relationships]

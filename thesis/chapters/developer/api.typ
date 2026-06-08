@@ -13,11 +13,11 @@ The schema is declared in `GraphleManager/src/main/resources/graphql/schema.grap
 GraphiQL is enabled in `application.properties`, so the schema can be explored interactively at `http://<host>:5824/graphiql`.
 
 #table(
-  columns: (auto, 1fr),
+  columns: (15em, 1fr),
   align: (left, left),
   stroke: 0.4pt + luma(160),
   table.header([*Query*], [*Purpose*]),
-  [`fileByLocation(location, showHiddenFiles)`], [File detail with #link(label("voc_tag"))[tags] and all live #link(label("voc_neighbor"))[neighbours] (parent, descendants, custom #link(label("voc_connection"))[connections]).],
+  [`fileByLocation(location, showHiddenFiles)`], [File detail with #link(label("voc_tag"))[tags] and all live #link(label("voc_neighbor"))[neighbors] (parent, descendants, custom #link(label("voc_connection"))[connections]).],
   [`fileType(location)`], [Returns `File` or `Directory`, or `null` if the path is not present.],
   [`tagsByFileLocation(location)`], [Lists every #link(label("voc_tag"))[tag] attached to the given file.],
   [`filesByTag(tagName)`], [Reverse lookup from #link(label("voc_tag"))[tag] to the files that carry it.],
@@ -45,12 +45,12 @@ Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionIn
 
 === REST
 
-`POST /dsl` accepts `{ "command": "<`#link(label("voc_dsl"))[dsl]` source>" }` and returns `{ "type": ResponseType, "responseObject": [String] }`.
+`POST /dsl` accepts `{ "command": "<`#link(label("voc_dsl"))[dsl]` command>" }` and returns `{ "type": ResponseType, "responseObject": [String] }`.
 `ResponseType` is one of `FILENAMES`, `CONNECTIONS`, `FILE`, `TAG`, `SUCCESS`, or `ERROR`. The payload shape depends on the type:
 
 - `FILENAMES`: absolute paths.
-- `CONNECTIONS`: #link(label("voc_json"))[JSON]-serialised `Connection` records.
-- `FILE` / `TAG`: #link(label("voc_json"))[JSON]-serialised `File` / `TagForFile` records.
+- `CONNECTIONS`: #link(label("voc_json"))[JSON]-serialized `Connection` records.
+- `FILE` / `TAG`: #link(label("voc_json"))[JSON]-serialized `File` / `TagForFile` records.
 - `SUCCESS`: empty list, used by mutating commands such as `addFile`, `addRel`, `addTag`.
 - `ERROR`: a single human-readable message.
 

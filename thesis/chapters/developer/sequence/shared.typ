@@ -21,6 +21,44 @@
   )),
 )
 
+#let _self-arrow-head(size: 3.2pt, stroke: (paint: black, thickness: 0.55pt)) = box(
+  width: size,
+  height: size,
+)[
+  #place(dx: 0pt, dy: size / 2, line(
+    length: size,
+    angle: -45deg,
+    stroke: stroke,
+  ))
+  #place(dx: 0pt, dy: size / 2, line(
+    length: size,
+    angle: 45deg,
+    stroke: stroke,
+  ))
+]
+
+#let _self-call(label) = align(left + horizon, grid(
+  columns: (2.5em, 1fr),
+  gutter: 4pt,
+  box(width: 2.5em, height: 1.45em)[
+    #place(dx: 0.55em, dy: 0.15em, line(
+      length: 1.2em,
+      stroke: (paint: black, thickness: 0.55pt),
+    ))
+    #place(dx: 1.75em, dy: 0.15em, line(
+      length: 0.75em,
+      angle: 90deg,
+      stroke: (paint: black, thickness: 0.55pt),
+    ))
+    #place(dx: 0.75em, dy: 0.9em, line(
+      length: 1em,
+      stroke: (paint: black, thickness: 0.55pt),
+    ))
+    #place(dx: 0.4em, dy: 0.74em, _self-arrow-head())
+  ],
+  text(size: 0.7em, label),
+))
+
 // Draws the body of a single step.
 //   from, to  — 0-based column indices of the actors involved
 //   label     — message text shown above the arrow
@@ -38,16 +76,9 @@
   let head-left = if dir-right { "" } else { "◀" }
   let head-right = if dir-right { "▶" } else { "" }
 
-  let self-glyph = "↺"
-
   let body = if is-self {
-    // Self-call: small loop glyph rendered in-column with the label to the right
-    align(left + horizon, grid(
-      columns: (0.9em, 1fr),
-      gutter: 3pt,
-      text(size: 0.85em, self-glyph),
-      text(size: 0.7em, label),
-    ))
+    // Self-call: draw a compact loop directly so it does not depend on font glyphs.
+    _self-call(label)
   } else {
     // Label above, arrow below. Leave ~1.2em slack on either side so the
     // arrowheads never extend past the enclosing figure box.

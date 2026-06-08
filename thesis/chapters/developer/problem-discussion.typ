@@ -26,12 +26,12 @@ When the backend happens to be running on the same host, a `server.localhost` fl
 
 The application targets macOS and Linux (F10). Windows is deliberately not supported. See the analysis chapter for the reasoning of not supporting it.
 Because both the Spring Boot backend and the Compose Desktop frontend are written in Kotlin and compile to JVM bytecode, JDK 21 is the single runtime that makes both components portable. JDK 21 is supported on both MacOS and Linux.
-Everything else (file existence, directory enumeration, path normalisation) delegates to `java.nio.file`, which abstracts the remaining OS differences.
+Everything else (file existence, directory enumeration, path normalization) delegates to `java.nio.file`, which abstracts the remaining OS differences.
 
 === User navigation
 
 The file-detail view is intentionally the central point of the GUI.
-`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #link(label("voc_neighbor"))[neighbours] (`descendantsOfFile`, `parentOfFile`) come from the live #link(label("voc_filesystem"))[filesystem] via `FileService`, persisted graph #link(label("voc_relationship"))[relationships] come from `ConnectionController.neighborsByFileLocation`, and #link(label("voc_tag"))[tags] come from `TagController.tagsByFileLocation`.
+`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #link(label("voc_neighbor"))[neighbors] (`descendantsOfFile`, `parentOfFile`) come from the live #link(label("voc_filesystem"))[filesystem] via `FileService`, persisted graph #link(label("voc_relationship"))[relationships] come from `ConnectionController.neighborsByFileLocation`, and #link(label("voc_tag"))[tags] come from `TagController.tagsByFileLocation`.
 Before the merged result is returned, every entry is checked with `Files.exists` (and optionally `Files.isHidden`), so a file deleted between the last sweeper run and the current request is silently dropped rather than surfaced to the user.
 
 A subtle consequence is that files which exist on disk but were never explicitly registered with Graphle are still reachable: navigating into a directory shows them under the hierarchical descendants even though they have no `File` node yet (F1).

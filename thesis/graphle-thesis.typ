@@ -16,7 +16,7 @@
     study-programme: "Programming and Software Development",
   ),
 
-  // set to true if generating a PDF for print (shifts page layout, turns code blocks greyscale, correctly aligns odd/even pages,...)
+  // set to true if generating a PDF for print (shifts page layout, turns code blocks grayscale, correctly aligns odd/even pages,...)
   print: false,
 
   show-todos: true,

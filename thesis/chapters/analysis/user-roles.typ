@@ -6,11 +6,11 @@ to utilize, and does not need to adjust to a more powerful way of traversing fil
 
 === Regular User
 
-A regular user is anyone who wants to organise their files beyond a plain folder hierarchy.
+A regular user is anyone who wants to organize their files beyond a plain folder hierarchy.
 They interact with the application through the GUI, browsing the #link(label("voc_filesystem"))[filesystem], assigning #link(label("voc_tag"))[tags] to files, 
 and navigating #link(label("voc_relationship"))[relationships] between them.
 No special technical knowledge is required beyond basic computer literacy.
-This user benefits from a gradual transition to a more expressive way of organising and discovering files, 
+This user benefits from a gradual transition to a more expressive way of organizing and discovering files, 
 as the application layers on top of the existing #link(label("voc_filesystem"))[filesystem] without requiring any upfront changes.
 
 === Power User
