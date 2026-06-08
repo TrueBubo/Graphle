@@ -26,16 +26,16 @@ error prone by enforcing a more precise contract.
 === API
 
 The application is divided into a backend service and two types of clients: a GUI client and a #link(label("voc_dsl"))[DSL] client.
-Both clients communicate exclusively through the API, which allows either to be swapped out or extended by third-party developers,
-and enables the backend to serve remote filesystems over a network without architectural changes.
+Both clients communicate exclusively through the #link(label("voc_api"))[API], which allows either to be swapped out or extended by third-party developers,
+and enables the backend to serve remote #link(label("voc_filesystem"))[filesystems] over a network without architectural changes.
 
 The backend is implemented with Spring Boot @springboot and exposes two interfaces.
 The GUI client communicates via #link(label("voc_graphql"))[GraphQL] @graphql, which allows it to request exactly the data it needs.
 This is important since a query result can contain millions of files, and fetching all fields when only a filename is needed would be wasteful.
-GraphQL also allows the response structure to evolve without introducing a new API version, and provides a schema that gives clients full transparency over the available data and operations.
-The DSL client communicates via REST, since the DSL is also intended to be used from the command line, where issuing REST calls is simpler than constructing GraphQL queries.
+GraphQL also allows the response structure to evolve without introducing a new #link(label("voc_api"))[API] version, and provides a schema that gives clients full transparency over the available data and operations.
+The #link(label("voc_dsl"))[DSL] client communicates via #link(label("voc_rest"))[REST], since the #link(label("voc_dsl"))[DSL] is also intended to be used from the command line, where issuing #link(label("voc_rest"))[REST] calls is simpler than constructing #link(label("voc_graphql"))[GraphQL] queries.
 
-Spring Boot provides a mature ecosystem for building production-grade JVM services, including first-class GraphQL and REST support.
+Spring Boot provides a mature ecosystem for building production-grade JVM services, including first-class #link(label("voc_graphql"))[GraphQL] and #link(label("voc_rest"))[REST] support.
 Its widespread adoption ensures that contributors with prior JVM experience can onboard with minimal friction.
 
 === GUI
@@ -47,27 +47,27 @@ to other platforms a low-cost extension rather than a full rewrite.
 
 === DSL
 
-The application provides a #link(label("voc_dsl"))[domain-specific language (DSL)] for advanced filesystem operations.
-Because autocomplete for the DSL must react to each keystroke, its parser runs inside the backend service and communicates available completions via WebSockets. 
-WebSockets maintain a persistent connection, avoiding the overhead of establishing a new HTTP connection on every keystroke,
+The application provides a #link(label("voc_dsl"))[domain-specific language (DSL)] for advanced #link(label("voc_filesystem"))[filesystem] operations.
+Because autocomplete for the #link(label("voc_dsl"))[DSL] must react to each keystroke, its parser runs inside the backend service and communicates available completions via #link(label("voc_websocket"))[WebSockets]. 
+#link(label("voc_websocket"))[WebSockets] maintain a persistent #link(label("voc_connection"))[connection], avoiding the overhead of establishing a new #link(label("voc_http"))[HTTP] connection on every keystroke,
 which is critical for meeting the low-latency autocomplete requirement.
 gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions and code generation,
 is overkill for a single stream exchanging short strings.
-There are specific tools for creating DSLs. However, as the auto-completer needs to parse the commands either way, and
+There are specific tools for creating #link(label("voc_dsl"))[DSLs]. However, as the auto-completer needs to parse the commands either way, and
 needs to fetch data from the database, I decided to keep them in the same service, as to avoid serialization between
 different services, which is important to keep the response time at minimum.
 
 === Relationships Between Files
 
-Storing and querying arbitrary relationships between files requires a database whose native data model is a graph.
-Two graph data models were considered: the Labeled Property Graph (LPG) and the Resource Description Framework (RDF).
+Storing and querying arbitrary #link(label("voc_relationship"))[relationships] between files requires a database whose native data model is a graph.
+Two graph data models were considered: the #link(label("voc_lpg"))[Labeled Property Graph (LPG)] and the Resource Description Framework (RDF).
 
 RDF was eliminated for two reasons.
-First, it mandates the use of URIs as node and relationship identifiers.
-This imposes an unnecessary burden on users who manage a purely local filesystem with no intent of publishing or interlinking it with external datasets.
-Second, RDF stores are typically triple stores that materialise graph structure only at query time, whereas LPG databases index edges natively, resulting in faster traversal for the relationship-heavy workloads this project targets @neo4jrdfvslpg.
+First, it mandates the use of URIs as node and #link(label("voc_relationship"))[relationship] identifiers.
+This imposes an unnecessary burden on users who manage a purely local #link(label("voc_filesystem"))[filesystem] with no intent of publishing or interlinking it with external datasets.
+Second, RDF stores are typically triple stores that materialise graph structure only at query time, whereas #link(label("voc_lpg"))[LPG] databases index edges natively, resulting in faster traversal for the #link(label("voc_relationship"))[relationship]-heavy workloads this project targets @neo4jrdfvslpg.
 
-Among self-hosted LPG databases, Neo4j @neo4j is the only option with broad industry adoption @so2024survey.
+Among self-hosted #link(label("voc_lpg"))[LPG] databases, Neo4j @neo4j is the only option with broad industry adoption @so2024survey.
 It was therefore selected as the graph store.
 
 === Autocomplete
@@ -81,7 +81,7 @@ and has received corporate backing from Oracle, AWS, and Google. Organisations t
  which reduces the risk of the project being abandoned @valkeyannouncement.
 Developers familiar with Redis can apply that knowledge directly to Valkey with no additional learning overhead.
 
-To support infix completion while keeping memory consumption reasonable, filenames are indexed using a modified trie.
+To support infix completion while keeping memory consumption reasonable, filenames are indexed using a modified #link(label("voc_trie"))[trie].
 Leaf level path components are stored without their parent segments, enabling efficient prefix search across all components of a filename.
 Parent path information is preserved as a back reference attached to leaf nodes,
 so a full path can be reconstructed from any matching suffix without duplicating the entire path at every entry.

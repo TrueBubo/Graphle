@@ -7,6 +7,11 @@ import kotlin.time.Duration
  */
 interface Storage {
     /**
+     * Executes multiple storage operations against the same backing session when supported.
+     */
+    fun <T> withSession(action: (Storage) -> T): T = action(this)
+
+    /**
      * Sets a string value for the given key.
      *
      * @param key The key under which the value will be stored.
@@ -71,9 +76,12 @@ interface Storage {
      * @return The string value if the key exists, or null otherwise.
      */
     fun getEx(key: String, ttl: Duration, onGet: (String) -> String?): String? {
-        expire(key, ttl.inWholeSeconds)
         val cachedValue = onGet(key)
-        return cachedValue ?: get(key)
+        if (cachedValue != null) return cachedValue
+
+        val value = get(key)
+        if (value != null) expire(key, ttl.inWholeSeconds)
+        return value
     }
 
     /**
@@ -85,8 +93,8 @@ interface Storage {
      * @return The string value if the key exists, or null otherwise.
      */
     fun setEx(key: String, ttl: Duration, value: String, onSet: (String, String) -> Unit) {
-        expire(key, ttl.inWholeSeconds)
         set(key, value)
+        expire(key, ttl.inWholeSeconds)
         onSet(key, value)
     }
 
@@ -103,8 +111,8 @@ interface Storage {
         hash: Map<String, String>,
         onSet: (String, Map<String, String>) -> Unit
     ) {
-        expire(key, ttl.inWholeSeconds)
         hset(key, hash)
+        expire(key, ttl.inWholeSeconds)
         onSet(key, hash)
     }
 
@@ -120,9 +128,12 @@ interface Storage {
         ttl: Duration,
         onGet: (String) -> Map<String, String>?
     ): Map<String, String> {
-        expire(key, ttl.inWholeSeconds)
         val cachedValue = onGet(key)
-        return cachedValue ?: hgetAll(key)
+        if (cachedValue != null) return cachedValue
+
+        val value = hgetAll(key)
+        if (value.isNotEmpty()) expire(key, ttl.inWholeSeconds)
+        return value
     }
 
     /**
@@ -133,8 +144,8 @@ interface Storage {
      * @param onSet Does this operation after setting the key
      */
     fun saddex(key: String, ttl: Duration, member: String, onSet: (String, String) -> Unit) {
-        expire(key, ttl.inWholeSeconds)
         sadd(key, member)
+        expire(key, ttl.inWholeSeconds)
         onSet(key, member)
     }
 
@@ -146,9 +157,11 @@ interface Storage {
      * @return Members of the set
      */
     fun smembersex(key: String, ttl: Duration, onGet: (String) -> Set<String>?): Set<String> {
-        expire(key, ttl.inWholeSeconds)
         val cachedValue = onGet(key)
-        return cachedValue ?: smembers(key)
+        if (cachedValue != null) return cachedValue
+
+        val value = smembers(key)
+        if (value.isNotEmpty()) expire(key, ttl.inWholeSeconds)
+        return value
     }
 }
-

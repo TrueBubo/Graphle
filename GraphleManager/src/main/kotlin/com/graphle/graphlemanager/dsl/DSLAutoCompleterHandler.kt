@@ -1,12 +1,48 @@
 package com.graphle.graphlemanager.dsl
 
+import io.valkey.exceptions.JedisException
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+
+internal fun encodeAutocompleteResponse(values: List<String>): String {
+    if (values.isEmpty()) return ""
+    val capacity = values.sumOf { it.length + it.length.toString().length + 1 }
+    return buildString(capacity) {
+        values.forEach { value ->
+            append(value.length)
+            append(':')
+            append(value)
+        }
+    }
+}
+
+internal data class AutocompleteRequest(
+    val id: Long?,
+    val input: String,
+)
+
+internal fun decodeAutocompleteRequest(text: String): AutocompleteRequest {
+    val separatorIndex = text.indexOf('\t')
+    if (separatorIndex <= 0) return AutocompleteRequest(id = null, input = text)
+
+    val possibleId = text.substring(0, separatorIndex)
+    if (!possibleId.all(Char::isDigit)) return AutocompleteRequest(id = null, input = text)
+    val requestId = possibleId.toLongOrNull() ?: return AutocompleteRequest(id = null, input = text)
+
+    return AutocompleteRequest(
+        id = requestId,
+        input = text.substring(separatorIndex + 1),
+    )
+}
+
+internal fun encodeAutocompleteResponse(requestId: Long?, values: List<String>): String {
+    val encodedValues = encodeAutocompleteResponse(values)
+    return requestId?.let { "$it\t$encodedValues" } ?: encodedValues
+}
 
 /**
  * WebSocket handler for autocomplete
@@ -15,6 +51,8 @@ import kotlinx.serialization.json.Json
  */
 @Service
 class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val dslAutoCompleter: DSLAutoCompleter) : TextWebSocketHandler() {
+    private val logger = LoggerFactory.getLogger(DSLAutoCompleterHandler::class.java)
+
     /**
      * adds the session to registry when connected
      * @param session Session added
@@ -33,14 +71,23 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val
     }
 
     /**
-     * Sends the messages in response to message from the client. Responds with possible continuations represented as json
+     * Sends the messages in response to message from the client.
      * @param session Origin of the message
      * @param messageReceived Message from client
      * @see DSLAutoCompleter.complete
      */
     override fun handleTextMessage(session: WebSocketSession, messageReceived: TextMessage) {
-        val input = messageReceived.payload
-        val messageSent = Json.encodeToString(dslAutoCompleter.complete(input))
+        val request = decodeAutocompleteRequest(messageReceived.payload)
+        val completions = try {
+            dslAutoCompleter.complete(request.input)
+        } catch (exception: JedisException) {
+            logger.warn("Autocomplete Valkey lookup failed", exception)
+            emptyList()
+        } catch (exception: RuntimeException) {
+            logger.warn("Autocomplete lookup failed", exception)
+            emptyList()
+        }
+        val messageSent = encodeAutocompleteResponse(request.id, completions)
         session.sendMessage(TextMessage(messageSent))
     }
 }

@@ -3,25 +3,25 @@
 == Functional and Qualitative Requirements
 
 I defined the requirements based on my personal analysis of existing tools and their limitations.
-I examined existing filesystem tools and productivity applications to identify potential enhancements that can be made to them.
+I examined existing #link(label("voc_filesystem"))[filesystem] tools and productivity applications to identify potential enhancements that can be made to them.
 The existing solutions will be discussed further in the #link(label("landscape"))[Current landscape] section.
 No formal user interviews were conducted. The requirements were instead derived from my own experience with the problem domain.
-The main goal of this project is to extend a standard filesystem to support faster traversal via interpreting the 
+The main goal of this project is to extend a standard #link(label("voc_filesystem"))[filesystem] to support faster traversal via interpreting the 
 #link(label("voc_relationship"))[relationships] as an #link(label("voc_lpg"))[LPG].
 
 === Functional Requirements
 This list serves as a feature list this application should fulfill in order to be considered complete.
 
 <functional_requirements>
-- *F1 Backwards Compatibility* - The application must work with the existing filesystems and can work with hierarchies via #link(label("voc_connection"))[connections] in the graph
+- *F1 Backwards Compatibility* - The application must work with the existing #link(label("voc_filesystem"))[filesystems] and can work with hierarchies via #link(label("voc_connection"))[connections] in the graph
 - *F2 #link(label("voc_relationship"))[Relationships] between files* - Files can be #link(label("voc_relationship"))[related] to other files
 - *F3 File #link(label("voc_tag"))[tags]* - Files can be categorized via #link(label("voc_tag"))[tags]
 - *F4 File manipulation* - Files can be created, opened, deleted and moved
 - *F5 Folders work as files* - Folders can do everything files can do
 - *F6 GUI file browser* - Filesystem can be traversed via a GUI client
-- *F7 Custom #link(label("voc_dsl"))[DSL]* - Custom #link(label("voc_dsl"))[DSL] for more advanced operations with the filesystem
+- *F7 Custom #link(label("voc_dsl"))[DSL]* - Custom #link(label("voc_dsl"))[DSL] for more advanced operations with the #link(label("voc_filesystem"))[filesystem]
 - *F8 Filename autocompletion* - The application recommends possible filenames based on recently visited files
-- *F9 Lazy updates* - Updates on the filesystem are done dynamically as needed
+- *F9 Lazy updates* - Updates on the #link(label("voc_filesystem"))[filesystem] are done dynamically as needed
 - *F10 Cross-platform support* - The application must run on macOS and Linux
 
 Windows is explicitly not supported, as NTFS assigns each volume an independent drive letter rather than providing a single root hierarchy. 

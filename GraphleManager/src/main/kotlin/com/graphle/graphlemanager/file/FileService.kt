@@ -3,10 +3,14 @@ package com.graphle.graphlemanager.file
 import com.graphle.graphlemanager.connection.Connection
 import com.graphle.graphlemanager.dsl.FilenameCompleterService
 import io.micrometer.common.util.StringUtils.isNotEmpty
+import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.io.File
@@ -25,6 +29,7 @@ class FileService(
     private val fileRepository: FileRepository,
     private val filenameCompleterService: FilenameCompleterService
 ) {
+    private val logger = LoggerFactory.getLogger(FileService::class.java)
     private val supervisorScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
@@ -135,11 +140,22 @@ class FileService(
     fun insertFilesToCompleter(locations: List<AbsolutePathString>) {
         supervisorScope.launch {
             locations.forEach { location ->
-                filenameCompleterService.completer.insert(
-                    location.split(File.separator).filter(::isNotEmpty)
-                )
+                try {
+                    filenameCompleterService.completer.insert(
+                        location.split(File.separator).filter(::isNotEmpty)
+                    )
+                } catch (exception: RuntimeException) {
+                    if (supervisorScope.isActive) {
+                        logger.warn("Failed to insert {} into autocomplete index", location, exception)
+                    }
+                }
             }
         }
+    }
+
+    @PreDestroy
+    fun close() {
+        supervisorScope.cancel()
     }
 
     companion object {

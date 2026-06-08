@@ -1,13 +1,16 @@
 package com.graphle.graphlemanager.dsl
 
 import io.valkey.Jedis
+import io.valkey.JedisPool
 
 /**
  * Storage implementation for Valkey
- * @param jedis Handler for Valkey operations
+ * @param pool Pool for Valkey operations
  * @see Storage
  */
-class JedisStorage(private val jedis: Jedis) : Storage {
+class JedisStorage(private val pool: JedisPool) : Storage {
+    override fun <T> withSession(action: (Storage) -> T): T =
+        pool.resource.use { jedis -> action(JedisConnectionStorage(jedis)) }
 
     /**
      * Sets a string value for the given key.
@@ -15,7 +18,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @param value The string value to store
      */
     override fun set(key: String, value: String) {
-        jedis.set(key, value)
+        withSession { storage -> storage.set(key, value) }
     }
 
     /**
@@ -24,7 +27,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @return The string value if the key exists, or null otherwise
      */
     override fun get(key: String): String? {
-        return jedis.get(key)
+        return withSession { storage -> storage.get(key) }
     }
 
     /**
@@ -33,7 +36,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @param hash A map of field-value pairs to set in the hash
      */
     override fun hset(key: String, hash: Map<String, String>) {
-        jedis.hset(key, hash)
+        withSession { storage -> storage.hset(key, hash) }
     }
 
     /**
@@ -42,7 +45,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @return A map containing all field-value pairs in the hash
      */
     override fun hgetAll(key: String): Map<String, String> {
-        return jedis.hgetAll(key)
+        return withSession { storage -> storage.hgetAll(key) }
     }
 
     /**
@@ -51,7 +54,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @param value The value to add to the set
      */
     override fun sadd(key: String, value: String) {
-        jedis.sadd(key, value)
+        withSession { storage -> storage.sadd(key, value) }
     }
 
     /**
@@ -60,7 +63,7 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @return A set containing all members of the stored set
      */
     override fun smembers(key: String): Set<String> {
-        return jedis.smembers(key)
+        return withSession { storage -> storage.smembers(key) }
     }
 
     /**
@@ -69,8 +72,36 @@ class JedisStorage(private val jedis: Jedis) : Storage {
      * @param seconds The TTL in seconds
      */
     override fun expire(key: String, seconds: Long) {
-        jedis.expire(key, seconds)
+        withSession { storage -> storage.expire(key, seconds) }
+    }
+}
+
+private class JedisConnectionStorage(private val jedis: Jedis) : Storage {
+    override fun set(key: String, value: String) {
+        jedis.set(key, value)
     }
 
+    override fun get(key: String): String? {
+        return jedis.get(key)
+    }
 
+    override fun hset(key: String, hash: Map<String, String>) {
+        jedis.hset(key, hash)
+    }
+
+    override fun hgetAll(key: String): Map<String, String> {
+        return jedis.hgetAll(key)
+    }
+
+    override fun sadd(key: String, value: String) {
+        jedis.sadd(key, value)
+    }
+
+    override fun smembers(key: String): Set<String> {
+        return jedis.smembers(key)
+    }
+
+    override fun expire(key: String, seconds: Long) {
+        jedis.expire(key, seconds)
+    }
 }

@@ -1,7 +1,7 @@
 #import "../../template/shared.typ": *
 == Security
 
-Since the application operates directly on the user's filesystem and can be accessed remotely, security is of utmost importance.
+Since the application operates directly on the user's #link(label("voc_filesystem"))[filesystem] and can be accessed remotely, security is of utmost importance.
 To not have to maintain my own security measures, the application delegates its authentication and access control to the underlying operating system.
 This section describes how user accounts and file permissions are handled.
 

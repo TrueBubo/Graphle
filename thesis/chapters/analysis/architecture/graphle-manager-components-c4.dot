@@ -1,0 +1,178 @@
+digraph GraphleManagerComponents {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.25,
+    nodesep=0.65,
+    ranksep=0.95,
+    splines=polyline,
+    compound=true,
+    outputorder=edgesfirst
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=11,
+    color="#455a64",
+    penwidth=1.2,
+    fillcolor="#f7f9fb",
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=9,
+    color="#546e7a",
+    arrowsize=0.7,
+    penwidth=1.1
+  ];
+
+  clients [
+    label="GraphleUI or DSL client\n[External client]",
+    fillcolor="#fff7dd",
+    color="#8a6d3b"
+  ];
+
+  subgraph cluster_api {
+    label="API adapters";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    graphql_api [
+      label="GraphQL controllers\nFileController\nTagController\nConnectionController",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+
+    rest_api [
+      label="REST controllers\nDSLController\nFileDownloadController",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+
+    websocket_api [
+      label="WebSocket adapter\nDSLAutoCompleterHandler\nSessionRegistry",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+  }
+
+  subgraph cluster_domain {
+    label="Application modules";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    file_module [
+      label="File module\nFileService\nfile model",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    tag_module [
+      label="Tag module\nTagService\ntag model",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    connection_module [
+      label="Connection module\nConnectionService\nconnection model",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    dsl_module [
+      label="DSL module\nDSLInterpreter\nDSLScopeParser\nDSLTokenInterpreter\nDSLCommandExecutor\nCypherQueryBuilder",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    autocomplete_module [
+      label="Autocomplete module\nDSLAutoCompleter\nFilenameCompleter\nConcurrentCache",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    sweeper_module [
+      label="Background maintenance\nNeo4JSweeper",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+  }
+
+  subgraph cluster_persistence {
+    label="Persistence adapters";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    repositories [
+      label="Neo4j repositories\nFileRepository\nTagRepository\nConnectionRepository",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+
+    valkey_adapter [
+      label="Valkey autocomplete adapter\nValkeyFilenameCompleterService\nJedisStorage",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+  }
+
+  filesystem [
+    label="Operating filesystem\n[External system]",
+    fillcolor="#eeeeee",
+    color="#737373"
+  ];
+
+  neo4j [
+    label="Neo4j\n[Database]",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  valkey [
+    label="Valkey\n[Database]",
+    shape=cylinder,
+    fillcolor="#f3e8ff",
+    color="#6a3ea1"
+  ];
+
+  clients -> graphql_api [label="/graphql"];
+  clients -> rest_api [label="/dsl, /download"];
+  clients -> websocket_api [label="/ws"];
+
+  graphql_api -> file_module [label="file queries/mutations"];
+  graphql_api -> tag_module [label="tag queries/mutations"];
+  graphql_api -> connection_module [label="relationship mutations"];
+  rest_api -> dsl_module [label="interpret command"];
+  rest_api -> filesystem [label="stream file"];
+  websocket_api -> autocomplete_module [label="complete prefix"];
+
+  dsl_module -> file_module [label="file commands"];
+  dsl_module -> tag_module [label="tag commands"];
+  dsl_module -> connection_module [label="relationship commands"];
+  dsl_module -> repositories [label="find via Cypher"];
+
+  file_module -> repositories [label="file graph updates"];
+  file_module -> filesystem [label="read hierarchy\nwrite files"];
+  file_module -> autocomplete_module [label="insert visited paths"];
+  tag_module -> repositories [label="tag graph updates"];
+  connection_module -> repositories [label="relationship graph updates"];
+  sweeper_module -> repositories [label="remove stale nodes"];
+  sweeper_module -> filesystem [label="check existence"];
+
+  autocomplete_module -> valkey_adapter [label="trie operations"];
+  repositories -> neo4j [label="Cypher / repository calls"];
+  valkey_adapter -> valkey [label="Valkey commands"];
+}

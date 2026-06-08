@@ -1,0 +1,168 @@
+digraph GraphleUIComponents {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.25,
+    nodesep=0.65,
+    ranksep=0.95,
+    splines=polyline,
+    compound=true,
+    outputorder=edgesfirst
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Arial",
+    fontsize=11,
+    color="#455a64",
+    penwidth=1.2,
+    fillcolor="#f7f9fb",
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    fontname="Arial",
+    fontsize=9,
+    color="#546e7a",
+    arrowsize=0.7,
+    penwidth=1.1
+  ];
+
+  user [
+    label="User\n[Person]",
+    fillcolor="#fff7dd",
+    color="#8a6d3b"
+  ];
+
+  subgraph cluster_presentation {
+    label="Presentation and state";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    app [
+      label="Application root\nMain.kt\nApp.kt",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    state [
+      label="Displayed state\nDisplayedSettings\nDisplayedData\nDisplayMode",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    header [
+      label="Header module\nHeader\nCommandLine\nAppMenu",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    dialogs [
+      label="Dialog module\nAddTag\nAddRelationship\nAddFile\nMoveFile\nDeleteFile",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+
+    bodies [
+      label="Body and feature views\nDisplayedBody\nFileBody\nFilenameBody\nFilesWithTagBody\nTagsView",
+      fillcolor="#e8f5e9",
+      color="#2e7d32"
+    ];
+  }
+
+  subgraph cluster_application {
+    label="Client application services";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    file_fetcher [
+      label="File loading\nFileFetcher",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+
+    graphql_commands [
+      label="GraphQL command wrapper\nGraphQLCommands\nApollo generated operations",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+
+    dsl_handler [
+      label="DSL response handling\nDSLCommandHandler\nDSLHistory",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+
+    file_util [
+      label="File utility layer\nFileUtil\nopen/download helpers",
+      fillcolor="#fffde7",
+      color="#8a7b1f"
+    ];
+  }
+
+  subgraph cluster_transport {
+    label="Backend transports";
+    fontname="Arial";
+    fontsize=12;
+    color="#90a4ae";
+    style="rounded,dashed";
+    margin=14;
+
+    apollo [
+      label="Apollo GraphQL client\n/graphql",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+
+    rest [
+      label="Ktor REST client\n/dsl\n/download",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+
+    websocket [
+      label="Ktor WebSocket client\n/ws autocomplete",
+      fillcolor="#e3f2fd",
+      color="#1e5f8f"
+    ];
+  }
+
+  manager [
+    label="GraphleManager\n[Backend container]",
+    fillcolor="#e3f2fd",
+    color="#1e5f8f",
+    penwidth=1.5
+  ];
+
+  user -> app [label="uses desktop window"];
+  app -> state [label="owns mutable state"];
+  app -> header [label="renders"];
+  app -> dialogs [label="renders"];
+  app -> bodies [label="renders selected mode"];
+
+  header -> websocket [label="autocomplete prefix"];
+  header -> dsl_handler [label="submit DSL command"];
+  dsl_handler -> rest [label="POST command"];
+  dsl_handler -> state [label="maps DSLResponse"];
+
+  dialogs -> graphql_commands [label="mutations"];
+  dialogs -> file_fetcher [label="refresh current file"];
+  bodies -> file_fetcher [label="navigate files"];
+  bodies -> graphql_commands [label="remove tag/relationship\nquery by tag"];
+  bodies -> file_util [label="open file"];
+
+  file_fetcher -> graphql_commands [label="fileByLocation"];
+  graphql_commands -> apollo [label="typed operations"];
+  file_util -> rest [label="remote download"];
+
+  apollo -> manager [label="GraphQL"];
+  rest -> manager [label="REST"];
+  websocket -> manager [label="WebSocket"];
+}

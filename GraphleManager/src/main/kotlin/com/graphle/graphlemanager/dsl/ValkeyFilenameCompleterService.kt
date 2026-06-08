@@ -1,8 +1,8 @@
 package com.graphle.graphlemanager.dsl
 
-import io.valkey.Jedis
 import io.valkey.JedisPool
 import io.valkey.JedisPoolConfig
+import jakarta.annotation.PreDestroy
 import org.springframework.stereotype.Service
 
 /**
@@ -11,13 +11,8 @@ import org.springframework.stereotype.Service
  */
 @Service
 class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompleteProperties): FilenameCompleterService {
-    /**
-     * Extension function to safely execute an action with a Jedis connection from the pool.
-     * @param action The action to perform with the Jedis connection
-     * @return The result of the action
-     */
-    private inline fun <T> JedisPool.withJedis(action: (Jedis) -> T): T {
-        return this.resource.use { jedis -> action(jedis) }
+    private companion object {
+        const val VALKEY_TIMEOUT_MILLIS = 500
     }
 
     /**
@@ -27,7 +22,9 @@ class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompletePropert
         maxTotal = 10
         maxIdle = 5
         minIdle = 1
-        testOnBorrow = true
+        testOnBorrow = false
+        testOnReturn = false
+        testWhileIdle = false
     }
 
     /**
@@ -43,12 +40,15 @@ class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompletePropert
     /**
      * The Jedis connection pool for Valkey database.
      */
-    private val pool = JedisPool(poolConfig, host, port)
+    private val pool = JedisPool(poolConfig, host, port, VALKEY_TIMEOUT_MILLIS)
 
     /**
      * The filename completer instance backed by Valkey storage.
      */
-    override val completer = pool.withJedis { jedis ->
-        FilenameCompleter(JedisStorage(jedis))
+    override val completer = FilenameCompleter(JedisStorage(pool))
+
+    @PreDestroy
+    fun close() {
+        pool.close()
     }
 }
