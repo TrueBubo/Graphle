@@ -2,6 +2,7 @@ package com.graphle.graphlemanager.dsl
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private val mockStorage = object : Storage {
     override fun set(key: String, value: String) {}
@@ -85,6 +86,18 @@ class ValkeyFilenameCompleterTest() {
     }
 
     @Test
+    fun `filename completer completes children after trailing directory slash`() {
+        val filenameCompleter = FilenameCompleter(mockStorage)
+        filenameCompleter.insert(listOf("home", "user", "first"))
+        filenameCompleter.insert(listOf("home", "user", "second"))
+
+        assertEquals(
+            setOf(listOf("home", "user", "first"), listOf("home", "user", "second")),
+            filenameCompleter.lookup("/home/user/") { true }.toSet()
+        )
+    }
+
+    @Test
     fun `filename completer only returns existing files`() {
         val filenameCompleter = FilenameCompleter(mockStorage)
         filenameCompleter.insert(listOf("home", "user"))
@@ -121,6 +134,23 @@ class ValkeyFilenameCompleterTest() {
 
         assertEquals(1, results.size)
         assertEquals(1, existenceChecks)
+    }
+
+    @Test
+    fun `filename completer bounds existence checks for stale subtree`() {
+        val filenameCompleter = FilenameCompleter(mockStorage)
+        repeat(200) {
+            filenameCompleter.insert(listOf("home", "user", "candidate$it"))
+        }
+
+        var existenceChecks = 0
+        val results = filenameCompleter.lookup("/home/user/c", limit = 5) {
+            existenceChecks++
+            false
+        }
+
+        assertEquals(emptyList(), results)
+        assertTrue(existenceChecks < 200)
     }
 
     @Test

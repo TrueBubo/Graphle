@@ -4,6 +4,12 @@ import com.graphle.graphlemanager.file.AbsolutePathString
 import org.springframework.beans.factory.annotation.Value
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
@@ -25,6 +31,47 @@ private val root = CharacterKey(ROOT_INDEX_KEY.toString()) // Every lookup call 
 @Value("\${cache.ttl}")
 private val ttl = 30.days // Keys not accessed for this long will be removed to prevent
 private val fileExistenceTtl = 2.seconds
+private const val FILE_EXISTS_TIMEOUT_MILLIS = 20L
+private const val FILE_EXISTS_THREADS = 2
+private const val LOOKUP_TIME_BUDGET_NANOS = 250_000_000L
+private const val MAX_LOOKUP_VISITED_NODES = 2_000
+private const val MAX_LOOKUP_EXISTENCE_CHECKS = 100
+private val fileExistsThreadId = AtomicInteger()
+private val fileExistsExecutor = ThreadPoolExecutor(
+    0,
+    FILE_EXISTS_THREADS,
+    30L,
+    TimeUnit.SECONDS,
+    SynchronousQueue<Runnable>(),
+) { runnable ->
+    Thread(runnable, "graphle-file-exists-${fileExistsThreadId.incrementAndGet()}").apply {
+        isDaemon = true
+    }
+}
+
+private class LookupBudget {
+    private val startedAtNanos = System.nanoTime()
+    private var visitedNodes = 0
+    private var existenceChecks = 0
+
+    fun shouldStop(collectedSize: Int, limit: Int): Boolean =
+        collectedSize >= limit ||
+            visitedNodes >= MAX_LOOKUP_VISITED_NODES ||
+            existenceChecks >= MAX_LOOKUP_EXISTENCE_CHECKS ||
+            System.nanoTime() - startedAtNanos >= LOOKUP_TIME_BUDGET_NANOS
+
+    fun canVisitNode(collectedSize: Int, limit: Int): Boolean {
+        if (shouldStop(collectedSize, limit)) return false
+        visitedNodes++
+        return true
+    }
+
+    fun canCheckFileExists(collectedSize: Int, limit: Int): Boolean {
+        if (shouldStop(collectedSize, limit)) return false
+        existenceChecks++
+        return true
+    }
+}
 
 /**
  * Stores and finds possible filenames
@@ -70,9 +117,26 @@ class FilenameCompleter(
 
     private fun cachedFileExists(filename: AbsolutePathString): Boolean {
         fileExistsCache[filename]?.let { return it }
-        val exists = Files.exists(Path(filename))
+        val exists = fastFileExists(filename)
         fileExistsCache[filename] = exists
         return exists
+    }
+
+    private fun fastFileExists(filename: AbsolutePathString): Boolean {
+        val future = try {
+            fileExistsExecutor.submit<Boolean> { Files.exists(Path(filename)) }
+        } catch (_: RejectedExecutionException) {
+            return true
+        }
+
+        return try {
+            future.get(FILE_EXISTS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+        } catch (_: TimeoutException) {
+            future.cancel(true)
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun fullPathAtKey(key: CharacterKey): String? {
@@ -131,9 +195,6 @@ class FilenameCompleter(
             val parentKey = storage.getEx(parentKeyPointer.key, ttl) { treeParentCache[it] }
             if (parentKey == null) return null
 
-            storage.expire(parentKeyPointer.key, ttl.inWholeSeconds)
-            storage.expire(parentKey, ttl.inWholeSeconds)
-
             val lastKeyChar = storage.getEx(keyOfValue(lastKey).key, ttl) { valueCache[it] }
             if (lastKeyChar == null) return null
             route.append(lastKeyChar)
@@ -153,28 +214,44 @@ class FilenameCompleter(
         limit: Int,
         collected: MutableSet<String> = mutableSetOf(),
         fileExistsPredicate: (AbsolutePathString) -> Boolean
+    ): List<String> = filenameDFS(
+        key = key,
+        limit = limit,
+        collected = collected,
+        fileExistsPredicate = fileExistsPredicate,
+        budget = LookupBudget(),
+    )
+
+    private fun filenameDFS(
+        key: CharacterKey,
+        limit: Int,
+        collected: MutableSet<String>,
+        fileExistsPredicate: (AbsolutePathString) -> Boolean,
+        budget: LookupBudget,
     ): List<String> {
-        if (collected.size >= limit) return collected.take(limit)
+        if (!budget.canVisitNode(collected.size, limit)) return collected.take(limit)
 
         val children = storage.hgetAllEx(key.key, ttl) { childrenCache[it] }
 
         if (collected.size < limit) {
             fullPathAtKey(key)?.let {
-                if (fileExistsPredicate(it)) collected.add(it)
+                if (budget.canCheckFileExists(collected.size, limit) && fileExistsPredicate(it)) collected.add(it)
             }
         }
         val previousLevelKeys = storage.smembersex(keyOfPreviousLevel(key).key, ttl) { previousLevelCache[it] }
         for (parentKey in previousLevelKeys) {
-            if (collected.size >= limit) break
+            if (budget.shouldStop(collected.size, limit)) break
             val route = fullPathAtKey(CharacterKey(parentKey)) ?: continue
-            if (route !in collected && fileExistsPredicate(route)) collected.add(route)
+            if (route !in collected && budget.canCheckFileExists(collected.size, limit) && fileExistsPredicate(route)) {
+                collected.add(route)
+            }
         }
 
 
         for ((_, charKey) in children) {
-            if (collected.size >= limit) break
+            if (budget.shouldStop(collected.size, limit)) break
             val childKey = CharacterKey(charKey)
-            filenameDFS(childKey, limit, collected, fileExistsPredicate)
+            filenameDFS(childKey, limit, collected, fileExistsPredicate, budget)
         }
 
         return collected.toList()
@@ -239,8 +316,6 @@ class FilenameCompleter(
         filenamePrefix.forEach { character ->
             val char = character.toString()
             val index = currNodeChildren[char] ?: return@withStorageSession emptyList()
-
-            storage.expire(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds)
 
             currNode = CharacterKey(index)
             currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }

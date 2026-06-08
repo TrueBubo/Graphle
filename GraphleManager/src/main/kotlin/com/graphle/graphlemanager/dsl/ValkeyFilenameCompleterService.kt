@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service
  */
 @Service
 class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompleteProperties): FilenameCompleterService {
+    private companion object {
+        const val VALKEY_TIMEOUT_MILLIS = 500
+    }
+
     /**
      * Configuration for the Jedis connection pool.
      */
@@ -36,7 +40,7 @@ class ValkeyFilenameCompleterService(autoCompleteProperties: AutoCompletePropert
     /**
      * The Jedis connection pool for Valkey database.
      */
-    private val pool = JedisPool(poolConfig, host, port)
+    private val pool = JedisPool(poolConfig, host, port, VALKEY_TIMEOUT_MILLIS)
 
     /**
      * The filename completer instance backed by Valkey storage.

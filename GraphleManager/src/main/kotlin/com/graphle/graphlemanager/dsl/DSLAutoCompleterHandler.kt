@@ -20,6 +20,30 @@ internal fun encodeAutocompleteResponse(values: List<String>): String {
     }
 }
 
+internal data class AutocompleteRequest(
+    val id: Long?,
+    val input: String,
+)
+
+internal fun decodeAutocompleteRequest(text: String): AutocompleteRequest {
+    val separatorIndex = text.indexOf('\t')
+    if (separatorIndex <= 0) return AutocompleteRequest(id = null, input = text)
+
+    val possibleId = text.substring(0, separatorIndex)
+    if (!possibleId.all(Char::isDigit)) return AutocompleteRequest(id = null, input = text)
+    val requestId = possibleId.toLongOrNull() ?: return AutocompleteRequest(id = null, input = text)
+
+    return AutocompleteRequest(
+        id = requestId,
+        input = text.substring(separatorIndex + 1),
+    )
+}
+
+internal fun encodeAutocompleteResponse(requestId: Long?, values: List<String>): String {
+    val encodedValues = encodeAutocompleteResponse(values)
+    return requestId?.let { "$it\t$encodedValues" } ?: encodedValues
+}
+
 /**
  * WebSocket handler for autocomplete
  * @param registry Registry to handle different sessions
@@ -53,9 +77,9 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val
      * @see DSLAutoCompleter.complete
      */
     override fun handleTextMessage(session: WebSocketSession, messageReceived: TextMessage) {
-        val input = messageReceived.payload
+        val request = decodeAutocompleteRequest(messageReceived.payload)
         val completions = try {
-            dslAutoCompleter.complete(input)
+            dslAutoCompleter.complete(request.input)
         } catch (exception: JedisException) {
             logger.warn("Autocomplete Valkey lookup failed", exception)
             emptyList()
@@ -63,7 +87,7 @@ class DSLAutoCompleterHandler(private val registry: SessionRegistry, private val
             logger.warn("Autocomplete lookup failed", exception)
             emptyList()
         }
-        val messageSent = encodeAutocompleteResponse(completions)
+        val messageSent = encodeAutocompleteResponse(request.id, completions)
         session.sendMessage(TextMessage(messageSent))
     }
 }
