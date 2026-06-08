@@ -21,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,6 +55,7 @@ internal fun TopBar(
     var autocompleteList by remember { mutableStateOf<List<String>>(emptyList()) }
     var areSuggestionsShown by remember { mutableStateOf(false) }
     var dslCommand by remember { mutableStateOf(TextFieldValue("")) }
+    val currentDslCommandText by rememberUpdatedState(dslCommand.text)
     var showAppMenu by remember { mutableStateOf(false) }
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -61,9 +63,10 @@ internal fun TopBar(
         DSLWebSocketManager.connect()
 
         // Listen for autocomplete messages
-        DSLWebSocketManager.messages.collect { list ->
-            autocompleteList = list
-            areSuggestionsShown = autocompleteList.isNotEmpty() && dslCommand.text.isNotEmpty()
+        DSLWebSocketManager.messages.collect { message ->
+            if (message.input != currentDslCommandText) return@collect
+            autocompleteList = message.suggestions
+            areSuggestionsShown = autocompleteList.isNotEmpty() && currentDslCommandText.isNotEmpty()
         }
     }
 
@@ -89,9 +92,7 @@ internal fun TopBar(
                     value = dslCommand,
                     onValueChange = {
                         dslCommand = it
-                        supervisorIoScope.launch {
-                            DSLWebSocketManager.sendAutocompleteRequest(dslCommand.text)
-                        }
+                        DSLWebSocketManager.sendAutocompleteRequest(it.text)
                     },
                     singleLine = true,
                     modifier = Modifier

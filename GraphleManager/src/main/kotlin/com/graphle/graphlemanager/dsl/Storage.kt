@@ -7,6 +7,11 @@ import kotlin.time.Duration
  */
 interface Storage {
     /**
+     * Executes multiple storage operations against the same backing session when supported.
+     */
+    fun <T> withSession(action: (Storage) -> T): T = action(this)
+
+    /**
      * Sets a string value for the given key.
      *
      * @param key The key under which the value will be stored.
@@ -151,4 +156,3 @@ interface Storage {
         return cachedValue ?: smembers(key)
     }
 }
-

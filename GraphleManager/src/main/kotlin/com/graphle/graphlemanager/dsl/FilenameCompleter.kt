@@ -9,6 +9,7 @@ import kotlin.collections.component2
 import kotlin.collections.iterator
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.seconds
 
 
 typealias FilenameComponents = List<String>
@@ -23,6 +24,7 @@ private val root = CharacterKey(ROOT_INDEX_KEY.toString()) // Every lookup call 
 
 @Value("\${cache.ttl}")
 private val ttl = 30.days // Keys not accessed for this long will be removed to prevent
+private val fileExistenceTtl = 2.seconds
 
 /**
  * Stores and finds possible filenames
@@ -32,10 +34,12 @@ private val ttl = 30.days // Keys not accessed for this long will be removed to 
  * @param storage Structure where the trie is saved to
  */
 class FilenameCompleter(
-    private val storage: Storage,
+    private val rootStorage: Storage,
 ) {
+    private val sessionStorage = ThreadLocal<Storage>()
+    private val storage: Storage get() = sessionStorage.get() ?: rootStorage
     private var lastElement =
-        storage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
+        rootStorage.get(LAST_KEY)?.toLong() ?: ROOT_INDEX_KEY // Will insert new elements  at this index
 
     // Caches so we do not always look in the database which is much more expensive than this
     private val childrenCache = ConcurrentCache<String, Map<String, String>>(ttl)
@@ -43,12 +47,40 @@ class FilenameCompleter(
     private val treeParentCache = ConcurrentCache<String, String>(ttl)
     private val valueCache = ConcurrentCache<String, String>(ttl)
     private val fullPathEndCache = ConcurrentCache<String, String>(ttl)
+    private val fileExistsCache = ConcurrentCache<String, Boolean>(fileExistenceTtl)
+
+    private fun <T> withStorageSession(action: () -> T): T {
+        val previousStorage = sessionStorage.get()
+        return rootStorage.withSession { storage ->
+            sessionStorage.set(storage)
+            try {
+                action()
+            } finally {
+                if (previousStorage == null) sessionStorage.remove()
+                else sessionStorage.set(previousStorage)
+            }
+        }
+    }
 
     // Getter functions for keys related to a main node
     private fun keyOfPreviousLevel(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:parents")
     private fun keyOfTreeParent(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:prev")
     private fun keyOfValue(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:val")
     private fun keyOfFullPathEnd(key: CharacterKey): CharacterKey = CharacterKey("${key.key}:full")
+
+    private fun cachedFileExists(filename: AbsolutePathString): Boolean {
+        fileExistsCache[filename]?.let { return it }
+        val exists = Files.exists(Path(filename))
+        fileExistsCache[filename] = exists
+        return exists
+    }
+
+    private fun fullPathAtKey(key: CharacterKey): String? {
+        val storedValue = storage.getEx(keyOfFullPathEnd(key).key, ttl) { fullPathEndCache[it] } ?: return null
+        return if (storedValue == TRUE_CHAR) {
+            findRouteToKey(key)?.also { fullPathEndCache[keyOfFullPathEnd(key).key] = it }
+        } else storedValue
+    }
 
     /**
      * Searches for a component, and if it does not exists it will build a path for it
@@ -126,20 +158,17 @@ class FilenameCompleter(
 
         val children = storage.hgetAllEx(key.key, ttl) { childrenCache[it] }
 
-        if (collected.size < limit && storage.getEx(
-                keyOfFullPathEnd(key).key,
-                ttl
-            ) { fullPathEndCache[it] } == TRUE_CHAR
-        ) {
-            findRouteToKey(key)?.let {
+        if (collected.size < limit) {
+            fullPathAtKey(key)?.let {
                 if (fileExistsPredicate(it)) collected.add(it)
             }
         }
         val previousLevelKeys = storage.smembersex(keyOfPreviousLevel(key).key, ttl) { previousLevelCache[it] }
-        previousLevelKeys
-            .mapNotNull { parentKey -> findRouteToKey(CharacterKey(parentKey)) }
-            .filter { it !in collected && fileExistsPredicate(it) }
-            .forEach(collected::add)
+        for (parentKey in previousLevelKeys) {
+            if (collected.size >= limit) break
+            val route = fullPathAtKey(CharacterKey(parentKey)) ?: continue
+            if (route !in collected && fileExistsPredicate(route)) collected.add(route)
+        }
 
 
         for ((_, charKey) in children) {
@@ -159,8 +188,8 @@ class FilenameCompleter(
     private fun insertComponent(component: String, parent: CharacterKey?): CharacterKey {
         val currNode = searchAndAddComponent(component)
         if (parent == null) {
-            storage.setEx(keyOfFullPathEnd(currNode).key, ttl, TRUE_CHAR) { key, value ->
-                fullPathEndCache[key] = value
+            storage.setEx(keyOfFullPathEnd(currNode).key, ttl, TRUE_CHAR) { key, _ ->
+                fullPathEndCache[key] = component
             }
         }
         parent?.let {
@@ -180,6 +209,12 @@ class FilenameCompleter(
      * @param filename Components of the filenames consists of parent directories and the bottom level filename itself
      */
     fun insert(filename: FilenameComponents) {
+        withStorageSession {
+            insertWithStorageSession(filename)
+        }
+    }
+
+    private fun insertWithStorageSession(filename: FilenameComponents) {
         if (filename == emptyList<AbsolutePathString>()) return
         val filenameString = filename.joinToString(prefix = File.separator, separator = File.separator)
         val fullFileKey = insertComponent(filenameString, null)
@@ -194,8 +229,8 @@ class FilenameCompleter(
      */
     fun lookup(filenamePrefix: String,
                limit: Int = COMPLETIONS_LIMIT,
-               fileExistsPredicate: (String) -> Boolean = { Files.exists(Path(it)) },
-               ): List<FilenameComponents> {
+               fileExistsPredicate: (AbsolutePathString) -> Boolean = ::cachedFileExists,
+               ): List<FilenameComponents> = withStorageSession {
         if (lastElement == ROOT_INDEX_KEY) storage.set(LAST_KEY, ROOT_INDEX_KEY.toString())
 
         var currNode = root
@@ -203,7 +238,7 @@ class FilenameCompleter(
 
         filenamePrefix.forEach { character ->
             val char = character.toString()
-            val index = currNodeChildren[char] ?: return emptyList()
+            val index = currNodeChildren[char] ?: return@withStorageSession emptyList()
 
             storage.expire(keyOfTreeParent(CharacterKey(index)).key, ttl.inWholeSeconds)
 
@@ -211,7 +246,7 @@ class FilenameCompleter(
             currNodeChildren = storage.hgetAllEx(currNode.key, ttl) { childrenCache[it] }
         }
 
-        return try {
+        try {
             filenameDFS(currNode, limit, fileExistsPredicate = fileExistsPredicate).map {
                 val list = it.split(File.separator)
                 if (list.first() == "") list.drop(1) else list
