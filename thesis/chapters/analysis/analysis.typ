@@ -9,7 +9,7 @@ It targets both regular users who benefit from a more expressive GUI file browse
 who can automate operations via the provided #link(label("voc_dsl"))[DSL].
 The section defines functional and qualitative requirements, including work with semantic and hierarchical #link(label("voc_connection"))[connections], 
 the interaction with the system, and its qualities. It explains how the system handles user accounts
-and their file permissions. In the last subsection, I show possible interactions via use cases,
+and their file permissions. The last subsection shows possible interactions via use cases,
 including creating and deleting semantic information, browsing through the #link(label("voc_filesystem"))[filesystem], and using
 the #link(label("voc_dsl"))[DSL].
 

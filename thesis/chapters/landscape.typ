@@ -13,9 +13,9 @@ and remote access, which is relevant to users who manage files on headless serve
 
 == Traditional File Managers
 
-To understand the problem space, we need to assess the current solutions of file managers. As representative of
-file managers I have chosen Finder for macOS @findermac, and Nautilus @gnomefiles and Dolphin @dolphin for Linux desktop
-environments.
+To understand the problem space, we need to assess the current solutions of file managers.
+Finder for macOS @findermac, Nautilus @gnomefiles and Dolphin @dolphin for Linux desktop
+environments were chosen as representatives of file managers.
 All three provide a graphical directory browser with file manipulation support.
 Finder exposes the macOS tagging system, which persists #link(label("voc_tag"))[tags] as extended filesystem attributes.
 Nautilus and Dolphin offer no comparable built-in tagging.

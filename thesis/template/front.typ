@@ -80,8 +80,8 @@
 ]
 
 #let declaration-page() = b(180mm)[
-  I declare that I carried out this bachelor thesis on my own, and only with the
-  cited sources, literature and other professional sources. I understand that my
+  The author declares that this bachelor thesis was carried out independently, and only with the
+  cited sources, literature and other professional sources. It is understood that the
   work relates to the rights and obligations under the Act No. 121/2000 Sb., the
   Copyright Act, as amended, in particular the fact that the Charles University has
   the right to conclude a license agreement on the use of this work as a school work

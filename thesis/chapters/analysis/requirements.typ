@@ -2,10 +2,10 @@
 
 == Functional and Qualitative Requirements
 
-I defined the requirements based on my personal analysis of existing tools and their limitations.
-I examined existing #link(label("voc_filesystem"))[filesystem] tools and productivity applications to identify potential enhancements that can be made to them.
+The requirements were defined based on an analysis of existing tools and their limitations.
+Existing #link(label("voc_filesystem"))[filesystem] tools and productivity applications were examined to identify potential enhancements that can be made to them.
 The existing solutions will be discussed further in the #link(label("landscape"))[Current landscape] section.
-No formal user interviews were conducted. The requirements were instead derived from my own experience with the problem domain.
+No formal user interviews were conducted. The requirements were instead derived from experience with the problem domain.
 The main goal of this project is to extend a standard #link(label("voc_filesystem"))[filesystem] to support faster traversal via interpreting the 
 #link(label("voc_relationship"))[relationships] as an #link(label("voc_lpg"))[LPG].
 

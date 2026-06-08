@@ -54,7 +54,7 @@ which is critical for meeting the low-latency autocomplete requirement.
 gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions and code generation,
 is overkill for a single stream exchanging short strings.
 There are specific tools for creating #link(label("voc_dsl"))[DSLs]. However, as the auto-completer needs to parse the commands either way, and
-needs to fetch data from the database, I decided to keep them in the same service, as to avoid serialization between
+needs to fetch data from the database, the parser and completer were kept in the same service to avoid serialization between
 different services, which is important to keep the response time at minimum.
 
 === Relationships Between Files
