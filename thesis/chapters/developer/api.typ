@@ -54,7 +54,7 @@ Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionIn
 - `SUCCESS`: empty list, used by mutating commands such as `addFile`, `addRel`, `addTag`.
 - `ERROR`: a single human-readable message.
 
-`GET /download?location=<absolute path>` streams the file contents with a detected `Content-Type`, served by `FileDownloadController`.
+`GET /download?path=<absolute path>` streams the file contents with a detected `Content-Type`, served by `FileDownloadController`.
 
 === WebSocket
 
