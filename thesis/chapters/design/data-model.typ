@@ -3,7 +3,7 @@
 == Data Model
 
 The application works with a graph-oriented extension of the user's existing filesystem.
-The filesystem itself remains outside the application data model: it stores file contents, permissions, timestamps, and the directory hierarchy.
+The filesystem itself remains outside the application data model. It stores file contents, permissions, timestamps, and the directory hierarchy.
 Graphle stores only the #voc("metadata") needed for graph navigation and derives the rest from the live filesystem when a query is executed.
 
 #figure(

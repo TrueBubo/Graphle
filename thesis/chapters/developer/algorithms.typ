@@ -11,7 +11,7 @@ Each node stores its parent link back up the #voc("trie"), the character it repr
 A separate top-level counter holds the index of the most recently allocated node so inserts pick a fresh index even across process restarts.
 
 The insertion path implements the "modified #voc("trie")" described in the architecture chapter.
-Because many files share long common ancestor paths, storing each full path as an independent sequence of characters would duplicate most nodes. The modified #voc("trie") avoids this by inserting each path twice: once as the complete absolute path, and once as only its leaf component, with a back-reference pointing from the leaf to the corresponding full-path node.
+Because many files share long common ancestor paths, storing each full path as an independent sequence of characters would duplicate most nodes. The modified #voc("trie") avoids this by inserting each path twice. Once as the complete absolute path, and once as only its leaf component, with a back-reference pointing from the leaf to the corresponding full-path node.
 The effect is that a directory prefix shared by many files is stored once and reused rather than repeated for every full path. The parent chain for any leaf can always be reconstructed by following the back-reference to the full-path node and then walking up to the root.
 Memory therefore grows with the number of unique directory and filename components in the dataset, rather than with the number of files multiplied by their average depth. This matters because the in-process #voc("cache") stores #voc("trie") nodes directly. Duplicated prefixes would fill the #voc("cache") with redundant entries and reduce its effectiveness.
 
