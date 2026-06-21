@@ -1,7 +1,7 @@
 #import "../../template/shared.typ": *
 == Backend
 
-The backend service is `GraphleManager`, a JVM Spring boot application written in Kotlin.
+The backend service is `GraphleManager`, a JVM Spring Boot application written in Kotlin.
 
 === Package Layout
 
@@ -37,20 +37,20 @@ Each entity has a `Neo4jRepository` declaring the #voc("cypher") queries the res
 === Service Layer
 
 Services sit between the controllers and the repositories and carry all non-trivial logic.
-`FileService` performs #voc("filesystem") I/O through `java.nio.file.Files`, reconciles database state with disk state after `addFile`/`removeFile`/`moveFile`, and schedules the autocomplete #voc("trie") asynchronout updates off via `insertFilesToCompleter`.
+`FileService` performs #voc("filesystem") I/O through `java.nio.file.Files`, reconciles database state with disk state after `addFile`/`removeFile`/`moveFile`, and schedules asynchronous autocomplete #voc("trie") updates via `insertFilesToCompleter`.
 It exposes functions `fileType`, `descendantsOfFile`, and `parentOfFile` that let the controllers compute hierarchical #voc("neighbor", text: "neighbors") without going through the database (F1, F9).
 `TagService` and `ConnectionService` are thin wrappers that delegate to their repositories.
-Background work is dispatched on a different thread so it does not need to wait and its failure will not affect the rest of the system.
+Background work is dispatched on a different thread so the caller does not need to wait and its failure will not affect the rest of the system.
 
 === Controller Layer
 
 #voc("graphql") surface is split across three `@Controller` classes, one per entity: `FileController`, `TagController`, and `ConnectionController`. Their methods are tagged with the standard query and mutation annotations, and the nested `File.tags` and `File.connections` fields are fetched lazily, only when the client actually requests them.
 `FileController.fileByLocation` is the only entry point that crosses domain boundaries: it assembles a single `File` response from the live hierarchical #voc("neighbor", text: "neighbors"), the persisted custom #voc("connection", text: "connections"), and the file's #voc("tag", text: "tags"), optionally hiding entries marked as hidden by the operating system.
-Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by UI.
+Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by the UI.
 
 Three more endpoints sit outside #voc("graphql").
 `DSLController` is a `@RestController` mapped at `/dsl` that hands the request body to the #voc("dsl") interpreter and returns the resulting response.
-`FileDownloadController` serves raw file contents over `GET /download?location=…` with a detected MIME type, the GUI uses it whenever the backend is running on a different host.
+`FileDownloadController` serves raw file contents over `GET /download?location=…` with a detected MIME type. The GUI uses it whenever the backend is running on a different host.
 A #voc("websocket") endpoint at `/ws` carries autocomplete traffic.
 
 === Configuration

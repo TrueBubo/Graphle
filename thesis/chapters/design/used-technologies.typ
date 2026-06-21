@@ -2,7 +2,7 @@
 
 == Used Technologies
 
-The selection of technologies was guided by three criteria which apply to all components:
+The selection of technologies was guided by three criteria that apply to all components:
 cross-platform compatibility to ensure the application runs on macOS and Linux without platform-specific defects (requirement F10),
 ecosystem maturity and community size to lower the barrier for future contributors and reduce the risk of relying on abandoned dependencies,
 and fit for the specific technical constraints of each component, such as latency requirements or data-model alignment.
@@ -19,9 +19,9 @@ At the time of project inception, the only candidates meeting both constraints w
 
 Kotlin was chosen over Java because it supports every Java library while also offering additional language features.
 This gives developers access to a vast span of existing functionality, allowing them to focus on the core domain 
-rather than reimplementing general purpose utilities. Kotlin's type system is also more expressive than Java's. 
+rather than reimplementing general-purpose utilities. Kotlin's type system is also more expressive than Java's.
 Illegal states can be made unrepresentable at compile time more easily, which makes client-server communication less 
-error prone by enforcing a more precise contract.
+error-prone by enforcing a more precise contract.
 
 === API
 
@@ -51,11 +51,11 @@ The application provides a #voc("dsl") for advanced #voc("filesystem") operation
 Because autocomplete for the #voc("dsl") must react to each keystroke, its parser runs inside the backend service and communicates available completions via #voc("websocket", text: "WebSockets"). 
 #voc("websocket", text: "WebSockets") maintain a persistent #voc("connection"), avoiding the overhead of establishing a new #voc("http") connection on every keystroke,
 which is critical for meeting the low-latency autocomplete requirement.
-gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions and code generation,
+gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions, and code generation,
 is overkill for a single stream exchanging short strings.
-There are specific tools for creating #voc("dsl", text: "DSLs"). However, as the auto-completer needs to parse the commands either way, and
+There are specific tools for creating #voc("dsl", text: "DSLs"). However, as the auto-completer needs to parse the commands either way and
 needs to fetch data from the database, the parser and completer were kept in the same service to avoid serialization between
-different services, which is important to keep the response time at minimum.
+different services, which is important to keep the response time to a minimum.
 
 === Relationships Between Files
 
@@ -65,7 +65,7 @@ Two graph data models were considered: the #voc("lpg") and the Resource Descript
 RDF was eliminated for two reasons.
 First, it mandates the use of URIs as node and #voc("relationship") identifiers.
 This imposes an unnecessary burden on users who manage a purely local #voc("filesystem") with no intent of publishing or interlinking it with external datasets.
-Second, RDF stores are typically triple stores that materialise graph structure only at query time, whereas #voc("lpg") databases index edges natively, resulting in faster traversal for the #voc("relationship")-heavy workloads this project targets @neo4jrdfvslpg.
+Second, RDF stores are typically triple stores that materialize graph structure only at query time, whereas #voc("lpg") databases index edges natively, resulting in faster traversal for the #voc("relationship")-heavy workloads this project targets @neo4jrdfvslpg.
 
 Among self-hosted #voc("lpg") databases, Neo4j @neo4j is the only option with broad industry adoption @so2024survey.
 It was therefore selected as the graph store.
@@ -76,9 +76,9 @@ As specified in requirement Q2.1, autocomplete responses must be delivered withi
 Meeting this constraint requires that candidate filenames be held in memory rather than retrieved from disk on each keystroke.
 
 Valkey @valkey, a Linux Foundation fork of Redis @redis, was selected as the in-memory store.
-Valkey is reported to be faster and more memory-efficient than Redis in benchmarks @valkeybenchmark, 
-and has received corporate backing from Oracle, AWS, and Google. Organisations that now depend on it in production,
- which reduces the risk of the project being abandoned @valkeyannouncement.
+Valkey is reported to be faster and more memory-efficient than Redis in benchmarks @valkeybenchmark
+and has received corporate backing from Oracle, AWS, and Google. Organizations now depend on it in production,
+which reduces the risk of the project being abandoned @valkeyannouncement.
 Developers familiar with Redis can apply that knowledge directly to Valkey with no additional learning overhead.
 
 To support infix completion while keeping memory consumption reasonable, filenames are indexed using a modified #voc("trie").

@@ -3,7 +3,7 @@
 
 === Command auto-completion
 * Preconditions *
-- The user has the application opened
+- The user has the application open
 - The file browser is connected to a Graphle server
 - The DSL command interface is active
 

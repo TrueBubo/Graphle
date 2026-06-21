@@ -2,9 +2,9 @@
 #import "../config.typ": *
 === Remove a tag
 * Preconditions *
-- a) The user has the application opened
+- a) The user has the application open
 - b) The file browser is connected to a Graphle server
-- c) The user wants to connect two files with their relationship
+- c) The user wants to remove a tag from a file
 
 * Flow *
 1. The user searches for a file

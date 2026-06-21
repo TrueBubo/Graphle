@@ -14,7 +14,7 @@ and remote access, which is relevant to users who manage files on headless serve
 == Traditional File Managers
 
 To understand the problem space, we need to assess the current solutions of file managers.
-Finder for macOS @findermac, Nautilus @gnomefiles and Dolphin @dolphin for Linux desktop
+Finder for macOS @findermac, Nautilus @gnomefiles, and Dolphin @dolphin for Linux desktop
 environments were chosen as representatives of file managers.
 All three provide a graphical directory browser with file manipulation support.
 Finder exposes the macOS tagging system, which persists #voc("tag", text: "tags") as extended filesystem attributes.
@@ -34,9 +34,9 @@ which does not scale.
 
 Dolphin exposes an integrated Konsole panel @dolphinkonsole that can be toggled inside the file manager window,
 giving users a terminal session whose working directory follows the GUI's current folder.
-The standard shell commands available, such as `cd`, `mv`, `find`, can be used to navigate the #voc("filesystem"),
-however they only operate on paths and are not able to navigate based on semantic information. Therefore, it
-receives a partial rating for DSL part.
+The standard shell commands available, such as `cd`, `mv`, and `find`, can be used to navigate the #voc("filesystem").
+However, they only operate on paths and are not able to navigate based on semantic information. Therefore, Dolphin
+receives a partial rating for the DSL part.
 
 == Obsidian
 
@@ -54,7 +54,7 @@ Because Obsidian stores its link index only for Markdown vaults, non-Markdown fi
 folder are invisible to the graph, hence the _Partial_ rating for _Existing FS_ in the
 comparison table below.
 The Dataview @dataview community plugin adds a query language over file #voc("metadata"),
-but its queries are still confined to Markdown files. PDFs, images, or a binary cannot
+but its queries are still confined to Markdown files. PDFs, images, or binaries cannot
 appear as a node in a Dataview query.
 
 == TagSpaces
@@ -115,13 +115,13 @@ It is a navigation aid rather than a file management tool, and it provides no gr
 )
 
 None of the surveyed tools satisfies the full requirement set.
-Standard file managers provide no #voc("relationship") or tagging model beyond OS-level #voc("tag", text: "tags") on macOS
+Standard file managers provide no #voc("relationship") or tagging model beyond OS-level #voc("tag", text: "tags") on macOS.
 
 Obsidian is the closest conceptual match, a graph of linked documents with #voc("tag", text: "tags") and partial query
 support. However, it is constrained to Markdown notes and cannot work with arbitrary file types in its graph.
 TagSpaces adds tagging to any file type but has no #voc("relationship") model and no query #voc("dsl") beyond
 #voc("tag") and filename matching.
-autojump demonstrates that traversing through links through the whole #voc("filesystem") is useful for
+autojump demonstrates that traversing links across the whole #voc("filesystem") is useful for
 navigation, but it has no file management capabilities, no #voc("relationship") model, and no GUI.
 
 Graphle addresses the gap left by all three by extending a standard #voc("filesystem") with #voc("relationship", text: "relationships"),

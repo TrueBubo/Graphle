@@ -24,8 +24,8 @@ When the backend happens to be running on the same host, a `server.localhost` fl
 
 === Portability
 
-The application targets macOS and Linux (F10). Windows is deliberately not supported. See the analysis chapter for the reasoning of not supporting it.
-Because both the Spring Boot backend and the Compose Desktop frontend are written in Kotlin and compile to JVM bytecode, JDK 21 is the single runtime that makes both components portable. JDK 21 is supported on both MacOS and Linux.
+The application targets macOS and Linux (F10). Windows is deliberately not supported. See the analysis chapter for the reasoning behind not supporting it.
+Because both the Spring Boot backend and the Compose Desktop frontend are written in Kotlin and compile to JVM bytecode, JDK 21 is the single runtime that makes both components portable. JDK 21 is supported on both macOS and Linux.
 Everything else (file existence, directory enumeration, path normalization) delegates to `java.nio.file`, which abstracts the remaining OS differences.
 
 === User navigation
@@ -44,4 +44,4 @@ GraphleManager depends on two external services, Neo4j and Valkey, each with its
 The GUI is a separate Gradle project that is either run directly with `./gradlew run` during development or built into a platform-native installer via the Compose Desktop plugin for distribution.
 
 The two services can fail independently, so a Valkey outage while Neo4j remains healthy is an expected operational state.
-GraphleManager treats it as degraded rather than fatal. Autocomplete stops working, but every other request continues normally. (Q3.2)
+GraphleManager treats it as degraded rather than fatal. Autocomplete stops working, but every other request continues normally (Q3.2).

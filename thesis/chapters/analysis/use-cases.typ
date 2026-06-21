@@ -1,8 +1,8 @@
 #import "../../template/shared.typ": *
 == Use Cases
 
-This section outlines the use cases describing how the user interacts with the application. Use cases range from
-a variety of functionalities, including creating and deleting semantic information, browsing through the #voc("filesystem"),
+This section outlines the use cases that describe how the user interacts with the application. Use cases cover
+a variety of functions, including creating and deleting semantic information, browsing through the #voc("filesystem"),
 and using the #voc("dsl").
 
 #figure(

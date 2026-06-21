@@ -6,11 +6,11 @@ To avoid maintaining application-specific security measures, the application del
 This section describes how user accounts and file permissions are handled.
 
 === Accounts
-The system will not have the ability to create custom users, as operating systems themselves already provide this functionality. 
-The user account used is the account of the user who launched the application. Hence, to create a new user, you create 
-a new user account in your operating system. This comes with the benefit that the system itself does not need to concern 
-itself with holding user credentials, which could be a significant security liability if the system was exposed to the internet. 
-Furthermore, regular people often set passwords in a way that allows malicious actors to crack them easily. @password-stolen 
+The system will not have the ability to create custom users, as operating systems already provide this functionality.
+The user account used is the account of the user who launched the application. Therefore, to create a new user, the user creates
+a new user account in the operating system. This has the benefit that the system itself does not need to concern
+itself with storing user credentials, which could be a significant security liability if the system were exposed to the internet.
+Furthermore, regular users often set passwords in a way that allows malicious actors to crack them easily. @password-stolen
 Instead, users are advised to set up SSH port forwarding @ssh-port-forwarding. This is the method that many other applications, 
 such as DBeaver @dbeaver-ssh, use for safer access.
 

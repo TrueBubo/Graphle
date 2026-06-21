@@ -2,14 +2,14 @@
 #import "../config.typ": *
 === Add a tag
 * Preconditions *
-- a) The user has the application opened
+- a) The user has the application open
 - b) The file browser is connected to a Graphle server
 - c) The user wants to tag a file
 
 * Flow *
 1. The user searches for a file
 2. The user selects the operation "Add tag"
-3. The system displays the menu where the user can enter info about the tag
+3. The system displays the menu where the user can enter information about the tag
 4. The user enters the information and submits it
 
 * Alternative flow *

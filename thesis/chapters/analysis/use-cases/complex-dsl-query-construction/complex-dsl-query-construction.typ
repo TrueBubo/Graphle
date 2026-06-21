@@ -3,7 +3,7 @@
 
 === Complex DSL query construction
 * Preconditions *
-- The user has the application opened
+- The user has the application open
 - The file browser is connected to a Graphle server
 - The user wants to perform a complex search using multiple criteria
 

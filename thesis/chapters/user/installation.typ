@@ -26,7 +26,7 @@ cd Graphle
 chmod +x start.sh
 ```
 
-3. Run the application - Execute the startup script from the top-level project directory.
+3. Run the application by executing the startup script from the top-level project directory.
 
 ```bash
 ./start.sh

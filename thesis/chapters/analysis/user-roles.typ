@@ -1,8 +1,8 @@
 #import "../../template/shared.typ": *
 == User roles
 
-The application targets both regular users and power user. The user is able to choose what functionality they want
-to utilize, and does not need to adjust to a more powerful way of traversing files all at once.
+The application targets both regular users and power users. The user can choose which functionality they want
+to use and does not need to adjust to a more powerful way of traversing files all at once.
 
 === Regular User
 
@@ -17,6 +17,6 @@ as the application layers on top of the existing #voc("filesystem") without requ
 
 A power user is a technically proficient user, most often a developer or system administrator, 
 who wants to automate or script #voc("filesystem") operations. They interact with the application primarily through the custom 
-#voc("dsl"), which allows them to easily perform batch operations and more advanced queries that would 
-require a lot of effort using GUI. This user is familiar with command line tools and basic scripting.
-This role is the ability to integrate the application into their existing workflows and tooling.
+#voc("dsl"), which allows them to perform batch operations and more advanced queries that would
+require a lot of effort using a GUI. This user is familiar with command line tools and basic scripting.
+This role benefits from the ability to integrate the application into existing workflows and tooling.
