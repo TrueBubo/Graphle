@@ -3,18 +3,18 @@
 
 === Search for a file
 * Preconditions *
-- The user has the application opened
+- The user has the application open
 - The file browser is connected to a Graphle server
 - The user wants to find a file
 
 * Flow *
 1. The user opens the file browser
 2. The file browser opens the user-defined home location
-3. Application shows possible #voc("neighbor") entities from the current location
+3. The application shows possible #voc("neighbor") entities from the current location
 4. The user clicks on the neighbor they want to visit
-5. If the file was not located then go back to step 3
+5. If the file was not located, then go back to step 3
 6. The user clicks on the file
-7. The user shows the menu on the file
+7. The user opens the menu on the file
 8. The system shows the menu with different operations available
 9. The user selects an operation
 10. The system performs the operation

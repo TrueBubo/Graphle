@@ -1,6 +1,6 @@
 services:
   neo4j:
-    image: 'neo4j:latest'
+    image: 'neo4j:2026.05-trixie'
     environment:
       - 'NEO4J_AUTH=neo4j/notverysecret'
     ports:
@@ -8,9 +8,15 @@ services:
       - '7474:7474'  # HTTP for Neo4j Browser
     volumes:
       - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p notverysecret 'RETURN 1;' >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 10s
+      retries: 24
+      start_period: 20s
 
   valkey:
-    image: valkey/valkey:latest
+    image: valkey/valkey:9.1.0-alpine
     container_name: valkey
     ports:
       - "6379:6379"

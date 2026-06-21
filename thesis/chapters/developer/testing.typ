@@ -30,5 +30,5 @@ Even the slowest measured group stayed well below the 250 ms limit defined by #l
 === Continuous Integration
 
 The GitHub Actions workflow runs on every push and on pull requests targeting `main`.
-Neo4j and Valkey are provided as service containers with health checks so the same wiring used locally is reproduced in CI.
+Neo4j and Valkey are provided as service containers so the same wiring used locally is reproduced in CI.
 The automatic action ensures the functionality in `main` will not regress once new pull requests with new features start coming in.

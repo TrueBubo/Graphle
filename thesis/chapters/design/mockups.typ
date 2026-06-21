@@ -1,6 +1,7 @@
 #import "../../template/shared.typ": *
 #import "mockups/main-page.typ": main-page-mockup
 #import "mockups/filenames-page.typ": filenames-page-mockup, find-relationships-page-mockup
+#import "mockups/files-with-tag-page.typ": files-with-tag-page-mockup
 == Mockups
 
 This section presents the visual design of the GUI client.
@@ -29,3 +30,10 @@ When a find command includes a #voc("relationship") filter, the results page sho
 Each pill displays the #voc("relationship") name and value alongside the file path.
 
 #find-relationships-page-mockup()
+
+=== Files With Tag mockup
+
+The files with tag page displays the output of a tag lookup command.
+Each result pill shows the matched #voc("tag") name and value followed by the file path.
+
+#files-with-tag-page-mockup()

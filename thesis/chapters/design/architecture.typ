@@ -27,8 +27,8 @@ File and folder manipulation is exposed through #voc("graphql") mutations for th
 It is the second user interface available to users alongside the GUI (Q1.1).
 
 *Neo4j* stores the graph of files, #voc("relationship", text: "relationships"), and #voc("tag", text: "tags") as an #voc("lpg") (F2, F3).
-Only GraphleManager reads from and writes to Neo4j directly, and the clients access the database layer through it.
-However, the database instance is exposed on a configurable port with a published schema. This allows external applications 
+Only GraphleManager reads from and writes to Neo4j directly, and clients access the database layer through it.
+However, the database instance is exposed on a configurable port with a published schema. This allows external applications
 and independent forks of GraphleManager to query or even extend the dataset directly, fulfilling the extensibility requirement (Q4.1).
 
 *Valkey* holds the filename autocomplete index in memory as a #voc("trie") (F8).
@@ -47,7 +47,7 @@ The schema also gives any future client full transparency over the available dat
 
 *#voc("websocket")* (`/ws`) provides a persistent connection for #voc("dsl") autocomplete.
 Keeping the connection open avoids establishing a new TCP handshake on each keystroke, which is necessary to meet the latency requirement (Q2.1).
-GraphleUI reconnects automatically with exponential back-off if the connection is lost. (Q3.1)
+GraphleUI reconnects automatically with exponential back-off if the connection is lost (Q3.1).
 
 === Background Maintenance and Lazy Loading
 
@@ -55,7 +55,7 @@ Files, parent directories, and descendants are not indexed eagerly.
 They are loaded from the #voc("filesystem") on demand the first time a query requests them (F9).
 This avoids a potentially unbounded startup scan and keeps the graph populated only with content the user has actually navigated to.
 Parent and descendant #voc("relationship", text: "relationships") are resolved live by reading the OS #voc("filesystem") hierarchy rather than being stored in Neo4j, 
-meaning any file already on disk is immediately accessible through Graphle without first being loaded to database (F1).
+meaning any file already on disk is immediately accessible through Graphle without first being loaded into the database (F1).
 
 A background job, *Neo4JSweeper*, runs inside GraphleManager at a configurable interval.
 It fetches all file locations recorded in Neo4j, checks whether each path still exists on the #voc("filesystem"),

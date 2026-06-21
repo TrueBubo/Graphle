@@ -2,7 +2,7 @@
 #import "../config.typ": *
 === Remove a relationship
 * Preconditions *
-- a) The user has the application opened
+- a) The user has the application open
 - b) The file browser is connected to a Graphle server
 - c) The user wants to remove a relationship between two files
 
