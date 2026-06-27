@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-= Analysis
+= Analysis <analysis>
 A standard #voc("filesystem") organizes files in a strict hierarchy of folders.
 This forces users to pick a single location for each file and makes it difficult to express a #voc("relationship") that spans multiple topics or projects.
 This section provides the analytical documentation for an application designed

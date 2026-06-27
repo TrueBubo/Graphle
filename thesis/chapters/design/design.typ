@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-= Design Documentation
+= Design Documentation <design>
 
 This section describes how the functional and qualitative requirements defined in the analysis are realized in the design of the system.
 It covers the data model, the overall architecture and communication between components, the technologies selected for each layer, 

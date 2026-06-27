@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-= Developer Documentation
+= Developer Documentation <developer>
 
 This chapter describes the implementation of Graphle for a developer who wants to work with the source code.
 It complements the design chapter, which explains why the system is structured the way it is, by focusing on how that structure is implemented.
