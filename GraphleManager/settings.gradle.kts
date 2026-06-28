@@ -4,3 +4,14 @@ pluginManagement {
     }
 }
 rootProject.name = "GraphleManager"
+
+include(
+    "common",
+    "model",
+    "tag",
+    "connection",
+    "autocomplete",
+    "file",
+    "application",
+    "dsl",
+)

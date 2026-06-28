@@ -3,18 +3,20 @@
 
 The backend service is `GraphleManager`, a JVM Spring Boot application written in Kotlin.
 
-=== Package Layout
+=== Module and Package Layout
 
-All source lives under `com.graphle.graphlemanager` and is split by domain concern rather than by layer.
-The root is the Spring entry point `GraphleManagerApplication.kt`. The subpackages are:
+`GraphleManager` is a Gradle multi-project build.
+The root project contains the Spring Boot entry point `GraphleManagerApplication.kt`, startup configuration, the background sweeper, and resources.
+Backend code is split into subprojects so cross-domain dependencies are visible in `build.gradle.kts`. `GraphleManager` consists of:
 
-- `init/`: Startup configuration.
-- `file/`: file entity and the #voc("graphql")/#voc("rest") endpoints that expose it.
-- `tag/`: #voc("tag") entity and the #voc("graphql") endpoints that expose it.
-- `connection/`: #voc("relationship") entity and the #voc("graphql") endpoints that expose it.
-- `dsl/`: the #voc("dsl") interpreter, autocomplete, and the Valkey-backed #voc("trie").
-- `sweeper/`: the background cleanup job `Neo4JSweeper`.
-- `commons/`: shared utilities.
+- `common`: shared utilities.
+- `model`: serializable #voc("api") and Neo4j data classes shared by the domain modules.
+- `tag`: #voc("tag") persistance, tag service operations, and the tag #voc("graphql") controller.
+- `connection`: #voc("relationship") persistance, connection service operations and the connection #voc("graphql") controller.
+- `autocomplete`: Valkey-backed filename #voc("trie") storage, caching, and the autocomplete service contract.
+- `file`: #voc("filesystem") interactions, file-node persistence, file mutations and queries, and downloads.
+- `application`: cross-domain orchestration.
+- `dsl`: #voc("dsl") parsing and execution, the `/dsl` #voc("rest") endpoint, and the autocomplete #voc("websocket").
 
 === Domain Layer
 
@@ -45,8 +47,9 @@ Background work is dispatched on a different thread so the caller does not need 
 === Controller Layer
 
 #voc("graphql") surface is split across three `@Controller` classes, one per entity: `FileController`, `TagController`, and `ConnectionController`. Their methods are tagged with the standard query and mutation annotations, and the nested `File.tags` and `File.connections` fields are fetched lazily, only when the client actually requests them.
-`FileController.fileByLocation` is the only entry point that crosses domain boundaries: it assembles a single `File` response from the live hierarchical #voc("neighbor", text: "neighbors"), the persisted custom #voc("connection", text: "connections"), and the file's #voc("tag", text: "tags"), optionally hiding entries marked as hidden by the operating system.
-Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by the UI.
+The `fileByLocation` query is implemented outside those domain controllers in `application/FileDetailsController`, which delegates to `FileDetailsService`.
+This service assembles a single `File` response from the live hierarchical #voc("neighbor", text: "neighbors"), the persisted custom #voc("connection", text: "connections"), and the file's #voc("tag", text: "tags").
+The separation is enforced by Gradle module dependencies, meaning only application module can access other domain modules. Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by the UI.
 
 Three more endpoints sit outside #voc("graphql").
 `DSLController` is a `@RestController` mapped at `/dsl` that hands the request body to the #voc("dsl") interpreter and returns the resulting response.

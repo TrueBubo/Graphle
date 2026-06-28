@@ -4,7 +4,7 @@
 
 This section adds a C4 view of the system.
 The diagrams define the architectural boundaries that follow from the requirements and complement the component-level design.
-The module names follow the current package structure of `GraphleManager` and `GraphleUI`, so the diagrams can be traced back to the implementation.
+The module names follow the current Gradle modules and package structure of `GraphleManager` and `GraphleUI`, so the diagrams can be traced back to the implementation.
 
 === System Context
 
@@ -41,7 +41,7 @@ instead of having to rely on the current state of backend internals.
 
 === GraphleManager Modules
 
-The backend module decomposition follows the source packages in `GraphleManager/src/main/kotlin/com/graphle/graphlemanager`.
+The backend module decomposition follows the Gradle modules in `GraphleManager`.
 The #voc("api") adapters accept client traffic and delegate to service modules.
 The service modules contain the application logic and decide whether an operation needs Neo4j, the live #voc("filesystem"), Valkey, or a combination of them.
 

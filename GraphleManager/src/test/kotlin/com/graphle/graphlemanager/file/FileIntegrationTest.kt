@@ -2,6 +2,7 @@ package com.graphle.graphlemanager.file
 
 import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
+import com.graphle.graphlemanager.commons.AbsolutePathString
 import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.apache.commons.io.FileUtils

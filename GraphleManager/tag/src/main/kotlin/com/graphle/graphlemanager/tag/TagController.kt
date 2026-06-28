@@ -1,0 +1,58 @@
+package com.graphle.graphlemanager.tag
+
+import com.graphle.graphlemanager.commons.normalize
+import com.graphle.graphlemanager.commons.AbsolutePathString
+import org.springframework.graphql.data.method.annotation.Argument
+import org.springframework.graphql.data.method.annotation.MutationMapping
+import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.stereotype.Controller
+
+/**
+ * GraphQL controller for managing information related to tags
+ * @param tagService Service used for retrieving required information
+ * */
+@Controller
+class TagController(private val tagService: TagService) {
+    /**
+     * Retrieves the list of all the tags for a file at a particular location
+     * @param location Absolute path of the file in server filesystem
+     * @return Tags corresponding to the file
+     */
+    @QueryMapping
+    fun tagsByFileLocation(@Argument location: AbsolutePathString): List<Tag> =
+        tagService.tagsByFileLocation(location.normalize())
+
+    /**
+     * Marks the given file with a tag via a connection to a tag node
+     * @param location Absolute path of the file in server filesystem
+     * @param tag Tag the system associate will with the file
+     * @return Inserted tag
+     */
+    @MutationMapping
+    fun addTagToFile(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
+        tagService.addTagToFile(location.normalize(), tag)
+        return Tag(tag.name, tag.value)
+    }
+
+    /**
+     * Removes a tag from the specified file
+     * @param location Absolute path of the file
+     * @param tag Tag to remove from the file
+     * @return The removed tag
+     */
+    @MutationMapping
+    fun removeTag(@Argument location: AbsolutePathString, @Argument tag: TagInput): Tag {
+        tagService.removeTag(location.normalize(), tag)
+        val tag = tag.let { Tag(it.name, it.value) }
+        return tag
+    }
+
+    /**
+     * Retrieves the absolute paths of all the files containing the given tag
+     * @param tagName name of tag to search for
+     * @return Absolute paths of files with tag with the given name
+     */
+    @QueryMapping
+    fun filesByTag(@Argument tagName: String): List<TagForFile> =
+        tagService.filesByTag(tagName)
+}

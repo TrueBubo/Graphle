@@ -31,7 +31,7 @@ Everything else (file existence, directory enumeration, path normalization) dele
 === User navigation
 
 The file-detail view is intentionally the central point of the GUI.
-`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #voc("neighbor", text: "neighbors") (`descendantsOfFile`, `parentOfFile`) come from the live #voc("filesystem") via `FileService`, persisted graph #voc("relationship", text: "relationships") come from `ConnectionController.neighborsByFileLocation`, and #voc("tag", text: "tags") come from `TagController.tagsByFileLocation`.
+`FileDetailsService.fileByLocation` in the `application` module assembles it in a single round trip by pulling from three independent sources: hierarchical #voc("neighbor", text: "neighbors") (`descendantsOfFile`, `parentOfFile`) come from the live #voc("filesystem") via `FileService`, persisted graph #voc("relationship", text: "relationships") come from `ConnectionService.neighborsByFileLocation`, and #voc("tag", text: "tags") come from `TagService.tagsByFileLocation`.
 Before the merged result is returned, every entry is checked with `Files.exists` (and optionally `Files.isHidden`), so a file deleted between the last sweeper run and the current request is silently dropped rather than surfaced to the user.
 
 A subtle consequence is that files which exist on disk but were never explicitly registered with Graphle are still reachable: navigating into a directory shows them under the hierarchical descendants even though they have no `File` node yet (F1).
