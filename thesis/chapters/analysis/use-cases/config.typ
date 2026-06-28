@@ -1,1 +1,1 @@
-#let use-case-figure-scale = 70%
+#let use-case-figure-scale = 120%

@@ -1,7 +1,7 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
 
-=== Command auto-completion
+=== Command auto-completion <uc-command-autocomplete>
 * Preconditions *
 - The user has the application open
 - The file browser is connected to a Graphle server

@@ -19,4 +19,4 @@ A power user is a technically proficient user, most often a developer or system 
 who wants to automate or script #voc("filesystem") operations. They interact with the application primarily through the custom 
 #voc("dsl"), which allows them to perform batch operations and more advanced queries that would
 require a lot of effort using a GUI. This user is familiar with command line tools and basic scripting.
-This role benefits from the ability to integrate the application into existing workflows and tooling.
+Power users benefits from being able to integrate Graphle DSL in their existing and new scripts.

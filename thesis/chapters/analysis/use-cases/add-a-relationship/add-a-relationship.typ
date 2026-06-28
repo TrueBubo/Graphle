@@ -1,6 +1,6 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
-=== Add a relationship
+=== Add a relationship <uc-add-relationship>
 * Preconditions *
 - a) The user has the application open
 - b) The file browser is connected to a Graphle server

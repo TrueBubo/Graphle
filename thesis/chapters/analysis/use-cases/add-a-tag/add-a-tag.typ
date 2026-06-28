@@ -1,6 +1,6 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
-=== Add a tag
+=== Add a tag <uc-add-tag>
 * Preconditions *
 - a) The user has the application open
 - b) The file browser is connected to a Graphle server

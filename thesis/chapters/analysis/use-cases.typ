@@ -15,6 +15,8 @@ The @use-case-diagram shows the overall picture of use cases and how they relate
 
 #include "use-cases/search-for-a-file/search-for-a-file.typ"
 
+#include "use-cases/remote-access/remote-access.typ"
+
 #include "use-cases/add-a-relationship/add-a-relationship.typ"
 
 #include "use-cases/remove-a-relationship/remove-a-relationship.typ"

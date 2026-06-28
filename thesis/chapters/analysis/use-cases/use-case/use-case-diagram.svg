@@ -1,1 +1,81 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="446px" preserveAspectRatio="none" style="width:921px;height:446px;background:#FFFFFF;" version="1.1" viewBox="0 0 921 446" width="921px" zoomAndPan="magnify"><title>Use Case Diagram</title><defs/><g><g class="title" data-source-line="1"><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="125.9715" x="390.728" y="24.9659">Use Case Diagram</text></g><!--entity User--><g class="entity" data-entity="User" data-source-line="5" data-uid="ent0002" id="entity_User"><ellipse cx="21.3089" cy="194.0879" fill="#F1F1F1" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M21.3089,202.0879 L21.3089,229.0879 M8.3089,210.0879 L34.3089,210.0879 M21.3089,229.0879 L8.3089,244.0879 M21.3089,229.0879 L34.3089,244.0879" fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.6179" x="6" y="260.5539">User</text></g><!--entity UC1--><g class="entity" data-entity="UC1" data-source-line="7" data-uid="ent0003" id="entity_UC1"><ellipse cx="856.4688" cy="200.1211" fill="#F1F1F1" rx="58.9588" ry="27.2032" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="88.1717" x="812.3829" y="200.7824">Searching for</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="31.4299" x="840.7538" y="219.8503">a file</text></g><!--entity UC2--><g class="entity" data-entity="UC2" data-source-line="8" data-uid="ent0004" id="entity_UC2"><ellipse cx="377.9587" cy="115.1137" fill="#F1F1F1" rx="101.6787" ry="22.7357" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="172.8013" x="291.558" y="121.1476">Relationship manipulation</text></g><!--entity UC3--><g class="entity" data-entity="UC3" data-source-line="9" data-uid="ent0005" id="entity_UC3"><ellipse cx="377.9561" cy="198.1131" fill="#F1F1F1" rx="77.9261" ry="17.9852" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="115.6116" x="320.1503" y="204.1471">Tag manipulation</text></g><!--entity UC4--><g class="entity" data-entity="UC4" data-source-line="10" data-uid="ent0006" id="entity_UC4"><ellipse cx="595.0702" cy="288.12" fill="#F1F1F1" rx="77.2102" ry="17.842" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113.7496" x="538.1954" y="294.1539">File manipulation</text></g><!--entity UC5--><g class="entity" data-entity="UC5" data-source-line="11" data-uid="ent0007" id="entity_UC5"><ellipse cx="595.0669" cy="369.1174" fill="#F1F1F1" rx="85.4369" ry="28.2995" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="86.8137" x="551.66" y="363.177">Complex DSL</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124.2635" x="532.9351" y="382.245">query construction</text></g><!--entity UC6--><g class="entity" data-entity="UC6" data-source-line="12" data-uid="ent0008" id="entity_UC6"><ellipse cx="171.9514" cy="412.1181" fill="#F1F1F1" rx="74.3314" ry="28.0202" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="68.6137" x="137.6445" y="405.7496">Command</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108.7236" x="117.5896" y="424.8175">auto-completion</text></g><!--link User to UC1--><g class="link" data-entity-1="User" data-entity-2="UC1" data-source-line="14" data-uid="lnk9" id="link_User_UC1"><path d="M36.98,200.6879 C50.38,180.3679 71.97,152.1079 97.62,135.1179 C167.45,88.8679 193.61,88.6279 276.28,75.1179 C454.04,46.0679 507.53,53.9279 680.51,104.1179 C734.42,119.7579 785.2104,150.6565 818.8804,173.7265" fill="none" id="User-to-UC1" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="823.83,177.1179,818.6665,168.7311,819.7053,174.2918,814.1447,175.3306,823.83,177.1179" style="stroke:#181818;stroke-width:1;"/></g><!--link User to UC2--><g class="link" data-entity-1="User" data-entity-2="UC2" data-source-line="15" data-uid="lnk10" id="link_User_UC2"><path d="M36.79,213.9079 C45.13,207.9079 56.03,200.8179 66.62,196.1179 C141.06,163.0979 225.8523,142.5332 289.9123,129.9632" fill="none" id="User-to-UC2" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="295.8,128.8079,286.1982,126.6157,290.8936,129.7707,287.7386,134.466,295.8,128.8079" style="stroke:#181818;stroke-width:1;"/></g><!--link User to UC3--><g class="link" data-entity-1="User" data-entity-2="UC3" data-source-line="16" data-uid="lnk11" id="link_User_UC3"><path d="M37.1,223.9879 C81.8,220.5879 211.7273,210.6932 297.5273,204.1632" fill="none" id="User-to-UC3" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="303.51,203.7079,294.2324,200.4024,298.5244,204.0874,294.8395,208.3794,303.51,203.7079" style="stroke:#181818;stroke-width:1;"/></g><!--link User to UC4--><g class="link" data-entity-1="User" data-entity-2="UC4" data-source-line="17" data-uid="lnk12" id="link_User_UC4"><path d="M37.08,226.7979 C45.69,227.7679 56.77,229.0179 66.62,230.1179 C230.74,248.3979 417.6555,268.8666 518.5655,279.8866" fill="none" id="User-to-UC4" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="524.53,280.5379,516.0174,275.5845,519.5596,279.9951,515.1489,283.5372,524.53,280.5379" style="stroke:#181818;stroke-width:1;"/></g><!--link User to UC5--><g class="link" data-entity-1="User" data-entity-2="UC5" data-source-line="18" data-uid="lnk13" id="link_User_UC5"><path d="M36.98,232.5579 C51.92,239.8979 75.91,251.0079 97.62,258.1179 C243.03,305.7379 413.0874,338.7176 511.6574,355.7276" fill="none" id="User-to-UC5" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="517.57,356.7479,509.3813,351.2757,512.6428,355.8976,508.0209,359.1592,517.57,356.7479" style="stroke:#181818;stroke-width:1;"/></g><!--link User to UC6--><g class="link" data-entity-1="User" data-entity-2="UC6" data-source-line="19" data-uid="lnk14" id="link_User_UC6"><path d="M27.67,265.0779 C33.26,293.4779 44.46,331.0579 66.62,357.1179 C79.88,372.7179 93.2851,381.9337 111.3051,390.5337" fill="none" id="User-to-UC6" style="stroke:#181818;stroke-width:1;"/><polygon fill="#181818" points="116.72,393.1179,110.3204,385.6316,112.2076,390.9644,106.8747,392.8515,116.72,393.1179" style="stroke:#181818;stroke-width:1;"/></g><!--link UC2 to UC1--><g class="link" data-entity-1="UC2" data-entity-2="UC1" data-source-line="21" data-uid="lnk15" id="link_UC2_UC1"><path d="M469.5,125.3079 C548.67,135.0579 666.45,151.6179 767.51,174.1179 C780.57,177.0279 788.7759,179.1177 801.6359,182.9177" fill="none" id="UC2-to-UC1" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/><polygon fill="#181818" points="807.39,184.6179,799.8924,178.2315,802.595,183.201,797.6254,185.9036,807.39,184.6179" style="stroke:#181818;stroke-width:1;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55.497" x="567.57" y="127.1549">&#171;extend&#187;</text></g><!--link UC3 to UC1--><g class="link" data-entity-1="UC3" data-entity-2="UC1" data-source-line="22" data-uid="lnk16" id="link_UC3_UC1"><path d="M456.31,198.4379 C551.72,198.8379 705.7501,199.4927 791.3301,199.8527" fill="none" id="UC3-to-UC1" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/><polygon fill="#181818" points="797.33,199.8779,788.3469,195.8401,792.33,199.8569,788.3133,203.84,797.33,199.8779" style="stroke:#181818;stroke-width:1;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55.497" x="567.57" y="194.5949">&#171;extend&#187;</text></g><!--link UC4 to UC1--><g class="link" data-entity-1="UC4" data-entity-2="UC1" data-source-line="23" data-uid="lnk17" id="link_UC4_UC1"><path d="M655.4,276.7179 C688.89,269.4279 731.17,258.7679 767.51,245.1179 C784.85,238.6079 797.9295,232.4082 813.3695,224.1482" fill="none" id="UC4-to-UC1" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/><polygon fill="#181818" points="818.66,221.3179,808.8374,222.0363,814.2512,223.6765,812.6111,229.0904,818.66,221.3179" style="stroke:#181818;stroke-width:1;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55.497" x="711.51" y="241.0149">&#171;extend&#187;</text></g><!--link UC5 to UC1--><g class="link" data-entity-1="UC5" data-entity-2="UC1" data-source-line="24" data-uid="lnk18" id="link_UC5_UC1"><path d="M654.48,348.3879 C689.03,334.6679 732.7,314.6779 767.51,290.1179 C793.4,271.8579 814.288,249.9743 830.908,230.4743" fill="none" id="UC5-to-UC1" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/><polygon fill="#181818" points="834.8,225.9079,825.9177,230.1629,831.5567,229.7133,832.0063,235.3522,834.8,225.9079" style="stroke:#181818;stroke-width:1;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55.497" x="711.51" y="286.0149">&#171;extend&#187;</text></g><!--link UC6 to UC5--><g class="link" data-entity-1="UC6" data-entity-2="UC5" data-source-line="25" data-uid="lnk19" id="link_UC6_UC5"><path d="M243.91,404.8679 C318.34,397.2679 429.141,385.9572 507.121,377.9972" fill="none" id="UC6-to-UC5" style="stroke:#181818;stroke-width:1;stroke-dasharray:7,7;"/><polygon fill="#181818" points="513.09,377.3879,503.7303,374.3225,508.1158,377.8957,504.5427,382.2812,513.09,377.3879" style="stroke:#181818;stroke-width:1;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55.497" x="350.46" y="377.7249">&#171;extend&#187;</text></g><!--SRC=[TP2zYiCm48HxFSMIte4ajeiGt3YakYe_NPf5Nji2MVB94YHlVv9oWIYWHZ2QRsRPlGeh2MuBGOl-EGeS34wCIUejM0r63AE5JXZYLcZ567AhJGWOnjn2FAHkxGPmWTM5qF1Hg05wRUuAeHUILX_ODc9daXZAbb7CCA4IitjzVAAxY5vno19b94v-H1Qf8jBgQPRqWEFbvwv-7PadS3_T6iU_0_Kxu1ixlu6pkk0n_Y9PM1oWA9gmTAAsYTebganKbQZQb_h3hDUn4lPmED33akgQXeKpP8moPrGve_utgjJu0m00]--></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="500px" preserveAspectRatio="none" style="width:960px;height:500px;background:#FFFFFF;" version="1.1" viewBox="0 0 960 500" width="960px">
+  <defs>
+    <marker id="arrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#181818"/>
+    </marker>
+    <marker id="open-arrow" markerHeight="8" markerWidth="8" orient="auto" refX="7" refY="4">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#181818" stroke-width="1"/>
+    </marker>
+  </defs>
+  <g font-family="sans-serif" fill="#000000" stroke="#181818">
+    <text x="480" y="28" text-anchor="middle" font-size="14" font-weight="bold" stroke="none">Use Case Diagram</text>
+
+    <g id="actor-user" stroke-width="0.8">
+      <ellipse cx="55" cy="198" rx="8" ry="8" fill="#F1F1F1"/>
+      <line x1="55" y1="206" x2="55" y2="238"/>
+      <line x1="37" y1="218" x2="73" y2="218"/>
+      <line x1="55" y1="238" x2="39" y2="260"/>
+      <line x1="55" y1="238" x2="71" y2="260"/>
+      <text x="55" y="282" text-anchor="middle" font-size="14" stroke="none">User</text>
+    </g>
+
+    <g id="uc-search">
+      <ellipse cx="792" cy="112" rx="88" ry="36" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="792" y="109" text-anchor="middle" font-size="14" stroke="none">Searching for</text>
+      <text x="792" y="127" text-anchor="middle" font-size="14" stroke="none">a file</text>
+    </g>
+
+    <g id="uc-relationship">
+      <ellipse cx="394" cy="86" rx="118" ry="25" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="394" y="91" text-anchor="middle" font-size="14" stroke="none">Relationship manipulation</text>
+    </g>
+
+    <g id="uc-tag">
+      <ellipse cx="394" cy="156" rx="96" ry="25" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="394" y="161" text-anchor="middle" font-size="14" stroke="none">Tag manipulation</text>
+    </g>
+
+    <g id="uc-file">
+      <ellipse cx="394" cy="226" rx="96" ry="25" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="394" y="231" text-anchor="middle" font-size="14" stroke="none">File manipulation</text>
+    </g>
+
+    <g id="uc-dsl">
+      <ellipse cx="394" cy="310" rx="104" ry="36" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="394" y="307" text-anchor="middle" font-size="14" stroke="none">Complex DSL</text>
+      <text x="394" y="325" text-anchor="middle" font-size="14" stroke="none">query construction</text>
+    </g>
+
+    <g id="uc-autocomplete">
+      <ellipse cx="168" cy="396" rx="96" ry="36" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="168" y="393" text-anchor="middle" font-size="14" stroke="none">Command</text>
+      <text x="168" y="411" text-anchor="middle" font-size="14" stroke="none">auto-completion</text>
+    </g>
+
+    <g id="uc-remote">
+      <ellipse cx="792" cy="238" rx="88" ry="25" fill="#F1F1F1" stroke-width="0.5"/>
+      <text x="792" y="243" text-anchor="middle" font-size="14" stroke="none">Remote access</text>
+    </g>
+
+    <line x1="78" y1="211" x2="704" y2="112" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="78" y1="216" x2="276" y2="86" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="78" y1="222" x2="298" y2="156" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="78" y1="229" x2="298" y2="226" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="78" y1="240" x2="300" y2="302" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="67" y1="263" x2="102" y2="368" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="78" y1="233" x2="704" y2="238" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <line x1="512" y1="86" x2="704" y2="104" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="596" y="84" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+    <line x1="490" y1="154" x2="706" y2="124" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="594" y="154" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+    <line x1="488" y1="219" x2="714" y2="134" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="598" y="199" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+    <line x1="488" y1="296" x2="724" y2="142" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="612" y="264" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+    <line x1="704" y1="222" x2="760" y2="148" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="708" y="184" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+    <line x1="264" y1="384" x2="304" y2="336" stroke-width="1" stroke-dasharray="7,7" marker-end="url(#open-arrow)"/>
+    <text x="312" y="374" text-anchor="middle" font-size="13" stroke="none">&lt;&lt;extend&gt;&gt;</text>
+  </g>
+</svg>

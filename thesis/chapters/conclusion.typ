@@ -34,3 +34,7 @@ In conclusion, Graphle shows that files can stay in the existing #voc("filesyste
 organized and explored as a graph. This thesis provides the data model, architecture,
 query language, user interface, and implementation for that approach. It also creates a base for
 better clients and for testing how useful graph-based file organization is in practice.
+
+The most important future extension is application-level authentication and authorization for remote access.
+The current implementation supports remote use through SSH port forwarding and relies on operating-system accounts and filesystem permissions.
+A more broadly deployed version should add a uniform authentication layer across the #voc("graphql"), #voc("rest"), and #voc("websocket") interfaces so that the backend can protect the exposed #voc("filesystem") even when it is reachable by remote clients.

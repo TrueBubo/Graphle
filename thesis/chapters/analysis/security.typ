@@ -1,9 +1,11 @@
 #import "../../template/shared.typ": *
 == Security
 
-Since the application operates directly on the user's #voc("filesystem") and can be accessed remotely, security is of utmost importance.
-To avoid maintaining application-specific security measures, the application delegates its authentication and access control to the underlying operating system.
-This section describes how user accounts and file permissions are handled.
+Since the application operates directly on the user's #voc("filesystem") and can be accessed remotely through SSH port forwarding, security must be considered.
+The current implementation does not provide application-level authentication.
+Instead, it relies on the operating system account under which `GraphleManager` runs, filesystem permissions, and the access control already provided by SSH.
+This is a deliberate limitation of the bachelor's thesis implementation rather than a complete security model.
+Multi-user support and authorization for remote clients are left as a future work.
 
 === Accounts
 The system will not have the ability to create custom users, as operating systems already provide this functionality.

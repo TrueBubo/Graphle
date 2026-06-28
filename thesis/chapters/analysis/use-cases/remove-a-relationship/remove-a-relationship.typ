@@ -1,6 +1,6 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
-=== Remove a relationship
+=== Remove a relationship <uc-remove-relationship>
 * Preconditions *
 - a) The user has the application open
 - b) The file browser is connected to a Graphle server

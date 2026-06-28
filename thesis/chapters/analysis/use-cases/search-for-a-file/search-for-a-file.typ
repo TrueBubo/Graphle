@@ -1,7 +1,7 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
 
-=== Search for a file
+=== Search for a file <uc-search-file>
 * Preconditions *
 - The user has the application open
 - The file browser is connected to a Graphle server

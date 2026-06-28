@@ -1,7 +1,7 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
 
-=== Complex DSL query construction
+=== Complex DSL query construction <uc-complex-dsl-query>
 * Preconditions *
 - The user has the application open
 - The file browser is connected to a Graphle server
