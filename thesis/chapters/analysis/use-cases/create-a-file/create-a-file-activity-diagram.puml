@@ -1,0 +1,20 @@
+@startuml
+start
+:The user opens the file browser;
+if (Does the user want to use GUI) then (Yes)
+:The user searches for the parent folder;
+:The user opens the context menu on the parent folder;
+:The user selects "Add file";
+:The system displays a dialog for the new name;
+if (Does the user want to proceed) then (Yes)
+:The user enters the name and submits the dialog;
+:The system creates the file;
+:The system shows the new file among the parent's neighbors;
+else (No)
+:The user cancels the operation;
+endif
+else (No)
+:The user issues the DSL command to create the file;
+endif
+stop
+@enduml

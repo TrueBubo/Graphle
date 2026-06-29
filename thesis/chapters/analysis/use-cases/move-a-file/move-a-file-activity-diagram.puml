@@ -1,0 +1,20 @@
+@startuml
+start
+:The user opens the file browser;
+if (Does the user want to use GUI) then (Yes)
+:The user searches for the file or folder;
+:The user opens the context menu for the selected item;
+:The user selects "Move";
+:The system displays a dialog for the destination;
+if (Does the user want to proceed) then (Yes)
+:The user enters the destination and submits the dialog;
+:The system moves the file or folder;
+:The system updates the stored graph location;
+else (No)
+:The user cancels the operation;
+endif
+else (No)
+:The user issues the DSL command to move the file;
+endif
+stop
+@enduml

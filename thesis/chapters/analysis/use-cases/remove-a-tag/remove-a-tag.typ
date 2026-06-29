@@ -8,11 +8,12 @@
 
 * Flow *
 1. The user searches for a file
-2. The user selects the operation "Delete" on the desired tag
+2. The user opens the context menu on the desired tag
+3. The user selects the operation "Delete"
 
 * Alternative flow *
 - 1a) The user issues a DSL command
-- 4b) The user cancels the operation
+- 2a) The user closes the context menu without selecting an operation
 
 * Postconditions *
 - a) The system removes the tag

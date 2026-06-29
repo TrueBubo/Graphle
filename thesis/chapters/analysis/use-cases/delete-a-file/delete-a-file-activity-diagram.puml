@@ -1,0 +1,19 @@
+@startuml
+start
+:The user opens the file browser;
+if (Does the user want to use GUI) then (Yes)
+:The user searches for the file or folder;
+:The user opens the context menu for the selected item;
+:The user selects "Delete permanently";
+:The system displays a confirmation dialog;
+if (Does the user confirm deletion?) then (Yes)
+:The system deletes the file or folder;
+:The system removes the deleted item and its metadata from the graph;
+else (No)
+:The user cancels the operation;
+endif
+else (No)
+:The user issues the DSL command to delete the file;
+endif
+stop
+@enduml

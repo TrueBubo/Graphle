@@ -2,7 +2,7 @@
 == Use Cases
 
 This section outlines the use cases that describe how the user interacts with the application. Use cases cover
-a variety of functions, including creating and deleting semantic information, browsing through the #voc("filesystem"),
+a variety of functions, including file manipulation, creating and deleting semantic information, browsing through the #voc("filesystem"),
 and using the #voc("dsl").
 
 #figure(
@@ -14,6 +14,14 @@ and using the #voc("dsl").
 The @use-case-diagram shows the overall picture of use cases and how they relate to each other.
 
 #include "use-cases/search-for-a-file/search-for-a-file.typ"
+
+#include "use-cases/create-a-file/create-a-file.typ"
+
+#include "use-cases/open-a-file/open-a-file.typ"
+
+#include "use-cases/move-a-file/move-a-file.typ"
+
+#include "use-cases/delete-a-file/delete-a-file.typ"
 
 #include "use-cases/remote-access/remote-access.typ"
 

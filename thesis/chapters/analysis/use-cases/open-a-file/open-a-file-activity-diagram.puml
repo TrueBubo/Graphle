@@ -1,0 +1,13 @@
+@startuml
+start
+:The user opens the file browser;
+:The user searches for a file or folder;
+:The user opens the context menu for the selected item;
+:The user selects "Open";
+if (Is the backend local?) then (Yes)
+:The system asks the operating system to open the path;
+else (No)
+:The GUI downloads the file and opens the local copy;
+endif
+stop
+@enduml

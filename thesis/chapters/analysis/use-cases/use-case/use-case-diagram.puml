@@ -8,7 +8,10 @@ actor User
 usecase UC1 as "Searching for\na file"
 usecase UC2 as "Relationship manipulation"
 usecase UC3 as "Tag manipulation"
-usecase UC4 as "File manipulation"
+usecase UC4A as "Create a file"
+usecase UC4B as "Open a file"
+usecase UC4C as "Move a file"
+usecase UC4D as "Delete a file"
 usecase UC5 as "Complex DSL\nquery construction"
 usecase UC6 as "Command\nauto-completion"
 usecase UC7 as "Remote access"
@@ -16,14 +19,20 @@ usecase UC7 as "Remote access"
 User  --> UC1
 User  --> UC2
 User  --> UC3
-User  --> UC4
+User  --> UC4A
+User  --> UC4B
+User  --> UC4C
+User  --> UC4D
 User  --> UC5
 User  --> UC6
 User  --> UC7
 
 UC2 ..> UC1 : <<extend>>
 UC3 ..> UC1 : <<extend>>
-UC4 ..> UC1 : <<extend>>
+UC4A ..> UC1 : <<extend>>
+UC4B ..> UC1 : <<extend>>
+UC4C ..> UC1 : <<extend>>
+UC4D ..> UC1 : <<extend>>
 UC5 ..> UC1 : <<extend>>
 UC6 ..> UC5 : <<extend>>
 UC7 ..> UC1 : <<extend>>
