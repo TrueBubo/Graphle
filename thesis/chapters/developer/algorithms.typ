@@ -16,7 +16,7 @@ The effect is that a directory prefix shared by many files is stored once and re
 Memory therefore grows with the number of unique directory and filename components in the dataset, rather than with the number of files multiplied by their average depth. This matters because the in-process #voc("cache") stores #voc("trie") nodes directly. Duplicated prefixes would fill the #voc("cache") with redundant entries and reduce its effectiveness.
 
 Lookup descends the #voc("trie") character by character from the root, returning an empty result as soon as a character has no child.
-From the node reached, `filenameDFS` finds full paths by interleaving three sources. The prefix node itself if it is marked `:full`, the `:parents` set which contains predecessor path indices, and a recursive descent through the children.
+From the node reached, `filenameDFS` finds full paths by interleaving three sources: the prefix node itself if it is marked `:full`, the `:parents` set, which contains predecessor path indices, and a recursive descent through the children.
 Every returned path is checked for existence on disk, so completions pointing at files deleted since the last sweeper run are filtered out before the suggestions are returned.
 
 Five dedicated #voc("cache", text: "caches"), one per access pattern, sit in front of the storage layer.

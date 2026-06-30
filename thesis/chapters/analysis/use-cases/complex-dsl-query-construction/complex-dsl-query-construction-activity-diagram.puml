@@ -10,14 +10,14 @@ repeat
   end note
 
   :The user submits the command;
-  :System validates the query syntax;
+  :The system validates the query syntax;
 
   if (Query valid?) then (Yes)
-    :System executes DSL query;
-    :System returns the result of the command;
+    :The system executes DSL query;
+    :The system returns the result of the command;
     stop
   else (No)
-    :System shows error message;
+    :The system shows error message;
   endif
 
 repeat while (Retry?) is (Yes)

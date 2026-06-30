@@ -13,7 +13,7 @@ The main page opens at the user's home directory and displays the file detail vi
 The header contains a hamburger menu and a command line input pre-filled with the current #voc("dsl") command.
 Below the header, the body is divided into three sections: URLs (#voc("tag", text: "tags") whose value is a URL), Tags, and Files.
 Files are rendered as pills. Parent and descendant #voc("connection", text: "connections") use arrow icons to indicate direction, while named #voc("relationship", text: "relationships") show their label.
-This page is displayed for detail on every file, which can be traversed by pressing on the pill or by #voc("dsl").
+This page is displayed as the detail view for every file, which can be traversed by pressing the pill or by using the #voc("dsl").
 
 #main-page-mockup()
 

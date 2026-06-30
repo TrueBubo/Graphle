@@ -70,7 +70,7 @@ cd GraphleUI
 The client reads its backend configuration from `GraphleUI/src/main/resources/config.yaml`.
 The `port` value must match the port exposed by `GraphleManager`.
 The client connects to `localhost` on that port; remote backends are therefore reached through the SSH port forwarding setup described below.
-The `localhost` flag describes whether the backend and GUI run on the same machine which is used when opening files.
+The `localhost` flag describes whether the backend and GUI run on the same machine, which affects how files are opened.
 When it is set to `false`, opened files are downloaded through `/download` before they are handed to the local operating system.
 
 === Remote access over SSH port forwarding <admin-ssh-port-forwarding>

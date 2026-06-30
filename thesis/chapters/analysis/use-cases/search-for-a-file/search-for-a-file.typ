@@ -19,7 +19,7 @@
 - 4a) The user uses the integrated DSL for search
 
 * Postconditions *
-- The user accessed the wanted file
+- The user accessed the desired file
 
 #figure(
   placement: none,

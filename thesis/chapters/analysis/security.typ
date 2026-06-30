@@ -5,7 +5,7 @@ Since the application operates directly on the user's #voc("filesystem") and can
 The current implementation does not provide application-level authentication.
 Instead, it relies on the operating system account under which `GraphleManager` runs, filesystem permissions, and the access control already provided by SSH.
 This is a deliberate limitation of the bachelor's thesis implementation rather than a complete security model.
-Multi-user support and authorization for remote clients are left as a future work.
+Multi-user support and authorization for remote clients are left for future work.
 
 === Accounts
 The system will not have the ability to create custom users, as operating systems already provide this functionality.

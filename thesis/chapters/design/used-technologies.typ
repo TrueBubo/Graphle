@@ -18,7 +18,7 @@ Since other developers should be able to extend the project with new features, a
 At the time of project inception, the only candidates meeting both constraints were Java @java and Kotlin @kotlin.
 
 Kotlin was chosen over Java because it supports every Java library while also offering additional language features.
-This gives developers access to a vast span of existing functionality, allowing them to focus on the core domain 
+This gives developers access to a wide range of existing functionality, allowing them to focus on the core domain
 rather than reimplementing general-purpose utilities. Kotlin's type system is also more expressive than Java's.
 Illegal states can be made unrepresentable at compile time more easily, which makes client-server communication less 
 error-prone by enforcing a more precise contract.
@@ -51,8 +51,8 @@ The application provides a #voc("dsl") for advanced #voc("filesystem") operation
 Because autocomplete for the #voc("dsl") must react to each keystroke, its parser runs inside the backend service and communicates available completions via #voc("websocket", text: "WebSockets"). 
 #voc("websocket", text: "WebSockets") maintain a persistent #voc("connection"), avoiding the overhead of establishing a new #voc("http") connection on every keystroke,
 which is critical for meeting the low-latency autocomplete requirement.
-gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions, and code generation,
-is overkill for a single stream exchanging short strings.
+gRPC was considered as an alternative, but its additional infrastructure, protobuf schema definitions, and code generation
+would be overkill for a single stream exchanging short strings.
 There are specific tools for creating #voc("dsl", text: "DSLs"). However, as the auto-completer needs to parse the commands either way and
 needs to fetch data from the database, the parser and completer were kept in the same service to avoid serialization between
 different services, which is important to keep the response time to a minimum.
@@ -89,6 +89,6 @@ which reduces the risk of the project being abandoned @valkeyannouncement.
 Developers familiar with Redis can apply that knowledge directly to Valkey with no additional learning overhead.
 
 To support infix completion while keeping memory consumption reasonable, filenames are indexed using a modified #voc("trie").
-Leaf level path components are stored without their parent segments, enabling efficient prefix search across all components of a filename.
-Parent path information is preserved as a back reference attached to leaf nodes,
+Leaf-level path components are stored without their parent segments, enabling efficient prefix search across all components of a filename.
+Parent path information is preserved as a back-reference attached to leaf nodes,
 so a full path can be reconstructed from any matching suffix without duplicating the entire path at every entry.

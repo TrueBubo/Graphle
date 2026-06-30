@@ -2,18 +2,16 @@
 
 = Introduction
 
-#todo[Include above includes this function]
-
 Operating systems organize files as a strict tree of directories, where every
 file resides at exactly one location. This imposes a single, rigid classification
 onto data where the user has to choose the most appropriate aspect of the file and place it
-into a corresponding folder. However, this is not always so easy, for example
+into a corresponding folder. However, this is not always so easy; for example,
 a photograph may belong at once to a holiday, a person, and a specific project.
 A tree cannot express such many-to-many associations, which makes organizing files
 harder than it should be. Some tools try to bridge this gap, but each does so only
-in their own limited way. They do not let a user freely connect any files with typed
+in its own limited way. They do not let users freely connect arbitrary files with typed
 #voc("relationship", text: "relationships") and tags across the whole filesystem
-which would be easily queryable.
+in an easily queryable way.
 
 People associate one thing with many areas at once, which a graph expresses more naturally than a tree.
 If we treat files and folders as nodes joined by typed #voc("relationship", text: "relationships") and
@@ -24,10 +22,10 @@ The objective of this thesis is to design and implement Graphle, a graph-oriente
 file management system that lets users organize their files the way they think.
 Graphle represents files and folders as nodes in a labeled property graph connected by
 arbitrary, user-defined #voc("relationship", text: "relationships") and
-#voc("tag", text: "tags"), while remaining backwards compatible with the existing
-#voc("filesystem"). It enables two modes of interaction, either a graphical client or a
+#voc("tag", text: "tags"), while remaining backward-compatible with the existing
+#voc("filesystem"). It enables two modes of interaction: either a graphical client or a
 custom query #voc("dsl"). The thesis delivers a working client and backend, a graph
-data model and query language for files, while simultaneously being backward-compatible with directory hierarchy.
+data model, and a query language for files, while the system remains backward-compatible with the directory hierarchy.
 
 #emph[Outline.] The remainder of this thesis is organized into six chapters.
 @analysis establishes the functional and qualitative requirements, user roles,

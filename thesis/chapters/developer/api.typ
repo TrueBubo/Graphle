@@ -67,7 +67,7 @@ Keeping the connection persistent avoids a TCP handshake per keystroke, which is
 
 No authentication is performed on any of the three interfaces.
 GraphleManager is intended to run on the operator's own machine or on a remote host reached through SSH port forwarding, as described by the remote-access requirement (Q1.3).
-In that model, the forwarded port must remain under the operator's control, the current version must not be exposed directly to untrusted callers.
+In that model, the forwarded port must remain under the operator's control, so the current version must not be exposed directly to untrusted callers.
 
 Application-level authentication is therefore future work.
 A complete remote-access security model would need a uniform layer across #voc("graphql"), #voc("rest"), and the #voc("websocket") handshake, plus authorization checks that map authenticated users to permitted filesystem paths.

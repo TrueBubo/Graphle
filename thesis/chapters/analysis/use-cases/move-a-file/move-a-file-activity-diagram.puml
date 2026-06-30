@@ -1,7 +1,7 @@
 @startuml
 start
 :The user opens the file browser;
-if (Does the user want to use GUI) then (Yes)
+if (Does the user want to use the GUI) then (Yes)
 :The user searches for the file or folder;
 :The user opens the context menu for the selected item;
 :The user selects "Move";

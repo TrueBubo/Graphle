@@ -11,8 +11,8 @@ Backend code is split into subprojects so cross-domain dependencies are visible 
 
 - `common`: shared utilities.
 - `model`: serializable #voc("api") and Neo4j data classes shared by the domain modules.
-- `tag`: #voc("tag") persistance, tag service operations, and the tag #voc("graphql") controller.
-- `connection`: #voc("relationship") persistance, connection service operations and the connection #voc("graphql") controller.
+- `tag`: #voc("tag") persistence, tag service operations, and the tag #voc("graphql") controller.
+- `connection`: #voc("relationship") persistence, connection service operations and the connection #voc("graphql") controller.
 - `autocomplete`: Valkey-backed filename #voc("trie") storage, caching, and the autocomplete service contract.
 - `file`: #voc("filesystem") interactions, file-node persistence, file mutations and queries, and downloads.
 - `application`: cross-domain orchestration.
@@ -46,10 +46,10 @@ Background work is dispatched on a different thread so the caller does not need 
 
 === Controller Layer
 
-#voc("graphql") surface is split across three `@Controller` classes, one per entity: `FileController`, `TagController`, and `ConnectionController`. Their methods are tagged with the standard query and mutation annotations, and the nested `File.tags` and `File.connections` fields are fetched lazily, only when the client actually requests them.
+The #voc("graphql") surface is split across three `@Controller` classes, one per entity: `FileController`, `TagController`, and `ConnectionController`. Their methods are tagged with the standard query and mutation annotations, and the nested `File.tags` and `File.connections` fields are fetched lazily, only when the client actually requests them.
 The `fileByLocation` query is implemented outside those domain controllers in `application/FileDetailsController`, which delegates to `FileDetailsService`.
 This service assembles a single `File` response from the live hierarchical #voc("neighbor", text: "neighbors"), the persisted custom #voc("connection", text: "connections"), and the file's #voc("tag", text: "tags").
-The separation is enforced by Gradle module dependencies, meaning only application module can access other domain modules. Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by the UI.
+The separation is enforced by Gradle module dependencies, meaning only the application module can access other domain modules. Exceptions thrown inside any of these controllers are caught by `@GraphQlExceptionHandler` methods that translate `IOException` and `FileAlreadyExistsException` into readable #voc("graphql") errors used by the UI.
 
 Three more endpoints sit outside #voc("graphql").
 `DSLController` is a `@RestController` mapped at `/dsl` that hands the request body to the #voc("dsl") interpreter and returns the resulting response.

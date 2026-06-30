@@ -47,7 +47,7 @@ Qualitative requirements define constraints on how the functionality should beha
   inset: 4pt,
   table.header([*ID*], [*Priority*], [*Requirement*], [*Acceptance criterion*], [*See*]),
   [Q1.1], [Must], [Usability - Interaction modes], [Finding files, editing tags, and editing relationships are available through both the GUI and the DSL.], [@uc-search-file, @uc-complex-dsl-query],
-  [Q1.2], [Should], [Usability - Theming and replaceable client], [The default GUI multiple visual themes, and another client can use the public API without direct database access.], [@design, @developer],
+  [Q1.2], [Should], [Usability - Theming and replaceable client], [The default GUI supports multiple visual themes, and another client can use the public API without direct database access.], [@design, @developer],
   [Q1.3], [Should], [Usability - Remote access], [A user can connect to a remote instance of `GraphleManager` via SSH port forwarding and browse the #voc("filesystem") of the machine where the backend runs.], [@uc-remote-access],
   [Q2.1], [Must], [Performance - Autocomplete latency], [For an established GUI connection and warm caches, filename autocomplete returns suggestions within 250 ms.], [@uc-command-autocomplete],
   [Q3.1], [Should], [Reliability - Autocomplete retries], [The GUI can reconnect to the autocomplete #voc("websocket") without restarting the application.], [@uc-command-autocomplete],

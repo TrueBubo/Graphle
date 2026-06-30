@@ -2,7 +2,7 @@
 = Conclusion <conclusion>
 
 This thesis set out to design and implement Graphle, a graph-oriented file management
-system that lets users organize files by semantic association whilst being backwards-compatible
+system that lets users organize files by semantic association while being backward-compatible
 with the standard #voc("filesystem"). Graphle keeps files in ordinary folders and adds a
 graph layer for tags and typed #voc("relationship", text: "relationships"). This lets users
 search and move between files by meaning, not only by path, without replacing the

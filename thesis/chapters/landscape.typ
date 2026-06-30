@@ -38,7 +38,7 @@ which does not scale.
 Dolphin exposes an integrated Konsole panel @dolphinkonsole that can be toggled inside the file manager window,
 giving users a terminal session whose working directory follows the GUI's current folder.
 The standard shell commands available, such as `cd`, `mv`, and `find`, can be used to navigate the #voc("filesystem").
-However, they only operate on paths and are not able to navigate based on semantic information. Therefore, Dolphin
+However, they only operate on paths and cannot navigate based on semantic information. Therefore, Dolphin
 receives a partial rating for the DSL part.
 
 == Obsidian
@@ -82,7 +82,7 @@ queries spanning multiple edges. The application has no remote-access capability
 
 TMSU @tmsu is a CLI tagging tool that stores tags in its own database
 and exposes them through a virtual #voc("filesystem").
-Files remain unchanged in their original locations, while still allowing users persist and query tags.
+Files remain unchanged in their original locations, while still allowing users to persist and query tags.
 TMSU supports simple tags, tag values, and its own #voc("dsl"), making it a relevant example of using
 tags over an ordinary #voc("filesystem").
 
@@ -92,7 +92,7 @@ The mounted hierarchy provides a convenient alternative view, but it does not ex
 files or folders.
 TMSU also has no dedicated graphical interface, no application-level remote-access workflow, and no shared
 multiuser model.
-It therefore demonstrates the usefulness of a tag-based navigation, but does not cover the graph-oriented
+It therefore demonstrates the usefulness of tag-based navigation, but does not cover the graph-oriented
 file management model required by Graphle.
 
 == autojump

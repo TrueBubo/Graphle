@@ -1,12 +1,12 @@
 @startuml
 start
 :The user opens the file browser;
-if (Does the user want to use GUI) then (Yes)
+if (Does the user want to use the GUI) then (Yes)
 :The user searches for a file;
 :The user opens the context menu for the selected file;
 :The user selects "Add tag";
-:The system displays a dialog where the \nuser can enter info about the tag;
-if (Does user want to proceed) then (Yes)
+:The system displays a dialog where the \nuser can enter information about the tag;
+if (Does the user want to proceed) then (Yes)
 :The user enters the information and submits it;
 else (No)
 :The user cancels the operation;
