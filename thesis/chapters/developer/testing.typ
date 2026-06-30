@@ -7,6 +7,18 @@ The backend favors integration tests over isolated unit tests.
 Pure logic such as #voc("dsl") token handling, the autocomplete #voc("trie"), and the concurrent #voc("cache") is still covered by focused unit tests, but anything that touches persistence is verified end-to-end.
 Reusable bases (`BaseGraphQlIntegrationTest`, `BaseRestIntegrationTest`) hide the boilerplate of issuing #voc("graphql") operations and #voc("http") requests, and randomized identifiers keep parallel runs from colliding on shared graph state.
 
+=== Automated Test Suite
+
+The local test environment requires Neo4j and Valkey.
+Both services can be started from the backend directory with:
+
+```sh
+cd GraphleManager
+docker compose up -d
+./gradlew test
+```
+
+
 === Autocomplete latency measurement
 
 Autocomplete latency was measured manually from the GUI because the perceived responsiveness of the #voc("dsl") command line depends on the full round trip over #voc("websocket"), not only on the pure trie lookup.

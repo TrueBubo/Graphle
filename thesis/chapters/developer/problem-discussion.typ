@@ -7,9 +7,9 @@ Requirement Q2.1 caps an autocomplete response at 250 ms, which rules out doing 
 A fresh TCP handshake on every keystroke is avoided by keeping a single #voc("websocket") open on `/ws`. The client transparently reconnects with exponential back-off when the link drops, so an established #voc("connection") is already in place whenever typing occurs.
 A Valkey round trip per #voc("trie") node traversed would in turn make lookup cost linear in the prefix length, which is avoided by fronting each access pattern with an in-process #voc("cache") and by the modified #voc("trie") encoding described in the Algorithms section.
 
-The 250 ms target is therefore a guarantee that holds once the #voc("cache", text: "caches") are hot. Under normal interactive use the relevant #voc("trie") nodes already sit in #voc("cache"), so a lookup is bounded by local work plus a single network round trip.
-It is explicitly *not* a worst-case guarantee for a freshly started session.
-The first few keystrokes after a cold start may exceed the budget while the in-process layer is repopulated from Valkey.
+The implementation is designed to make the 250 ms target realistic for established interactive sessions with warm #voc("cache", text: "caches").
+The manual measurements in the Testing section show that the sampled requests stayed below this threshold.
+The first few keystrokes after a cold start may exceed the budget while the cache is repopulated from Valkey, and slower responses are also possible under unusual system load or slow filesystem/database access.
 
 === Transparent computing
 

@@ -32,7 +32,6 @@ and enables the backend to serve remote #voc("filesystem", text: "filesystems") 
 The backend is implemented with Spring Boot @springboot and exposes three interfaces.
 The GUI client communicates via #voc("graphql") @graphql, which allows it to request exactly the data it needs.
 This is important since a query result can contain millions of files, and fetching all fields when only a filename is needed would be wasteful.
-GraphQL also allows the response structure to evolve without introducing a new #voc("api") version, and provides a schema that gives clients full transparency over the available data and operations.
 The #voc("dsl") client communicates via #voc("rest"), since the #voc("dsl") is also intended to be used from the command line, where issuing #voc("rest") calls is simpler than constructing #voc("graphql") queries.
 Lastly, the backend also provides a WebSocket endpoint used by the GUI to deliver low-latency autocomplete suggestions while the user types DSL commands.
 
