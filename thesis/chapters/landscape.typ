@@ -8,7 +8,7 @@ The comparison is structured around both the functional requirements established
 #link(label("qualitative_requirements"))[Qualitative Requirements].
 The criteria therefore cover two groups.
 The first group consists of support for typed #voc("relationship", text: "relationships"), #voc("tag", text: "tags"),
-queries or a query #voc("dsl"), autocomplete, and whether the tool can operate on arbitrary files and folders rather than only on a special document type.
+queries or a query #voc("dsl"), autocomplete, file preview, and whether the tool can operate on arbitrary files and folders rather than only on a special document type.
 The second group consists of cross-platform availability, remote use, multiuser support, and storage model.
 These criteria are not meant to cover every feature of the surveyed tools.
 They are selected because they correspond to the requirements that most directly determine whether an existing tool can replace Graphle.
@@ -25,6 +25,7 @@ Nautilus and Dolphin offer no comparable built-in tagging.
 All three support remote filesystem access. Finder connects via _Connect to Server_ (supporting #voc("sftp") and #voc("smb")),
 while Nautilus and Dolphin accept `sftp://` URIs directly, allowing users to browse files on remote machines
 and NAS devices as if they were local.
+They also provide previews or quick viewing workflows for common file types, which makes them stronger than Graphle for direct file inspection.
 
 The closest approximation to relationships available in all three managers is the #voc("symbolic_link"),
 which can make a file appear at a different location.
@@ -114,25 +115,26 @@ rather than a semantic model of the #voc("filesystem").
 
 #figure(
   table(
-    columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
-    align: (left, center, center, center, center, center, center),
+    columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+    align: (left, center, center, center, center, center, center, center),
     table.header(
       [*Tool*],
       [*Relationships*],
       [*Tags*],
       [*Arbitrary files/folders*],
+      [*File preview*],
       [*Query/DSL*],
       [*Autocomplete*],
       [*Remote Access*],
     ),
-    [Finder],            [No],      [Yes],     [Yes],       [No],      [No],    [Yes],
-    [Nautilus],          [No],      [No],      [Yes],       [No],      [No],    [Yes],
-    [Dolphin],           [No],      [No],      [Yes],       [Partial], [No],    [Yes],
-    [Obsidian],          [Partial], [Yes],     [Partial],   [Plugin],  [No],    [No],
-    [TagSpaces],         [No],      [Yes],     [Yes],       [No],      [No],    [No],
-    [TMSU],              [No],      [Yes],     [Yes],       [Yes],     [No],    [No],
-    [autojump],          [No],      [No],      [Dirs only], [No],      [Yes],   [No],
-    [*Graphle*],         [*Yes*],   [*Yes*],   [*Yes*],     [*Yes*],   [*Yes*], [*Yes*],
+    [Finder],            [No],      [Yes],     [Yes],          [Yes],     [No],      [No],    [Yes],
+    [Nautilus],          [No],      [No],      [Yes],          [Partial], [No],      [No],    [Yes],
+    [Dolphin],           [No],      [No],      [Yes],          [Partial], [Partial], [No],    [Yes],
+    [Obsidian],          [Partial], [Yes],     [Partial],      [Partial], [Plugin],  [No],    [No],
+    [TagSpaces],         [No],      [Yes],     [Yes],          [Yes],     [No],      [No],    [No],
+    [TMSU],              [No],      [Yes],     [Yes],          [No],      [Yes],     [No],    [No],
+    [autojump],          [No],      [No],      [Folders only], [No],      [No],      [Yes],   [No],
+    [*Graphle*],         [*Yes*],   [*Yes*],   [*Yes*],        [*No*],    [*Yes*],   [*Yes*], [*Yes*],
   ),
   caption: [
     Functional comparison of existing tools against selected requirements.
@@ -157,37 +159,37 @@ rather than a semantic model of the #voc("filesystem").
     [Nautilus],
     [Linux / GNOME],
     [Native #voc("filesystem") plus GVfs-backed remote locations],
-    [Uses Linux accounts and file permissions; no separate application users],
+    [Uses Linux accounts and file permissions, no separate application users],
 
     [Dolphin],
     [Linux / KDE],
     [Native #voc("filesystem") plus KIO-backed remote locations],
-    [Uses Linux accounts and file permissions; no separate application users],
+    [Uses Linux accounts and file permissions, no separate application users],
 
     [Obsidian],
-    [macOS and Linux],
+    [macOS, Linux and Windows],
     [Markdown vault plus application and plugin indexes],
-    [Primarily single-user local vaults; shared editing depends on optional sync or external storage],
+    [Primarily single-user local vaults, shared editing depends on optional sync or external storage],
 
     [TagSpaces],
-    [macOS and Linux],
+    [macOS, Linux and Windows],
     [Filenames or sidecar #voc("json") metadata next to files],
-    [Local or shared-folder use; access control depends on the underlying #voc("filesystem")],
+    [Local or shared-folder use, access control depends on the underlying #voc("filesystem")],
 
     [TMSU],
-    [Linux and Unix-like command-line environments],
-    [Local tag database plus a mounted virtual #voc("filesystem") of tag views],
-    [Primarily per-user local use; sharing depends on the underlying files and database coordination],
+    [macOS and Linux],
+    [Local tag database],
+    [Primarily per-user local use, sharing depends on the underlying files and database coordination],
 
     [autojump],
-    [macOS and Linux shells],
+    [macOS and Linux],
     [Local weighted database of visited directories],
-    [Per-shell-user history database; no shared multiuser model],
+    [Per-shell-user history database, no shared multiuser model],
 
     [*Graphle*],
     [*macOS and Linux*],
     [*Existing #voc("filesystem") plus Neo4j graph metadata and Valkey autocomplete index*],
-    [*OS accounts and SSH can separate users; no application-level multiuser authorization in the thesis version*],
+    [*OS accounts and SSH can separate users. No application-level multiuser authorization in the thesis version*],
   ),
   caption: [
     Operational comparison of existing tools against selected requirements and constraints.
@@ -195,7 +197,8 @@ rather than a semantic model of the #voc("filesystem").
 )
 
 None of the surveyed tools satisfies the full requirement set.
-Standard file managers provide no #voc("relationship") or tagging model beyond OS-level #voc("tag", text: "tags") on macOS.
+Standard file managers provide good browsing and file-operation workflows, but their semantic model is limited.
+Finder exposes OS-level #voc("tag", text: "tags"), while Nautilus and Dolphin do not provide an equivalent built-in tagging model, and none of the three supports typed, queryable #voc("relationship", text: "relationships") between files as a first-class concept.
 They are also tied to a particular desktop environment or operating system, so they do not provide one cross-platform graph layer over both macOS and Linux filesystems.
 
 Obsidian is the closest conceptual match, a graph of linked documents with #voc("tag", text: "tags") and partial query
@@ -209,4 +212,7 @@ navigation, but it has no file management capabilities, no #voc("relationship") 
 
 Graphle addresses the gap left by the surveyed tools by extending a standard #voc("filesystem") with #voc("relationship", text: "relationships"),
 #voc("tag", text: "tags"), a #voc("dsl") with filename autocompletion, and remote access.
-It keeps file contents in place, stores semantic graph #voc("metadata") in a graph database, supports both files and folders as graph nodes, and relies on existing OS accounts and SSH rather than introducing a separate multiuser authorization model in the thesis implementation.
+It keeps file contents in place, stores semantic graph #voc("metadata") in a graph database, and supports both files and folders as graph nodes.
+However, Graphle still lacks features that could be added in future extensions.
+It does not provide application-level multiuser support, so supporting multiple concurrent users would require running separate GraphleManager instances.
+Second, it does not yet provide built-in file preview, so users inspect file contents through external applications rather than inside the Graphle client.

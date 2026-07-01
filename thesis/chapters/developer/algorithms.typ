@@ -15,6 +15,36 @@ Because many files share long common ancestor paths, storing each full path as a
 The effect is that a directory prefix shared by many files is stored once and reused rather than repeated for every full path. The parent chain for any leaf can always be reconstructed by following the back-reference to the full-path node and then walking up to the root.
 Memory therefore grows with the number of unique directory and filename components in the dataset, rather than with the number of files multiplied by their average depth. This matters because the in-process #voc("cache") stores #voc("trie") nodes directly. Duplicated prefixes would fill the #voc("cache") with redundant entries and reduce its effectiveness.
 
+To validate this behavior empirically, a small experiment was run on files accessible from a home directory.
+For each sample size, five random subsets were selected and inserted into the #voc("trie").
+The experiment recorded the number of created #voc("trie") nodes and the sum of the sampled path string lengths before prefix sharing.
+
+#figure(
+  table(
+    columns: (1fr, 1fr, 1.2fr, 1fr),
+    align: (center, center, center, center),
+    table.header(
+      [*Sample size*],
+      [*Trie nodes*],
+      [*Sum of path lengths*],
+      [*Nodes / length*],
+    ),
+    [10],     [555],       [810],       [68.5%],
+    [100],    [4,060],     [7,966],     [51.0%],
+    [1,000],  [32,911],    [79,477],    [41.4%],
+    [10,000], [272,931],   [796,071],   [34.3%],
+    [50,000], [1,193,662], [3,979,503], [30.0%],
+  ),
+  caption: [
+    Trie size measured on random subsets of files accessible from a home directory.
+  ],
+)
+
+The results show the expected sharing effect.
+As the sample grows, more files reuse already indexed directory prefixes, so the number of #voc("trie") nodes per input character decreases from 68.5% for 10 files to 30.0% for 50,000 files.
+The autocomplete index still grows with the number of known paths, but the experiment supports
+that storing shared prefixes once avoids a large amount of redundant path data in realistic directory trees.
+
 Lookup descends the #voc("trie") character by character from the root, returning an empty result as soon as a character has no child.
 From the node reached, `filenameDFS` finds full paths by interleaving three sources: the prefix node itself if it is marked `:full`, the `:parents` set, which contains predecessor path indices, and a recursive descent through the children.
 Every returned path is checked for existence on disk, so completions pointing at files deleted since the last sweeper run are filtered out before the suggestions are returned.
