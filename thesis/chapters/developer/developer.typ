@@ -11,7 +11,40 @@ It then outlines all #voc("api") endpoints in detail, providing paths, methods, 
 Next, it describes the algorithms behind the core features, the modified #voc("trie") used for autocomplete, the background sweeper that keeps the graph consistent with the #voc("filesystem"), and the multi-stage #voc("dsl") interpreter pipeline. It also discusses the problems that arose during implementation.
 Finally, the chapter concludes with the testing strategy and the continuous-integration setup that ensures the codebase keeps working as future contributors extend it.
 
-The implementation follows the design chapter without major deviation, and the requirements defined in the analysis are fulfilled by the resulting program.
+The implementation follows the design chapter without major deviation, and the requirements defined in the analysis are fulfilled by the resulting program, as summarised in @req-traceability.
+
+#figure(
+  caption: [Requirements traceability: each requirement mapped to its design component, key implementation class or module, and automated test.],
+  placement: none,
+  kind: table,
+  {
+    set text(size: 8pt)
+    table(
+      columns: (auto, 1.4fr, 2.2fr, 2fr),
+      stroke: 0.4pt + luma(160),
+      inset: 4pt,
+      align: left,
+      table.header([*Req.*], [*Design component*], [*Implementation*], [*Test*]),
+      [F1],   [File module],                                                   [`FileController`, `FileService`, `FileRepository`],                                                                                                [`FileIntegrationTest`],
+      [F2],   [Connection module],                                             [`ConnectionController`, `ConnectionService`, `ConnectionRepository`],                                                                              [`ConnectionIntegrationTests`],
+      [F3],   [Tag module],                                                    [`TagController`, `TagService`, `TagRepository`],                                                                                                    [`TagIntegrationTests`],
+      [F4],   [File module],                                                   [`FileController`, `FileService`, `FileRepository`],                                                                                                 [`FileIntegrationTest`],
+      [F5],   [File module],                                                   [`FileService`, `FileController`],                                                                                                                   [`FileIntegrationTest`],
+      [F6],   [GraphleUI],                                                     [`GraphleUI` project],                                                                                                                               [Manual],
+      [F7],   [DSL module],                                                    [`DSLController`, `DSLInterpreter`, `CypherQueryBuilder`, `DSLCommandExecutor`],                                                                    [`DSLInterpreterTest`, `DSLInterpreterIntegrationTest`],
+      [F8],   [Autocomplete module],                                           [`FilenameCompleter`, `DSLAutoCompleter`, `DSLWebSocketManager`],                                                                                    [`ValkeyFilenameCompleterTest`],
+      [F9],   [File module],                                                   [`FileService`, `Neo4JSweeper`],                                                                                                                     [`Neo4JSweeperTest`],
+      [F10],  [Chosen stack, File module],                                     [`FileService`],                                                                                                                                     [Manual],
+      [Q1.1], [GraphleUI containers + DSL module],                             [`FileController`, `TagController`, `ConnectionController`, `DSLController`],                                                                       [`FileIntegrationTest`, `TagIntegrationTests`, `ConnectionIntegrationTests`, `DSLInterpreterIntegrationTest`],
+      [Q1.2], [Public API, GraphleUI theme],                                   [`GraphQLCommands`, GraphleUI `common/`],                                                                                                            [Manual],
+      [Q1.3], [Boundary between GraphleManager and GraphleUI, download endpoint], [`FileDownloadController`, `DSLRestManager`],                                                                                                        [`FileDownloadControllerTest`],
+      [Q2.1], [Autocomplete module],                                           [`FilenameCompleter`, `DSLWebSocketManager`],                                                                                                        [#link(label("autocomplete-latency"))[Latency measurement]],
+      [Q3.1], [WebSocket transport],                                           [`DSLWebSocketManager`],                                                                                                                             [Manual],
+      [Q3.2], [Module boundaries (@graphle-manager-components-c4)],            [`FileService`, `TagService`, `ConnectionService`],                                                                                                  [`FileIntegrationTest`, `TagIntegrationTests`, `ConnectionIntegrationTests`],
+      [Q4.1], [DSL module, parser/dispatch split],                             [`DSLInterpreter`, DSL parser],                                                                                                                      [`DSLInterpreterTest`],
+    )
+  }
+) <req-traceability>
 
 #include "backend.typ"
 

@@ -53,7 +53,7 @@ The separation is enforced by Gradle module dependencies, meaning only the appli
 
 Three more endpoints sit outside #voc("graphql").
 `DSLController` is a `@RestController` mapped at `/dsl` that hands the request body to the #voc("dsl") interpreter and returns the resulting response.
-`FileDownloadController` serves raw file contents over `GET /download?location=…` with a detected MIME type. The GUI uses it whenever the backend is running on a different host.
+`FileDownloadController` serves raw file contents over `GET /download?path=…` with a detected MIME type. The GUI uses it whenever the backend is running on a different host.
 A #voc("websocket") endpoint at `/ws` carries autocomplete traffic.
 
 === Configuration

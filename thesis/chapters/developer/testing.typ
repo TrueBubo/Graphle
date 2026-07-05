@@ -19,7 +19,7 @@ docker compose up -d
 ```
 
 
-=== Autocomplete latency measurement
+=== Autocomplete latency measurement <autocomplete-latency>
 
 Autocomplete latency was measured manually from the GUI because the perceived responsiveness of the #voc("dsl") command line depends on the full round trip over #voc("websocket"), not only on the pure trie lookup.
 The client timed each autocomplete request from sending the prefix frame to receiving the matching response frame on an already established `/ws` connection.
