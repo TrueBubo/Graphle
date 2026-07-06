@@ -2,7 +2,7 @@ package com.graphle.graphlemanager.connection
 
 import com.graphle.graphlemanager.BaseGraphQlIntegrationTest
 import com.graphle.graphlemanager.FileTestUtils
-import com.graphle.graphlemanager.file.AbsolutePathString
+import com.graphle.graphlemanager.commons.AbsolutePathString
 import com.graphle.graphlemanager.randomString
 import com.graphle.graphlemanager.sweeper.Neo4JSweeper
 import org.springframework.beans.factory.annotation.Autowired

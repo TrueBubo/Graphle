@@ -10,12 +10,6 @@ else ( DSL )
     :The user enters a command to search for an item;
 endif
 endwhile ( No )
-if (Does the user want to perform an operation on the selected file or neighbor) then ( Selected )
-    :The user opens the menu located at the top of the application;
-else (Neighbor)
-    :The user opens the menu on the desired file by right clicking on it;
-endif
-:The user selects the operation they want the system to perform;
-:Operation is done;
+:The system displays the selected file or folder;
 stop
 @enduml

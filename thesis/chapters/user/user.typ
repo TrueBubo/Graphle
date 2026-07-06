@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-= User Documentation
+= User Documentation <user>
 
 This chapter provides the end user with a guide to installing, deploying, and using Graphle.
 It begins with the hardware and software requirements needed to run the application well on supported systems.

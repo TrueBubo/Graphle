@@ -1,6 +1,6 @@
 package com.graphle.graphlemanager.sweeper
 
-import com.graphle.graphlemanager.file.AbsolutePathString
+import com.graphle.graphlemanager.commons.AbsolutePathString
 import com.graphle.graphlemanager.file.File
 import com.graphle.graphlemanager.file.FileRepository
 import com.graphle.graphlemanager.tag.TagRepository

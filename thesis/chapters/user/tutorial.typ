@@ -31,7 +31,7 @@ If the command cannot be parsed or executed, the response type is `ERROR`.
 ==== Basic commands
 
 The simplest commands operate on one file, one tag, or one relationship.
-Names, values, and paths can be written without double quotes, but if one needs multi-word entries, one should use double quotes.
+Names, values, and paths can be written without double quotes, but multi-word entries should use double quotes.
 
 #table(
   columns: (19em, 1fr),
@@ -101,8 +101,8 @@ To find one file by its path, use:
 find (location = "/Users/johndoe/GraphleDslSample/research/notes/research-questions.md")
 ```
 
-If no filter is given for the first file scope, it displays all the files indexed by Graphle, to avoid having to
-fetch all the files present on the disk.
+If no filter is given for the first file scope, Graphle displays all indexed files to avoid having to
+fetch every file present on disk.
 
 ==== Traversing relationships
 
@@ -165,13 +165,13 @@ find (location = "/Users/johndoe/GraphleDslSample/research/datasets/interviews.c
 ==== Demo setup
 
 The repository contains a small runnable example for this workflow in the `examples` directory.
-The script `examples/graphle-dsl-home-sample.sh` creates a sample hierarchy under `~/GraphleDslSample`, creates empty files, and then initializes Graphle metadata through the #voc("dsl").
+The script `examples/graphle-dsl-home-setup.sh` creates a sample hierarchy under `~/GraphleDslSample`, creates empty files, and then initializes Graphle metadata through the #voc("dsl").
 The generated hierarchy contains research notes, a dataset, project files, an archive file, and a movie collection.
 
 The same script tags the files with values such as `type = movie` or `year = 1999`.
 It also creates relationships such as `motivates` or `input-for`.
 
-After the sample has been initialized, query files can be executed with `examples/run-graphle-dsl-file.sh` with a DSL file.
+After the sample has been initialized, query files can be executed by passing a DSL file to `examples/run-graphle-dsl-file.sh`.
 
 ```bash
 examples/run-graphle-dsl-file.sh examples/queries/04-movies-by-type.dsl

@@ -7,9 +7,9 @@ Requirement Q2.1 caps an autocomplete response at 250 ms, which rules out doing 
 A fresh TCP handshake on every keystroke is avoided by keeping a single #voc("websocket") open on `/ws`. The client transparently reconnects with exponential back-off when the link drops, so an established #voc("connection") is already in place whenever typing occurs.
 A Valkey round trip per #voc("trie") node traversed would in turn make lookup cost linear in the prefix length, which is avoided by fronting each access pattern with an in-process #voc("cache") and by the modified #voc("trie") encoding described in the Algorithms section.
 
-The 250 ms target is therefore a guarantee that holds once the #voc("cache", text: "caches") are hot. Under normal interactive use the relevant #voc("trie") nodes already sit in #voc("cache"), so a lookup is bounded by local work plus a single network round trip.
-It is explicitly *not* a worst-case guarantee for a freshly started session.
-The first few keystrokes after a cold start may exceed the budget while the in-process layer is repopulated from Valkey.
+The implementation is designed to make the 250 ms target realistic for established interactive sessions with warm #voc("cache", text: "caches").
+The manual measurements in the Testing section show that the sampled requests stayed below this threshold.
+The first few keystrokes after a cold start may exceed the budget while the cache is repopulated from Valkey, and slower responses are also possible under unusual system load or slow filesystem/database access.
 
 === Transparent computing
 
@@ -31,7 +31,7 @@ Everything else (file existence, directory enumeration, path normalization) dele
 === User navigation
 
 The file-detail view is intentionally the central point of the GUI.
-`FileController.fileByLocation` assembles it in a single round trip by pulling from three independent sources: hierarchical #voc("neighbor", text: "neighbors") (`descendantsOfFile`, `parentOfFile`) come from the live #voc("filesystem") via `FileService`, persisted graph #voc("relationship", text: "relationships") come from `ConnectionController.neighborsByFileLocation`, and #voc("tag", text: "tags") come from `TagController.tagsByFileLocation`.
+`FileDetailsService.fileByLocation` in the `application` module assembles it in a single round trip by pulling from three independent sources: hierarchical #voc("neighbor", text: "neighbors") (`descendantsOfFile`, `parentOfFile`) come from the live #voc("filesystem") via `FileService`, persisted graph #voc("relationship", text: "relationships") come from `ConnectionService.neighborsByFileLocation`, and #voc("tag", text: "tags") come from `TagService.tagsByFileLocation`.
 Before the merged result is returned, every entry is checked with `Files.exists` (and optionally `Files.isHidden`), so a file deleted between the last sweeper run and the current request is silently dropped rather than surfaced to the user.
 
 A subtle consequence is that files which exist on disk but were never explicitly registered with Graphle are still reachable. Navigating into a directory shows them under the hierarchical descendants even though they have no `File` node yet (F1).

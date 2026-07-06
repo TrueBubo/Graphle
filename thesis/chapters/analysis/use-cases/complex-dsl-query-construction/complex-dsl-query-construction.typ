@@ -1,7 +1,7 @@
 #import "../../../../template/shared.typ": *
 #import "../config.typ": *
 
-=== Complex DSL query construction
+=== Complex DSL query construction <uc-complex-dsl-query>
 * Preconditions *
 - The user has the application open
 - The file browser is connected to a Graphle server
@@ -9,7 +9,7 @@
 
 * Flow *
 1. The user opens the DSL command interface
-2. The user starts constructing a query with filters they want to query for (more on that in user tutorial)
+2. The user starts constructing a query with filters they want to apply (more on that in the user tutorial)
 3. The user submits the command
 4. The system validates the query syntax
 5. The system executes the DSL query

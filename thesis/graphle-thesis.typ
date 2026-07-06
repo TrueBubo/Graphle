@@ -22,26 +22,42 @@
   show-todos: true,
 
   abstract-en: [
-    #lorem(60)
+    Operating systems organize files in directory trees, which forces each file into
+    one primary location and makes it difficult to express multiple semantic
+    associations. This thesis presents Graphle, a graph-oriented file management
+    system that extends an existing filesystem with tags and typed relationships
+    between files and folders. Files remain stored in their original directories,
+    while semantic metadata is kept in a labeled property graph. The result of this
+    thesis is a working application that supports graphical and command-based
+    interaction, preserves compatibility with ordinary filesystem tools, and
+    demonstrates the feasibility of graph-based file organization.
   ],
 
   abstract-cz: [
-    #lorem(60)
+    Operační systémy organizují soubory do adresářových stromů, což každý soubor omezuje na
+    jedno primární umístění a ztěžuje vyjádření více sémantických
+    vztahů. Tato práce představuje Graphle, grafově orientovaný systém pro správu souborů,
+    který rozšiřuje stávající souborový systém o značky a typované vztahy
+    mezi soubory a složkami. Soubory zůstávají uloženy ve svých původních adresářích,
+    zatímco sémantická metadata jsou uchovávána v grafu vlastností s popisky. Výsledkem této
+    práce je funkční aplikace, která podporuje grafickou i příkazovou
+    interakci, zachovává kompatibilitu s běžnými nástroji pro práci se souborovým systémem a
+    dokazuje proveditelnost grafové organizace souborů.
   ],
 
   keywords-en: [
-    #lorem(20)
+    file management, filesystem, labeled property graph, file tagging,
+    semantic relationships, domain-specific language
   ],
 
   keywords-cz: [
-   #lorem(20)
+    správa souborů, souborový systém, graf vlastností s popisky,
+    značkování souborů, sémantické vztahy, doménově specifický jazyk
   ],
 
   acknowledgement: [
-    Acknowledgement
-    #lorem(30)
-    
-    #lorem(30)
+    I would like to thank my supervisor, Pavel Koupil, for his guidance and
+    support during my work on this thesis.
   ],
 )
 

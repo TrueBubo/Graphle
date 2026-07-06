@@ -14,7 +14,7 @@ Hardware requirements:
 
 - *Memory* - Minimum 8 GB RAM.
   This is sufficient to run all application parts - the JVM backend, the Compose desktop client, the Neo4j container, and the Valkey container, together with a small or medium-sized file collection.
-  Recommended is 16 GB RAM.
+  16 GB RAM is recommended.
   This amount keeps everything running smoothly, because both Neo4j and Valkey keep their data in memory for fast access, and Graphle does the same for the most frequently used autocomplete entries.
   Bigger file collections therefore need more memory, even though Graphle only keeps information about the files, not the files themselves.
 

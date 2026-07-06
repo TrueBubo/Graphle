@@ -1,0 +1,17 @@
+@startuml
+start
+:The user starts SSH port forwarding to the remote GraphleManager;
+:The user configures the server URL to the forwarded local port;
+:The user opens the Graphle GUI;
+if (Connection established?) then (Yes)
+  :GraphleManager opens the configured home location;
+  :The application shows neighbors from the remote filesystem;
+  if (Open selected file?) then (Yes)
+    :The GUI downloads a local copy or opens the file in place when configured as local;
+  endif
+else (No)
+  :The system shows a connection error;
+  :The user fixes or restarts the SSH tunnel;
+endif
+stop
+@enduml
