@@ -1,4 +1,5 @@
 #import "../../template/shared.typ": *
+#import "use-cases/config.typ": *
 == Use Cases
 
 This section outlines the use cases that describe how the user interacts with the application. Use cases cover
@@ -7,7 +8,7 @@ and using the #voc("dsl").
 
 #figure(
   placement: none,
-  image("use-cases/use-case/use-case-diagram.svg"),
+  image("use-cases/use-case/use-case-diagram.svg", width: use-case-figure-scale),
   caption: [Use case diagram]
 ) <use-case-diagram>
 
