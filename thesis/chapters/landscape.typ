@@ -113,6 +113,7 @@ rather than a semantic model of the #voc("filesystem").
 == Comparison
 
 #figure(
+  placement: none,
   table(
     columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
     align: (left, center, center, center, center, center, center, center),
@@ -141,6 +142,7 @@ rather than a semantic model of the #voc("filesystem").
 )
 
 #figure(
+  placement: none,
   table(
     columns: (auto, 1.2fr, 2.3fr, 2fr),
     align: (left, left, left, left),

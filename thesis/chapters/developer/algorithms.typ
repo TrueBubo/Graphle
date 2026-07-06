@@ -20,6 +20,7 @@ For each sample size, five random subsets were selected and inserted into the #v
 The experiment recorded the number of created #voc("trie") nodes and the sum of the sampled path string lengths before prefix sharing.
 
 #figure(
+  placement: none,
   table(
     columns: (1fr, 1fr, 1.2fr, 1fr),
     align: (center, center, center, center),
