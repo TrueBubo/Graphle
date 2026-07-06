@@ -15,7 +15,7 @@ The following sections describe how each component and interface addresses the #
 It hosts the #voc("dsl") interpreter, manages both external datastores, and exposes the three communication interfaces described below.
 Because GraphleManager is a network service, clients can connect to an instance running on a remote machine, giving users access to a remote #voc("filesystem") (Q1.3).
 It is implemented on the JVM, which together with Compose Multiplatform on the client side ensures the application runs on both macOS and Linux without duplicating the logic (F10).
-When an auxiliary component such as Valkey or a connected GUI becomes unavailable, GraphleManager continues to handle all other operations.
+When an auxiliary component (Valkey, GUI) becomes unavailable, GraphleManager continues to handle all other operations.
 Failures in optional subsystems are caught and logged without propagating to the core (Q3.2).
 
 *GraphleUI* is the desktop GUI client built with Compose Multiplatform (F6).
