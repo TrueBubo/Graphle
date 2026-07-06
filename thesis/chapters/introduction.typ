@@ -5,9 +5,8 @@
 Operating systems organize files as a strict tree of directories, where every
 file resides at exactly one location. This imposes a single, rigid classification
 onto data where the user has to choose the most appropriate aspect of the file and place it
-into a corresponding folder. However, this is not always so easy; for example,
-a photograph may belong at once to a holiday, a person, and a specific project.
-A tree cannot express such many-to-many associations, which makes organizing files
+into a corresponding folder. However, this is often difficult. A photograph may belong at once to a holiday,
+a person, and a specific project. A tree cannot express such many-to-many associations, which makes organizing files
 harder than it should be. Some tools try to bridge this gap, but each does so only
 in its own limited way. They do not let users freely connect arbitrary files with typed
 #voc("relationship", text: "relationships") and tags across the whole filesystem

@@ -88,9 +88,8 @@ TMSU supports simple tags, tag values, and its own #voc("dsl"), making it a rele
 tags over an ordinary #voc("filesystem").
 
 The limitation is that the model remains centered on tags.
-The mounted hierarchy provides a convenient alternative view, but it does not express typed
-#voc("relationship", text: "relationships") such as _derived from_, _cites_, or _belongs to project_ between two
-files or folders.
+It cannot express typed #voc("relationship", text: "relationships")
+such as _derived from_, _cites_, or _belongs to project_ between two files or folders.
 TMSU also has no dedicated graphical interface, no application-level remote-access workflow, and no shared
 multiuser model.
 It therefore demonstrates the usefulness of tag-based navigation, but does not cover the graph-oriented
@@ -154,7 +153,7 @@ rather than a semantic model of the #voc("filesystem").
     [Finder],
     [macOS only],
     [Native #voc("filesystem") plus macOS metadata such as tags and #voc("symbolic_link", text: "symbolic links")],
-    [Uses macOS accounts and file permissions; no separate application users],
+    [Uses macOS accounts and file permissions, no separate application users],
 
     [Nautilus],
     [Linux / GNOME],
