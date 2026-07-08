@@ -2,9 +2,9 @@
 #import "../config.typ": *
 === Remove a relationship <uc-remove-relationship>
 * Preconditions *
-- a) The user has the application open
-- b) The file browser is connected to a Graphle server
-- c) The user wants to remove a relationship between two files
+- The user has the application open
+- The file browser is connected to a Graphle server
+- The user wants to remove a relationship between two files
 
 * Flow *
 1. The user searches for a file
@@ -16,7 +16,7 @@
 - 2a) The user closes the context menu without selecting an operation
 
 * Postconditions *
-- a) The system removes the relationship between two entities
+- The system removes the relationship between two entities
 #figure(
   placement: none,
   image("remove-a-relationship-activity-diagram.svg", width: use-case-figure-scale),

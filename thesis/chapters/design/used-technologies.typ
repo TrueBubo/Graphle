@@ -62,10 +62,10 @@ different services, which is important to keep the response time to a minimum.
 Storing and querying arbitrary #voc("relationship", text: "relationships") between files requires a database whose native data model is a graph.
 Two graph data models were considered: the #voc("lpg") and the Resource Description Framework (RDF).
 
-RDF was eliminated for two reasons.
-First, it mandates the use of URIs as node and #voc("relationship") identifiers.
+RDF was eliminated because it mandates the use of URIs as node and #voc("relationship") identifiers.
 This imposes an unnecessary burden on users who manage a purely local #voc("filesystem") with no intent of publishing or interlinking it with external datasets.
-Second, RDF stores are typically triple stores that materialize graph structure only at query time, whereas #voc("lpg") databases index edges natively, resulting in faster traversal for the #voc("relationship")-heavy workloads this project targets @neo4jrdfvslpg.
+Since Graphle's graph never leaves the user's machine, maintaining such identifiers,
+would add complexity for users without a matching benefit.
 
 After selecting the #voc("lpg") model, several self-hosted databases capable of storing
 property graphs were compared: ArangoDB, ArcadeDB, and Neo4j. ArangoDB @arangodb and
@@ -83,10 +83,10 @@ As specified in requirement Q2.1, autocomplete responses must be delivered withi
 Meeting this constraint requires that candidate filenames be held in memory rather than retrieved from disk on each keystroke.
 
 Valkey @valkey, a Linux Foundation fork of Redis @redis, was selected as the in-memory store.
-Valkey is reported to be faster and more memory-efficient than Redis in benchmarks @valkeybenchmark
-and has received corporate backing from Oracle, AWS, and Google. Organizations now depend on it in production,
+It has received corporate backing from Oracle, AWS, and Google. Organizations, which now depend on it in production,
 which reduces the risk of the project being abandoned @valkeyannouncement.
-Developers familiar with Redis can apply that knowledge directly to Valkey with no additional learning overhead.
+Valkey is fully compatible with Redis, so developers familiar with Redis can apply that knowledge
+directly to Valkey with no additional learning overhead.
 
 To support infix completion while keeping memory consumption reasonable, filenames are indexed using a modified #voc("trie").
 Leaf-level path components are stored without their parent segments, enabling efficient prefix search across all components of a filename.

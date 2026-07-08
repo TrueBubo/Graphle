@@ -2,9 +2,9 @@
 #import "../config.typ": *
 === Add a relationship <uc-add-relationship>
 * Preconditions *
-- a) The user has the application open
-- b) The file browser is connected to a Graphle server
-- c) The user wants to connect two files with a relationship
+- The user has the application open
+- The file browser is connected to a Graphle server
+- The user wants to connect two files with a relationship
 
 * Flow *
 1. The user searches for a file
@@ -18,9 +18,9 @@
 - 5b) The user cancels the operation
 
 * Postconditions *
-- a) The system remembers the new relationship between two entities
-- b) The relationship has the name and the value set by the user
-- c) The user can traverse the relationship to find the second file directly from the first file
+- The system remembers the new relationship between two entities
+- The relationship has the name and the value set by the user
+- The user can traverse the relationship to find the second file directly from the first file
 #figure(
   placement: none,
   image("add-a-relationship-activity-diagram.svg", width: use-case-figure-scale),

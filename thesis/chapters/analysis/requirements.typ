@@ -33,8 +33,8 @@ Each requirement has a priority, an acceptance criterion, and a link to the use 
   [F10], [Must], [Cross-platform support], [The backend and GUI can be built and run on macOS and Linux using the documented installation steps.], [@user],
 )
 
-Windows is explicitly not supported, as NTFS assigns each volume an independent drive letter rather than providing a single root hierarchy. 
-Without a common root, files on different drives cannot be connected in the graph.  
+Windows is explicitly not supported. This is a scope limitation of the work rather than a fundamental constraint.
+Windows path semantics and its permission system differ from those of macOS and Linux and were not tested during development.
 
 === Qualitative Requirements
 Qualitative requirements define constraints on how the functionality should behave.

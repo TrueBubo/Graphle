@@ -1,20 +1,21 @@
 digraph GraphleManagerComponents {
   graph [
-    rankdir=LR,
+    rankdir=TB,
     bgcolor="white",
-    pad=0.25,
-    nodesep=0.65,
-    ranksep=0.95,
+    pad=0.30,
+    nodesep=1,
+    ranksep=1.6,
     splines=polyline,
     compound=true,
-    outputorder=edgesfirst
+    outputorder=edgesfirst,
+    forcelabels=true
   ];
 
   node [
     shape=rect,
     style="rounded,filled",
     fontname="Arial",
-    fontsize=11,
+    fontsize=22,
     color="#455a64",
     penwidth=1.2,
     fillcolor="#f7f9fb",
@@ -23,7 +24,7 @@ digraph GraphleManagerComponents {
 
   edge [
     fontname="Arial",
-    fontsize=9,
+    fontsize=17,
     color="#546e7a",
     arrowsize=0.7,
     penwidth=1.1
@@ -38,10 +39,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_api {
     label="API adapters";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=14;
+    margin=22;
 
     graphql_api [
       label="GraphQL controllers\nFileController\nTagController\nConnectionController",
@@ -65,10 +66,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_domain {
     label="Application modules";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=14;
+    margin=22;
 
     file_module [
       label="File module\nFileService\nfile model",
@@ -110,10 +111,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_persistence {
     label="Persistence adapters";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=14;
+    margin=22;
 
     repositories [
       label="Neo4j repositories\nFileRepository\nTagRepository\nConnectionRepository",
@@ -148,31 +149,31 @@ digraph GraphleManagerComponents {
     color="#6a3ea1"
   ];
 
-  clients -> graphql_api [label="/graphql"];
-  clients -> rest_api [label="/dsl, /download"];
-  clients -> websocket_api [label="/ws"];
+  clients -> graphql_api [xlabel="/graphql"];
+  clients -> rest_api [xlabel="/dsl, /download"];
+  clients -> websocket_api [xlabel="/ws"];
 
-  graphql_api -> file_module [label="file queries/mutations"];
-  graphql_api -> tag_module [label="tag queries/mutations"];
-  graphql_api -> connection_module [label="relationship mutations"];
-  rest_api -> dsl_module [label="interpret command"];
-  rest_api -> filesystem [label="stream file"];
-  websocket_api -> autocomplete_module [label="complete prefix"];
+  graphql_api -> file_module [xlabel="file queries/mutations"];
+  graphql_api -> tag_module [xlabel="tag queries/mutations"];
+  graphql_api -> connection_module [xlabel="relationship mutations"];
+  rest_api -> dsl_module [xlabel="interpret command"];
+  rest_api -> filesystem [xlabel="stream file"];
+  websocket_api -> autocomplete_module [xlabel="complete prefix"];
 
-  dsl_module -> file_module [label="file commands"];
-  dsl_module -> tag_module [label="tag commands"];
-  dsl_module -> connection_module [label="relationship commands"];
-  dsl_module -> repositories [label="find via Cypher"];
+  dsl_module -> file_module [xlabel="file commands"];
+  dsl_module -> tag_module [xlabel="tag commands"];
+  dsl_module -> connection_module [xlabel="relationship commands"];
+  dsl_module -> repositories [xlabel="find via Cypher"];
 
-  file_module -> repositories [label="file graph updates"];
-  file_module -> filesystem [label="read hierarchy\nwrite files"];
-  file_module -> autocomplete_module [label="insert visited paths"];
-  tag_module -> repositories [label="tag graph updates"];
-  connection_module -> repositories [label="relationship graph updates"];
-  sweeper_module -> repositories [label="remove stale nodes"];
-  sweeper_module -> filesystem [label="check existence"];
+  file_module -> repositories [xlabel="file graph updates"];
+  file_module -> filesystem [xlabel="read hierarchy\nwrite files"];
+  file_module -> autocomplete_module [xlabel="insert visited paths"];
+  tag_module -> repositories [xlabel="tag graph updates"];
+  connection_module -> repositories [xlabel="relationship graph updates"];
+  sweeper_module -> repositories [xlabel="remove stale nodes"];
+  sweeper_module -> filesystem [xlabel="check existence"];
 
-  autocomplete_module -> valkey_adapter [label="trie operations"];
-  repositories -> neo4j [label="Cypher / repository calls"];
-  valkey_adapter -> valkey [label="Valkey commands"];
+  autocomplete_module -> valkey_adapter [xlabel="trie operations"];
+  repositories -> neo4j [xlabel="Cypher / repository calls"];
+  valkey_adapter -> valkey [xlabel="Valkey commands"];
 }
