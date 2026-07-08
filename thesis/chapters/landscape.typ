@@ -26,6 +26,8 @@ All three support remote filesystem access. Finder connects via _Connect to Serv
 while Nautilus and Dolphin accept `sftp://` URIs directly, allowing users to browse files on remote machines
 and NAS devices as if they were local.
 They also provide previews or quick viewing workflows for common file types, which makes them stronger than Graphle for direct file inspection.
+Finder's Quick Look ships built in, whereas Nautilus needs the separate `Sushi` extension and Dolphin
+needs KIO thumbnailer packages to support previews, hence the _Plugin_ rating for file preview for Nautilus and Dolphin.
 
 The closest approximation to relationships available in all three managers is the #voc("symbolic_link"),
 which can make a file appear at a different location.
@@ -48,6 +50,9 @@ Obsidian @obsidian is a personal knowledge management application built on top o
 of Markdown files.
 Its central feature is a graph view that visualizes the `wikilink` connections users embed
 in their notes, establishing explicit, browsable #voc("relationship", text: "relationships") between documents.
+A `wikilink` carries no type or label describing the nature of the connection, unlike Graphle's typed
+#voc("relationship", text: "relationships"), hence the _Partial_ rating for relationships in the functional
+comparison table below.
 Because links are stored as plain text, the vault remains readable without the application.
 #voc("tag", text: "Tags") are supported via `#hashtag` syntax or YAML front matter.
 Its primary storage model is a local Markdown vault plus indexes built by the application and its plugins.
@@ -58,6 +63,9 @@ or source code files, and folders cannot be tagged or linked as first-class enti
 Because Obsidian stores its link index only for Markdown vaults, non-Markdown files in the same
 folder are invisible to the graph, hence the _Partial_ rating for arbitrary files and folders in the
 functional comparison table below.
+Preview is fully supported only for embeddable file types, such as images, audio, video,
+and PDFs. Other file types, such as office documents have no
+preview at all, hence the _Partial_ rating for file preview as well.
 The Dataview @dataview community plugin adds a query language over file #voc("metadata"),
 but its queries are still confined to Markdown files. PDFs, images, or binaries cannot
 appear as a node in a Dataview query.
@@ -128,8 +136,8 @@ rather than a semantic model of the #voc("filesystem").
       [*Remote Access*],
     ),
     [Finder],            [No],      [Yes],     [Yes],          [Yes],     [No],      [No],    [Yes],
-    [Nautilus],          [No],      [No],      [Yes],          [Partial], [No],      [No],    [Yes],
-    [Dolphin],           [No],      [No],      [Yes],          [Partial], [Partial], [No],    [Yes],
+    [Nautilus],          [No],      [No],      [Yes],          [Plugin],  [No],      [No],    [Yes],
+    [Dolphin],           [No],      [No],      [Yes],          [Plugin],  [Partial], [No],    [Yes],
     [Obsidian],          [Partial], [Yes],     [Partial],      [Partial], [Plugin],  [No],    [No],
     [TagSpaces],         [No],      [Yes],     [Yes],          [Yes],     [No],      [No],    [No],
     [TMSU],              [No],      [Yes],     [Yes],          [No],      [Yes],     [No],    [No],
@@ -202,7 +210,7 @@ Standard file managers provide good browsing and file-operation workflows, but t
 Finder exposes OS-level #voc("tag", text: "tags"), while Nautilus and Dolphin do not provide an equivalent built-in tagging model, and none of the three supports typed, queryable #voc("relationship", text: "relationships") between files as a first-class concept.
 They are also tied to a particular desktop environment or operating system, so they do not provide one cross-platform graph layer over both macOS and Linux filesystems.
 
-Obsidian is the closest conceptual match, a graph of linked documents with #voc("tag", text: "tags") and partial query
+Obsidian is the closest conceptual match, a graph of linked documents with #voc("tag", text: "tags") and plugin-based query
 support. However, it is constrained to Markdown notes and cannot work with arbitrary file types in its graph.
 TagSpaces adds tagging to any file type but has no #voc("relationship") model and no query #voc("dsl") beyond
 #voc("tag") and filename matching. Its filename and sidecar storage is transparent, but it does not provide a graph storage model.

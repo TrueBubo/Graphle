@@ -1,20 +1,21 @@
 digraph GraphleContainers {
   graph [
-    rankdir=LR,
+    rankdir=TB,
     bgcolor="white",
-    pad=0.25,
-    nodesep=0.8,
-    ranksep=1.05,
+    pad=0.20,
+    nodesep=0.6,
+    ranksep=0.7,
     splines=polyline,
     compound=true,
-    outputorder=edgesfirst
+    outputorder=edgesfirst,
+    forcelabels=true
   ];
 
   node [
     shape=rect,
     style="rounded,filled",
     fontname="Arial",
-    fontsize=12,
+    fontsize=14,
     color="#455a64",
     penwidth=1.3,
     fillcolor="#f7f9fb",
@@ -23,7 +24,7 @@ digraph GraphleContainers {
 
   edge [
     fontname="Arial",
-    fontsize=10,
+    fontsize=11,
     color="#546e7a",
     arrowsize=0.75,
     penwidth=1.2
@@ -83,11 +84,11 @@ digraph GraphleContainers {
     color="#6a3ea1"
   ];
 
-  user -> graphle_ui [label="browses and edits files"];
-  user -> dsl_client [label="automates commands"];
-  graphle_ui -> graphle_manager [label="/graphql GraphQL\n/dsl and /download REST\n/ws WebSocket"];
-  dsl_client -> graphle_manager [label="POST /dsl"];
-  graphle_manager -> filesystem [label="java.nio.file\nread/write/move/delete"];
-  graphle_manager -> neo4j [label="Bolt via Spring Data Neo4j"];
-  graphle_manager -> valkey [label="Valkey client\ntrie reads/writes"];
+  user -> graphle_ui [xlabel="browses and edits files"];
+  user -> dsl_client [xlabel="automates commands"];
+  graphle_ui -> graphle_manager [xlabel="/graphql GraphQL\n/dsl and /download REST\n/ws WebSocket"];
+  dsl_client -> graphle_manager [xlabel="POST /dsl"];
+  graphle_manager -> filesystem [xlabel="java.nio.file\nread/write/move/delete"];
+  graphle_manager -> neo4j [xlabel="Bolt via Spring Data Neo4j"];
+  graphle_manager -> valkey [xlabel="Valkey client\ntrie reads/writes"];
 }

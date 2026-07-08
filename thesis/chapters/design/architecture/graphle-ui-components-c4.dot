@@ -14,7 +14,7 @@ digraph GraphleUIComponents {
     shape=rect,
     style="rounded,filled",
     fontname="Arial",
-    fontsize=11,
+    fontsize=22,
     color="#455a64",
     penwidth=1.2,
     fillcolor="#f7f9fb",
@@ -23,7 +23,7 @@ digraph GraphleUIComponents {
 
   edge [
     fontname="Arial",
-    fontsize=9,
+    fontsize=17,
     color="#546e7a",
     arrowsize=0.7,
     penwidth=1.1
@@ -38,7 +38,7 @@ digraph GraphleUIComponents {
   subgraph cluster_presentation {
     label="Presentation and state";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
     margin=14;
@@ -77,7 +77,7 @@ digraph GraphleUIComponents {
   subgraph cluster_application {
     label="Client application services";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
     margin=14;
@@ -110,7 +110,7 @@ digraph GraphleUIComponents {
   subgraph cluster_transport {
     label="Backend transports";
     fontname="Arial";
-    fontsize=12;
+    fontsize=18;
     color="#90a4ae";
     style="rounded,dashed";
     margin=14;
