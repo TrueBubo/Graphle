@@ -10,7 +10,8 @@ For proper deployment of the application, ensure that the following components a
 - *JDK 21 or newer* - Required for running both `GraphleManager` and `GraphleUI`.
 - *Docker* - Required for the Neo4j and Valkey containers.
 - *Docker Compose* - Either the `docker compose` plugin or the older `docker-compose` command can be used.
-- *Access to source code* - The source code can be obtained by cloning the GitHub repository with `git clone`.
+- *Access to source code* - The source code can be obtained by cloning the GitHub repository with `git clone https://github.com/TrueBubo/Graphle`.
+The tag used for this thesis is #todo[Add git tag]
 
 Initializing the installation with the recommended script consists of the following steps:
 
