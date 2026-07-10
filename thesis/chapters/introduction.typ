@@ -19,12 +19,29 @@ resides in a single location, yet it can be referenced from anywhere in the grap
 
 The objective of this thesis is to design and implement Graphle, a graph-oriented
 file management system that lets users organize their files the way they think.
-Graphle represents files and folders as nodes in a labeled property graph connected by
-arbitrary, user-defined #voc("relationship", text: "relationships") and
-#voc("tag", text: "tags"), while remaining backward-compatible with the existing
-#voc("filesystem"). It enables two modes of interaction: either a graphical client or a
-custom query #voc("dsl"). The thesis delivers a working client and backend, a graph
-data model, and a query language for files, while the system remains backward-compatible with the directory hierarchy.
+This objective breaks down into five main goals:
+
+- #emph[Requirements and related work.] Analyze the functional and qualitative
+  requirements for graph-based file management, and survey existing file managers,
+  knowledge-management applications, and navigation utilities in order to position
+  Graphle among them and justify its design decisions.
+- #emph[Graph data model.] Design a data model that represents files and folders as
+  nodes in a labeled property graph connected by arbitrary, user-defined
+  #voc("relationship", text: "relationships") and #voc("tag", text: "tags"), while
+  remaining backward-compatible with the existing #voc("filesystem") so that files
+  stay usable by ordinary tools.
+- #emph[Query language.] Design a custom query #voc("dsl") that lets users search
+  for files and manipulate their #voc("tag", text: "tags") and
+  #voc("relationship", text: "relationships") by the graph structure rather than by
+  paths alone.
+- #emph[Backend.] Select and justify a suitable technology stack, and develop a
+  backend that maintains the graph, exposes it through an API, and keeps it
+  consistent with a live #voc("filesystem") that continues to be modified outside
+  Graphle.
+- #emph[Graphical client.] Develop an interactive graphical client that provides
+  effective browsing of the #voc("filesystem"), management of files, editing of
+  #voc("tag", text: "tags") and #voc("relationship", text: "relationships"), and
+  execution of #voc("dsl") queries in one place.
 
 #emph[Outline.] The remainder of this thesis is organized into six chapters.
 @analysis establishes the functional and qualitative requirements, user roles,
