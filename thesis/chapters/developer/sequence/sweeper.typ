@@ -10,7 +10,7 @@
     (from: 4, to: 1, label: [locations], kind: "return"),
     (from: 1, to: 0, label: [locations], kind: "return"),
     (from: 0, to: 3, label: [`Files.exists(location)` per entry]),
-    (from: 3, to: 0, label: [boolean], kind: "return"),
+    (from: 3, to: 0, label: [File existance], kind: "return"),
     (from: 0, to: 1, label: [`removeFileByLocation` (stale)]),
     (from: 1, to: 4, label: [`DETACH DELETE`]),
     (from: 0, to: 2, label: [`removeOrphanTags`]),

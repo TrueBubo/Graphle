@@ -1,10 +1,10 @@
 digraph GraphleManagerComponents {
   graph [
-    rankdir=TB,
+    rankdir=LR,
     bgcolor="white",
-    pad=0.30,
-    nodesep=1,
-    ranksep=1.6,
+    pad="0.5,0.5",
+    nodesep=2.4,
+    ranksep=2.8,
     splines=polyline,
     compound=true,
     outputorder=edgesfirst,
@@ -15,7 +15,7 @@ digraph GraphleManagerComponents {
     shape=rect,
     style="rounded,filled",
     fontname="Arial",
-    fontsize=22,
+    fontsize=40,
     color="#455a64",
     penwidth=1.2,
     fillcolor="#f7f9fb",
@@ -24,7 +24,7 @@ digraph GraphleManagerComponents {
 
   edge [
     fontname="Arial",
-    fontsize=17,
+    fontsize=40,
     color="#546e7a",
     arrowsize=0.7,
     penwidth=1.1
@@ -39,10 +39,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_api {
     label="API adapters";
     fontname="Arial";
-    fontsize=18;
+    fontsize=38;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=22;
+    margin=30;
 
     graphql_api [
       label="GraphQL controllers\nFileController\nTagController\nConnectionController",
@@ -66,10 +66,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_domain {
     label="Application modules";
     fontname="Arial";
-    fontsize=18;
+    fontsize=38;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=22;
+    margin=30;
 
     file_module [
       label="File module\nFileService\nfile model",
@@ -111,10 +111,10 @@ digraph GraphleManagerComponents {
   subgraph cluster_persistence {
     label="Persistence adapters";
     fontname="Arial";
-    fontsize=18;
+    fontsize=38;
     color="#90a4ae";
     style="rounded,dashed";
-    margin=22;
+    margin=30;
 
     repositories [
       label="Neo4j repositories\nFileRepository\nTagRepository\nConnectionRepository",
@@ -160,9 +160,9 @@ digraph GraphleManagerComponents {
   rest_api -> filesystem [xlabel="stream file"];
   websocket_api -> autocomplete_module [xlabel="complete prefix"];
 
-  dsl_module -> file_module [xlabel="file commands"];
-  dsl_module -> tag_module [xlabel="tag commands"];
-  dsl_module -> connection_module [xlabel="relationship commands"];
+  dsl_module -> file_module [xlabel="file commands", minlen=2];
+  dsl_module -> tag_module [xlabel="tag commands", minlen=2];
+  dsl_module -> connection_module [xlabel="relationship commands", minlen=2];
   dsl_module -> repositories [xlabel="find via Cypher"];
 
   file_module -> repositories [xlabel="file graph updates"];
@@ -174,6 +174,6 @@ digraph GraphleManagerComponents {
   sweeper_module -> filesystem [xlabel="check existence"];
 
   autocomplete_module -> valkey_adapter [xlabel="trie operations"];
-  repositories -> neo4j [xlabel="Cypher / repository calls"];
-  valkey_adapter -> valkey [xlabel="Valkey commands"];
+  repositories -> neo4j [xlabel="Cypher calls", minlen=2];
+  valkey_adapter -> valkey [xlabel="Valkey calls", minlen=2];
 }

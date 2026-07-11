@@ -125,7 +125,7 @@
 
     set text(size: 9pt)
     set par(justify: false)
-    columns(2, it)
+    it
   }
 
   

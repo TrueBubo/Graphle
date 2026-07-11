@@ -22,7 +22,7 @@ After both complete, the GUI re-fetches the file detail to display the updated t
 === DSL `find` Query
 
 The #voc("dsl") client posts a command string to `/dsl`.
-`DSLInterpreter` selects the `find` branch, and the query is split into file- and #voc("relationship")-level scopes by `DSLScopeParser`, compiled into #voc("cypher") by `CypherQueryBuilder`, and executed by `DSLCommandExecutor` against Neo4j.
+`DSLInterpreter` selects the `find` branch, and the query is split into file and #voc("relationship") level scopes by `DSLScopeParser`, compiled into #voc("cypher") by `CypherQueryBuilder`, and executed by `DSLCommandExecutor` against Neo4j.
 The response type (`FILENAMES` vs `CONNECTIONS`) is derived from the last scope of the query so that the client can choose a matching `DisplayMode` without a second round trip.
 
 #dsl-query-diagram()
