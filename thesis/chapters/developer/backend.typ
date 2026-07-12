@@ -42,7 +42,7 @@ Services sit between the controllers and the repositories and carry all non-triv
 `FileService` performs #voc("filesystem") I/O through `java.nio.file.Files`, reconciles database state with disk state after `addFile`/`removeFile`/`moveFile`, and schedules asynchronous autocomplete #voc("trie") updates via `insertFilesToCompleter`.
 It exposes functions `fileType`, `descendantsOfFile`, and `parentOfFile` that let the controllers compute hierarchical #voc("neighbor", text: "neighbors") without going through the database (F1, F9).
 `TagService` and `ConnectionService` are thin wrappers that delegate to their repositories.
-Background work is dispatched on a different thread so the caller does not need to wait and its failure will not affect the rest of the system.
+Background work is dispatched on a different thread, so the caller does not need to wait and its failure will not affect the rest of the system.
 
 === Controller Layer
 

@@ -41,7 +41,7 @@ GraphiQL is enabled in `application.properties`, so the schema can be explored i
 )
 
 The `File` type embeds `tags: [Tag!]!` and `connections: [Connection!]!` as nested fields, so a client can request the complete detail in a single round trip.
-Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionInput.bidirectional` is non-nullable on input so callers must decide whether the new edge should be traversed both ways.
+Inputs `TagInput` and `ConnectionInput` mirror their output types. `ConnectionInput.bidirectional` is non-nullable on input, so callers must decide whether the new edge should be traversed both ways.
 
 === REST
 
