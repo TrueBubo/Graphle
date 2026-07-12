@@ -6,7 +6,8 @@ The requirements were defined based on an analysis of existing tools and their l
 Existing #voc("filesystem") tools and productivity applications were examined to identify potential enhancements that can be made to them.
 The existing solutions will be discussed further in the #link(label("landscape"))[Current landscape] section.
 The thesis was not commissioned by an external client. Instead, the author acted as the primary stakeholder for the project.
-The requirements were derived from the author's experience with the problem domain and adjusted based on supervisor feedback and informal interviews with potential users.
+The requirements were derived from the user stories gathered from the supervisor and informal interviews with potential users,
+and then adjusted based on the author's own experience with the problem domain.
 The main goal of this project is to extend a standard #voc("filesystem") to support faster traversal by interpreting
 #voc("relationship", text: "relationships") as an #voc("lpg").
 

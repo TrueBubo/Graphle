@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-== Installation and Deployment
+== Installation and Deployment <installation>
 
 Graphle is distributed as source code and is intended to be run as a small group of cooperating services.
 The recommended deployment path uses the provided `start.sh` script, which starts all required parts from the top-level project directory.
@@ -11,7 +11,6 @@ For proper deployment of the application, ensure that the following components a
 - *Docker* - Required for the Neo4j and Valkey containers.
 - *Docker Compose* - Either the `docker compose` plugin or the older `docker-compose` command can be used.
 - *Access to source code* - The source code can be obtained by cloning the GitHub repository with `git clone https://github.com/TrueBubo/Graphle`.
-The tag used for this thesis is #todo[Add git tag]
 
 Initializing the installation with the recommended script consists of the following steps:
 

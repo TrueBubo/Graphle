@@ -19,7 +19,7 @@
   // set to true if generating a PDF for print (shifts page layout, turns code blocks grayscale, correctly aligns odd/even pages,...)
   print: false,
 
-  show-todos: true,
+  show-todos: false,
 
   abstract-en: [
     Operating systems organize files in directory trees, which forces each file into

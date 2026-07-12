@@ -17,7 +17,7 @@
   align(center, line(
     length: 100%,
     angle: 90deg,
-    stroke: (paint: luma(180), thickness: 0.5pt, dash: "dashed"),
+    stroke: (paint: luma(120), thickness: 1pt, dash: "dashed"),
   )),
 )
 
@@ -95,15 +95,32 @@
     ))
   }
 
+  // Actors strictly between the arrow's endpoints are just "passed over" -
+  // without this their dashed lifeline would vanish for this row, since the
+  // whole span is a single cell containing only the arrow. Each marker is
+  // anchored to the top of the cell, matching where _empty-lifeline sits in
+  // the untouched columns, so it never collides with the label/arrow (which
+  // is bottom-anchored).
+  let span = hi - lo + 1
+  let pass-through = for j in range(lo + 1, hi) {
+    let frac = (j - lo + 0.5) / span * 100%
+    place(top + left, dx: frac, line(
+      length: 8pt,
+      angle: 90deg,
+      stroke: (paint: luma(120), thickness: 1pt, dash: "dashed"),
+    ))
+  }
+
+  let cell-body = box(width: 100%, height: 22pt)[
+    #pass-through
+    #body
+  ]
+
   let cells = ()
   // Empty lifelines left of the arrow
   for _ in range(lo) { cells.push(_empty-lifeline()) }
   // The arrow / self-call cell spans from lo to hi (inclusive)
-  cells.push(grid.cell(colspan: hi - lo + 1, box(
-    width: 100%,
-    height: 22pt,
-    body,
-  )))
+  cells.push(grid.cell(colspan: hi - lo + 1, cell-body))
   // Empty lifelines right of the arrow
   for _ in range(total - hi - 1) { cells.push(_empty-lifeline()) }
 

@@ -54,3 +54,8 @@ better clients and for testing how useful graph-based file organization is in pr
 The most important future extension is application-level authentication and authorization for remote access.
 The current implementation supports remote use through SSH port forwarding and relies on operating-system accounts and filesystem permissions.
 A more broadly deployed version should add a uniform authentication layer across the #voc("graphql"), #voc("rest"), and #voc("websocket") interfaces so that the backend can protect the exposed #voc("filesystem") even when it is reachable by remote clients.
+
+Another natural extension is Windows support. As noted in the #link(label("functional_requirements"))[functional requirements],
+Windows was excluded from the scope of this thesis because its path semantics and permission system differ from those of
+macOS and Linux and were not tested during development, not because of a fundamental limitation of the underlying model.
+Adding Windows support would mean validating path handling, file permission mapping, and the installation steps on that platform.

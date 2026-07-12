@@ -53,3 +53,17 @@ architecture, module decomposition, technologies, and mockups of the user interf
 algorithms. @user covers installation, the user
 interface, and a tutorial for both the graphical and DSL workflows. Finally,
 @conclusion summarizes the contributions and outlines future work.
+
+The complete source code of the platform (the Spring Boot backend and the
+Compose Multiplatform graphical client), together with the helper scripts
+referenced throughout this thesis, is publicly
+available at #link("https://github.com/TrueBubo/Graphle"). Concrete instructions
+for cloning the repository and running the stack are given in @installation.
+
+#emph[Use of AI tools.] ChatGPT was used to research the current landscape of
+file managers and knowledge-management tools and to compare candidate technology
+stacks during the design phase. Claude was used for stylistic editing of the
+thesis prose (grammar, sentence rhythm, and clarity) and to generate the example
+dataset and queries used in the user documentation section. DeepL was used to translate parts of
+the thesis into Czech. The author reviewed all AI-assisted content and takes
+responsibility for its correctness.
