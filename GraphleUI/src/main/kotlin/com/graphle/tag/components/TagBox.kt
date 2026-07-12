@@ -32,7 +32,7 @@ private fun textsForTag(tag: Tag): List<String> = buildList {
     tag.value?.let { add(it) }
 }
 
-private fun getTagsCommand(tagName: String) = "tag \"$tagName\")"
+private fun getTagsCommand(tagName: String) = "tag \"$tagName\""
 
 @Composable
 internal fun TagBox(
