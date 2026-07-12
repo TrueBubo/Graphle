@@ -1,7 +1,4 @@
 #import "../../template/shared.typ": *
-#import "../design/mockups/main-page.typ": main-page-mockup
-#import "../design/mockups/filenames-page.typ": filenames-page-mockup, find-relationships-page-mockup
-#import "../design/mockups/files-with-tag-page.typ": files-with-tag-page-mockup
 == User Interface
 
 This section describes the screens and controls of the Graphle desktop application.
@@ -40,7 +37,11 @@ The file detail screen is the main screen of the application.
 It is opened after application startup, where it displays the user's home directory, and it is also opened whenever the user selects a file pill or executes a detail command.
 The same screen is used for normal files, directories, and the Graphle trash directory.
 
-#main-page-mockup()
+#figure(
+  placement: none,
+  image("screenshots/file-detail-view-screenshot.png", width: 88%),
+  caption: [Main page - file detail view],
+)
 
 The file detail screen consists of the following parts:
 
@@ -62,7 +63,11 @@ The file detail screen consists of the following parts:
 The filename results screen is displayed when a #voc("dsl") command returns a list of file paths.
 This typically happens after a `find` command that ends with a file scope, for example a search by tag name, tag value, location, or relationship traversal followed by an empty file scope. Scopes and the DSL are explained further in the following section.
 
-#filenames-page-mockup()
+#figure(
+  placement: none,
+  image("screenshots/filenames-view-screenshot.png", width: 88%),
+  caption: [Main page - filenames view],
+)
 
 The screen contains:
 
@@ -76,7 +81,11 @@ The screen contains:
 The relationship results screen is displayed when a `find` command ends with a relationship scope and therefore returns relationships rather than target files.
 It has the same visual structure as the file list, but each pill contains both relationship information and the related file path.
 
-#find-relationships-page-mockup()
+#figure(
+  placement: none,
+  image("screenshots/relationship-filter-view-screenshot.png", width: 88%),
+  caption: [Main page - find results with relationship filter view],
+)
 
 The screen contains:
 
@@ -91,7 +100,11 @@ The screen contains:
 The files with tag screen is displayed after opening a tag from the tag context menu or after executing the `tag` #voc("dsl") command.
 It lists all files that carry the requested tag name.
 
-#files-with-tag-page-mockup()
+#figure(
+  placement: none,
+  image("screenshots/tag-view-screenshot.png", width: 88%),
+  caption: [Files with tag view],
+)
 
 The screen contains:
 
