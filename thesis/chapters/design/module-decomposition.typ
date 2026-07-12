@@ -47,7 +47,7 @@ The service modules contain the application logic and decide whether an operatio
 
 #figure(
   placement: none,
-  rotate(-90deg, reflow: true, image("architecture/graphle-manager-components-c4.svg", width: 229mm)),
+  move(dx: -28mm, dy: -17mm, rotate(-90deg, reflow: true, image("architecture/graphle-manager-components-c4.svg", width: 285mm, height: 174mm, fit: "contain"))),
   caption: [C4 component diagram of GraphleManager]
 ) <graphle-manager-components-c4>
 
@@ -65,7 +65,7 @@ All backend communication is kept in transport helpers, which lets the composabl
 
 #figure(
   placement: none,
-  rotate(-90deg, reflow: true, image("architecture/graphle-ui-components-c4.svg", width: 229mm)),
+  rotate(-90deg, reflow: true, image("architecture/graphle-ui-components-c4.svg", width: 229mm, height: 140mm, fit: "contain")),
   caption: [C4 component diagram of GraphleUI]
 ) <graphle-ui-components-c4>
 

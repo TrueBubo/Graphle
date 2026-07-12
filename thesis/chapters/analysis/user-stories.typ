@@ -4,7 +4,7 @@
 We derived the functional requirements and use cases from a set of user stories captured when communicating with stakeholders.
 The most important points raised in these conversations were written up as the user stories below.
 The stories are grouped by the two user roles introduced above, since the two roles interact with Graphle in different ways and get different value from the same underlying functionality.
-The *See* column points to the requirement that later formalizes the story and where one exists, to the use case that elaborates it.
+The #emph[See] column points to the requirement that later formalizes the story and where one exists, to the use case that elaborates it.
 
 === Regular User Stories
 

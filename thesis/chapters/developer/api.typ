@@ -21,7 +21,7 @@ GraphiQL is enabled in `application.properties`, so the schema can be explored i
   [`fileType(location)`], [Returns `File` or `Directory`, or `null` if the path is not present.],
   [`tagsByFileLocation(location)`], [Lists every #voc("tag") attached to the given file.],
   [`filesByTag(tagName)`], [Reverse lookup from #voc("tag") to the files that carry it.],
-  [`filesFromFileByRelationship(fromLocation, relationshipName)`], [Files reachable from `fromLocation` through a named #voc("relationship") (custom or hierarchical).],
+  [`filesFromFileByRelationship(`#linebreak()`fromLocation,`#linebreak()`relationshipName)`], [Files reachable from `fromLocation` through a named #voc("relationship") (custom or hierarchical).],
   [`optionsByDslPrefix(dslPrefix, limit)`], [Autocomplete suggestions for a #voc("dsl") prefix, offered over #voc("graphql") as an alternative to the #voc("websocket").],
   [`entriesFromDSL(dslCommand, limit)`], [Executes a #voc("dsl") command from #voc("graphql") and returns an `Entries { entryTypeName, identifiers[] }` tuple.],
 )
