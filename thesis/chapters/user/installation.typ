@@ -1,5 +1,5 @@
 #import "../../template/shared.typ": *
-== Installation and Deployment
+== Installation and Deployment <installation>
 
 Graphle is distributed as source code and is intended to be run as a small group of cooperating services.
 The recommended deployment path uses the provided `start.sh` script, which starts all required parts from the top-level project directory.
